@@ -1,4 +1,7 @@
-from gui.CustomWidgets import PreviousNextTextArea, PreviousNextLabel, PreviousNextHTML
+from IPython.core.display import display
+from ipywidgets import widgets
+
+from gui.CustomWidgets import PreviousNextTextArea, PreviousNextLabel, PreviousNextHTML, PreviousNextIntSlider
 from gui.DirChooser import DirChooser
 from gui.FileIO import ReadFiles
 # from gui.SetFilterKeyWords import SetFilterKeyWords
@@ -6,29 +9,60 @@ from gui.Workflow import Workflow
 
 
 class GUI:
-	"""Define and execute a workflow"""
+    """Define and execute a workflow"""
 
-	def __init__(self):
-		self.data = None
-		self.dir_chooser = None
-		self.data = None
-		self.ready = False
-		self.workflow = None
-		pass
+    def __init__(self):
 
-	def start(self):
-		self.workflow = Workflow([PreviousNextHTML('<p><b>Welcome to SmartAnno!<br/>First let\'s import txt data from a directory. </p>'
-												   '<br/>',False),
-								  DirChooser(), ReadFiles(),PreviousNextTextArea(description='Type your keywords filter below: ')])
-		self.workflow.start()
-		pass
+        self.data = None
+        self.dir_chooser = None
+        self.data = None
+        self.ready = False
+        self.workflow = None
 
-	def getData(self):
-		return self.workflow.data
+        pass
 
-	def getLastStepData(self):
-		length = len(self.workflow.data)
-		if length > 0:
-			return self.workflow.data[length - 1]
-		else:
-			return None
+    def setUpStage(self):
+        style = '''<style>.output_wrapper, .output {
+                    height:auto !important;
+                    max-height:1000px;  /* your desired max-height here */
+                }
+                .output_scroll {
+                    box-shadow:none !important;
+                    webkit-box-shadow:none !important;
+                }
+                </style>'''
+        display(widgets.HTML(style))
+        pass
+
+    def start(self):
+        self.workflow = Workflow(
+            [PreviousNextHTML('<p><b>Welcome to SmartAnno!<br/>First let&apos;s import txt data from a directory. </p>'
+                              '<br/>', False),
+             DirChooser(), ReadFiles(),
+             PreviousNextTextArea(
+                 '<h4>Keywords Filter</h4><p>Type your keywords filter below. These key words are <b>optional</b>. They will'
+                 ' be used to filter down the samples(documents or snippets). You can set how much percent'
+                 'of the samples you want to review will be filter in <b>next step</b>. </p>'
+                 '<p> This is helpful, if you estimate that '
+                 'there will be too many samples with negative findings. </p>'
+                 '<p>If not keywords is set, all the samples will be ask to reviewed. </p>'),
+             PreviousNextIntSlider(value=60, min=0, max=100, step=10,
+                                   description='<h4>Percentage to Filter: </h4><p>Choose how many percent of the samples '
+                                               'you want to use the keywords filter.</p>'),
+             PreviousNextTextArea(
+                 '<h4>Annotation types:</h4><p>List all the types you want to identify below. Each type per line.<br/>If you'
+                 'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
+                 'for each sample. </p>')
+             ])
+        self.workflow.start()
+        pass
+
+    def getData(self):
+        return self.workflow.data
+
+    def getLastStepData(self):
+        length = len(self.workflow.data)
+        if length > 0:
+            return self.workflow.data[length - 1]
+        else:
+            return None
