@@ -4,7 +4,7 @@ from IPython.core.display import display, HTML, clear_output
 from gensim.models import KeyedVectors
 from collections import Set
 
-from gui.CustomWidgets import TimerProgressBar, OptionButtons
+from gui.PreviousNextWidgets import TimerProgressBar, OptionButtons
 from gui.Workflow import Step
 
 
