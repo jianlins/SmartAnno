@@ -1,5 +1,3 @@
-from _ast import List
-
 import ipywidgets as widgets
 from IPython.core.display import display, clear_output
 
@@ -7,7 +5,7 @@ from gui.ClickResponsiveToggleButtons import ClickResponsiveToggleButtons
 from gui.Workflow import Step, Workflow
 
 """
-This file contains 
+This file contains branching widgets
 """
 
 
