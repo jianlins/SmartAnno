@@ -110,7 +110,7 @@ class RepeatHTMLToggleStep(RepeatStep):
             description='',
             disabled=False,
             value=value,
-            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
+            button_style='info',  # 'success', 'info', 'warning', 'danger' or ''
             tooltips=tooltips,
             layout=widgets.Layout(width='70%')
             #     icons=['check'] * 3
@@ -137,7 +137,9 @@ class RepeatHTMLToggleStep(RepeatStep):
                 self.workflow.data = {'reviewed': [self.data]}
         else:
             print('the workflow is not set for the repeated step')
+        print(self.workflow.data)
         self.navigate(self.branch_buttons[1])
+
         pass
 
     def createBox(self):
@@ -153,22 +155,25 @@ class LoopRepeatSteps(Step):
 
     def __init__(self, repeat_steps=[], name=None):
         super().__init__(name)
-        self.data = dict()
         self.loop_workflow = Workflow()
+        self.loop_workflow.data = dict()
+        self.data = self.loop_workflow.data
         for step in repeat_steps:
-            step.setWorkflow(self.workflow)
+            step.pos_id = len(self.loop_workflow)
+            step.setWorkflow(self.loop_workflow)
             self.appendRepeatStep(step)
         pass
 
     def appendRepeatStep(self, newRepeatStep):
         previous_step = None
-        if len(self.loop_workflow.steps) > 0:
+        if len(self.loop_workflow) > 0:
             previous_step = self.loop_workflow.steps[-1]
-        id = len(self.loop_workflow.steps)
+        id = len(self.loop_workflow)
         self.loop_workflow.steps.append(newRepeatStep)
         self.loop_workflow.name_dict[newRepeatStep.name] = id
         self.loop_workflow.step_names.append(newRepeatStep.name)
         # print('attache new step' + newRepeatStep.name + "_" + str(id))
+        newRepeatStep.setWorkflow(self.loop_workflow)
         newRepeatStep.setPreviousRepeat(previous_step)
         if previous_step is not None:
             previous_step.setNextRepeat(newRepeatStep)

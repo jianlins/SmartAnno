@@ -29,8 +29,6 @@ class Step(object):
             print('You cannot set a None workflow')
             return
         self.workflow = workflow
-        if pos_id is None:
-            self.pos_id = len(workflow)
         pass
 
     def setNextStep(self, next_step):
