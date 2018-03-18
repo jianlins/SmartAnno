@@ -1,0 +1,7 @@
+TODO References;
+
+
+https://github.com/explosion/spacy/blob/master/examples/deep_learning_keras.py
+https://spacy.io/usage/training#section-ner
+
+http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#adding-and-updating-objects

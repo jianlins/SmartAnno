@@ -1,1 +1,2 @@
-src/conf/*.json
+SmartAnno/conf/*.json
+SmartAnno/data/*.sqlite

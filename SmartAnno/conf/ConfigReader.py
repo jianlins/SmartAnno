@@ -3,6 +3,8 @@ import os
 
 
 class ConfigReader(object):
+    """Read configuration parameters from a json file.
+    By default, the file is 'conf/smartanno_conf.json'."""
     configurations = None
 
     def __init__(self, config_file='conf/smartanno_conf.json'):
