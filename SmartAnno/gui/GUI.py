@@ -1,11 +1,14 @@
 from IPython.core.display import display
 from ipywidgets import widgets
 
+from conf.ConfigReader import ConfigReader
+from gui.ForkWidgets import IntroStep
 from gui.PreviousNextWidgets import PreviousNextTextArea, PreviousNextLabel, PreviousNextHTML, PreviousNextIntSlider
 from gui.DirChooser import DirChooser
 from gui.FileIO import ReadFiles
 # from gui.SetFilterKeyWords import SetFilterKeyWords
 from gui.Workflow import Workflow
+from utils.DocsToDB import DocsToDB
 
 
 class GUI:
@@ -37,9 +40,10 @@ class GUI:
 
     def start(self):
         self.workflow = Workflow(
-            [PreviousNextHTML('<p><b>Welcome to SmartAnno!<br/>First let&apos;s import txt data from a directory. </p>'
-                              '<br/>', name='intro', show_previous=False),
+            [IntroStep('<p><b>Welcome to SmartAnno!<br/>First let&apos;s import txt data from a directory. </p>'
+                       '<br/>', name='intro'),
              DirChooser(name='choosedir'), ReadFiles(name='readfiles'),
+             DocsToDB(name='save2db'),
              PreviousNextTextArea(
                  '<h4>Keywords Filter</h4><p>Type your keywords filter below. These key words are <b>optional</b>. They will'
                  ' be used to filter down the samples(documents or snippets). You can set how much percent'
@@ -55,7 +59,7 @@ class GUI:
                  'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
                  'for each sample. </p>', name='types')
              ])
-        self.workflow.start()
+        self.workflow.start(False)
         pass
 
     def getData(self):

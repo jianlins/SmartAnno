@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import Column, Integer, String, Table, MetaData, Date, DateTime, ForeignKey, Text, CLOB
 from sqlalchemy_dao import Model, Dao
 
@@ -6,10 +8,11 @@ class Document(Model):
     doc_id = Column(Integer, primary_key=True)
     # bunch can be used to represent a visit or a patient for a bunch of documents belows
     # to a same unit
+    dataset_id = Column(String, index=True)
     bunch_id = Column(String, index=True)
     doc_name = Column(String, index=True)
     text = Column(CLOB)
-    date = Column(Date)
+    date = Column(Date, default=datetime.datetime.utcnow)
     meta_data = Column(String)
 
     def __repr__(self):
@@ -30,7 +33,7 @@ class Annotation(Model):
     snippet = Column(String)
     features = Column(String)
     comments = Column(String)
-    create_dtm = Column(DateTime)
+    create_dtm = Column(DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
         return "<Annotation(id='%s', doc_id='%s'," \

@@ -29,7 +29,11 @@ setup(
         "Topic :: Text Processing :: Linguistic",
     ],
     install_requires=[
-        'PyRuSH', 'sqlalchemy-dao', 'tensorflow', 'keras'
+        'PyRuSH', 'sqlalchemy-dao', 'keras'
     ],
+    extras_require={
+        "tf": ["tensorflow"],
+        "tf_gpu": ["tensorflow-gpu"],
+    },
     data_files=[('demo_data', ['conf/*'])],
 )

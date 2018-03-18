@@ -194,3 +194,37 @@ class LoopReviews(LoopRepeatSteps):
             repeat_steps.append(RepeatHTMLToggleStep(values[i], descriptions[i], options, tooltips))
         super().__init__(repeat_steps, name)
         pass
+
+
+class IntroStep(BranchingStep):
+    def __init__(self, description='', name=None):
+        self.html = widgets.HTML(value=description)
+        super().__init__(name)
+        pass
+
+    def start(self):
+        self.branch_buttons = [widgets.Button(description=d, layout=widgets.Layout(width='90px', left='100px')) for d in
+                               ['StartOver', 'ContinueLeftover']]
+        self.branch_buttons[0].restore = False
+        self.branch_buttons[1].restore = True
+        self.box = self.createBox()
+        clear_output()
+        display(self.box)
+        pass
+
+    def navigate(self, button):
+        if button.restore:
+            self.workflow.start()
+        else:
+            self.workflow.steps[1].start()
+        pass
+
+    def createBox(self):
+        rows = [self.html] + self.addSeparator() + self.addConditions()
+        vbox = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
+        return vbox
+
+    def addConditions(self):
+        for button in self.branch_buttons:
+            button.on_click(self.navigate)
+        return [widgets.HBox(self.branch_buttons, layout=widgets.Layout(left='10%', width='80%'))]

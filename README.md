@@ -1,6 +1,8 @@
 # SmartAnno
 
-SmartAnno is a semi-automatic annotation tool implemented within jupyter notebook. It use deep learning model in the backend to learn a smart model over time while users annotating the data. It also integrate word embedding, and UMLS synonym heuristics to improve learning rate.
+SmartAnno is a semi-automatic annotation tool implemented within jupyter notebook. 
+It uses deep learning model in the backend to learn a smarter and smarter model over time while users annotating the data. 
+It also integrates word embedding, and UMLS synonym heuristics to improve learning rate.
 
 
 
@@ -12,7 +14,7 @@ pip install smartanno
 
 ## How to use
 
-Within jupyter notebook, add a python cell, type: 
+Within a jupyter notebook, add a python cell, type: 
 ```python
 from gui.GUI import GUI
 gui=GUI()

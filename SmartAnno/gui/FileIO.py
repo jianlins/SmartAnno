@@ -18,10 +18,12 @@ class ReadFiles(PreviousNext):
         pass
 
     def resetParameters(self):
-        self.data = pd.DataFrame(columns=['file_name', 'text'])
+        self.data = pd.DataFrame(columns=['doc_name', 'text'])
         pass
 
     def start(self):
+        if self.previous_step.data is None:
+            self.previous_step.start()
         parent_dir, files = self.previous_step.data
         label = widgets.HTML(description="<h4>Import files from: </h4><p>" + parent_dir + "</p>")
         progressbar = widgets.IntProgress(min=0, max=len(files), value=0, layout=widgets.Layout(width='50%'))
@@ -36,10 +38,10 @@ class ReadFiles(PreviousNext):
             with open(parent_dir + '/' + file) as f:
                 base_name = path.basename(file)
                 text = f.read()
-                self.data = self.data.append(pd.DataFrame([[base_name, text]], columns=['file_name', 'text']))
+                self.data = self.data.append(pd.DataFrame([[base_name, text]], columns=['doc_name', 'text']))
         progressbar.value = progressbar.max
         self.next_button.disabled = False
-        self.data.set_index('file_name', inplace=True)
+        self.data.set_index('doc_name', inplace=True)
         print("Totally " + str(len(files)) + " files have been imported into dataframe.")
 
         return self.data

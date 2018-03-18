@@ -2,6 +2,8 @@ import abc
 
 from IPython.core.display import clear_output
 
+from conf.ConfigReader import ConfigReader
+
 
 class Step(object):
     """a step in a workflow"""
@@ -24,7 +26,7 @@ class Step(object):
         self.previous_step = previous_step
         pass
 
-    def setWorkflow(self, workflow, pos_id=None):
+    def setWorkflow(self, workflow):
         if workflow is None:
             print('You cannot set a None workflow')
             return
@@ -48,6 +50,7 @@ class Step(object):
         if self.previous_step is not None:
             if isinstance(self.previous_step, Step):
                 self.previous_step.resetParameters()
+                self.workflow.updateStatus(self.previous_step.pos_id)
                 self.previous_step.start()
             else:
                 raise TypeError(
@@ -61,6 +64,8 @@ class Step(object):
         clear_output(True)
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
+                if self.workflow is not None:
+                    self.workflow.updateStatus(self.next_step.pos_id)
                 self.next_step.start()
             else:
                 raise TypeError(
@@ -74,18 +79,25 @@ class Step(object):
 class Workflow(object):
     """a workflow consist a list of steps that are linked to each other. So that once one step is finished,
     it can trigger the next step to start."""
+    global_id = 0
 
-    def __init__(self, steps=[]):
+    def __init__(self, steps=[], name='workflow_' + str(global_id), config_file='conf/smartanno_demo.json'):
+        Workflow.global_id += 1
+        self.name = name
         self.steps = []
         self.step_names = [None] * len(steps)
         self.name_dict = dict()
+        self.status = 0
+        self.config_file = config_file
         for step in steps:
             self.append(step)
         pass
 
-    def start(self):
-        if len(self.steps) > 0:
-            self.steps[0].start()
+    def start(self, restore=True):
+        if restore:
+            self.status = self.restoreStatus()
+        if len(self.steps) > self.status:
+            self.steps[self.status].start()
 
     def __len__(self):
         return len(self.steps)
@@ -99,6 +111,8 @@ class Workflow(object):
         if len(self.steps) > 0:
             previous_step = self.steps[-1]
         id = len(self.steps)
+        new_step.pos_id = id
+        new_step.setWorkflow(self)
         self.steps.append(new_step)
 
         self.name_dict[new_step.name] = id
@@ -130,3 +144,14 @@ class Workflow(object):
             return step.data
         else:
             return None
+
+    def updateStatus(self, status=None):
+        if status is not None:
+            self.status = status
+        ConfigReader().saveStatus(self.status, status_key='status/' + self.name)
+
+    def restoreStatus(self):
+        status = ConfigReader().getValue('status/' + self.name)
+        if status is None or status == '':
+            status = 0
+        return status
