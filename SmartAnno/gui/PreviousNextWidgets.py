@@ -68,6 +68,9 @@ class PreviousNext(Step):
             my_buttons.append(self.next_button)
         return widgets.HBox(my_buttons, layout=widgets.Layout(left='10%', width='80%'))
 
+    def __repr__(self):
+        return "<" + str(type(self).__name__) + "\tname:" + self.name + ">"
+
 
 class PreviousNextWithOptions(PreviousNext):
     """display toggle buttons, link each option with a next step function"""
@@ -134,6 +137,50 @@ class PreviousNextTextArea(PreviousNext):
 
     def complete(self):
         self.data = [item.strip() for item in self.text_area.value.split("\n")]
+        super().complete()
+        pass
+
+
+class PreviousNextText(PreviousNext):
+    """display a input text field, with optional button: 'submit', 'cancel', and 'finish'"""
+
+    def __init__(self, description='Name your task:', value='', placeholder='enter a name',
+                 width='500px', name=str(Step.global_id + 1), workflow_attribute='task_name',
+                 show_previous=True,
+                 show_next=True):
+        self.data = value.split("\n")
+        self.workflow_attribute = workflow_attribute
+        self.title = widgets.HTML(value=description)
+        self.text = widgets.Text(
+            value=value,
+            placeholder=placeholder,
+            description='',
+            disabled=False,
+            layout=widgets.Layout(width=width))
+        self.text.observe(self.submit, 'value')
+        self.text.continuous_update = False
+        super().__init__(name, show_previous, show_next)
+        self.resetParameters()
+        pass
+
+    def createBox(self):
+        rows = [self.title, self.text] + self.addSeparator(top='10px') + [
+            self.addPreviousNext(self.show_previous, self.show_next)]
+        vbox = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
+        return vbox
+
+    def resetParameters(self):
+        super().resetParameters()
+        self.text.value = ''
+        pass
+
+    def submit(self, value):
+        self.data = self.text.value.strip()
+        setattr(self.workflow, self.workflow_attribute, self.data)
+        self.complete()
+        pass
+
+    def complete(self):
         super().complete()
         pass
 

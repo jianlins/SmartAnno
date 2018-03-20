@@ -1,5 +1,4 @@
 import os
-from time import sleep
 
 import sqlalchemy_dao
 from IPython.core.display import clear_output, display
@@ -10,13 +9,12 @@ from sqlalchemy_dao import Model
 from conf.ConfigReader import ConfigReader
 from gui.PreviousNextWidgets import PreviousNext, PreviousNextText
 from gui.Workflow import Step
-from sqlalchemy import func
 
 from db.ORMs import Task, Typedef
 from db.ORMs import Filter, Annotation, Document
 
 
-class DocsToDB(PreviousNext):
+class DBInitiater(PreviousNext):
     """Import read documents into database"""
 
     def __init__(self, name=None):
@@ -24,17 +22,29 @@ class DocsToDB(PreviousNext):
         self.dao = None
         self.dbfile = ''
         self.dbpath = ''
-        self.remove_old = False
+        self.need_import = False
         pass
 
     def start(self):
-        with self.workflow.dao.create_session() as session:
-            num_docs = session.query(func.count(Document.id)).first()
-            if num_docs is not None and num_docs > 0:
-                self.displayOptions(num_docs)
+        if not hasattr(self.workflow, 'dao') or self.workflow.dao is None:
+            print(self.workflow.config_file)
+            self.dbfile = ConfigReader(self.workflow.config_file).getValue('db')
+            self.dbpath = self.dbfile[self.dbfile.find(':///') + 4:]
+            if os.path.isfile(self.dbpath):
+                self.initDao(self.dbfile)
+                self.displayOptions()
             else:
-                self.importData()
+                self.initDao(self.dbfile)
+                self.createSQLTables()
+                self.need_import = True
                 self.next_step.start()
+        else:
+            self.next_step.start()
+        pass
+
+    def backStart(self):
+        self.workflow.dao = None
+        self.start()
         pass
 
     def updateBox(self):
@@ -49,9 +59,9 @@ class DocsToDB(PreviousNext):
         self.workflow.dao = self.dao
         pass
 
-    def displayOptions(self, num_docs):
+    def displayOptions(self):
         clear_output()
-        self.html = widgets.HTML('<h4>There are %s document  database exists, do you want to overwrite?</h4>' % (num_docs))
+        self.html = widgets.HTML('<h4>Sqlite database "%s" exists, do you want to overwrite?</h4>' % self.dbpath)
         self.toggle = widgets.ToggleButtons(
             options=['Yes', 'No'],
             description='',
@@ -72,19 +82,18 @@ class DocsToDB(PreviousNext):
     def on_click(self, change):
         self.data = change['new']
         if self.data == 'Yes':
-            self.remove_old = True
+            self.need_import = True
         pass
 
     def complete(self):
         clear_output(True)
-        if self.remove_old:
+        if self.need_import:
             os.remove(self.dbpath)
             self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
             self.createSQLTables()
         else:
             self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
         self.workflow.dao = self.dao
-        self.importData()
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
@@ -100,27 +109,4 @@ class DocsToDB(PreviousNext):
 
     def createSQLTables(self):
         Model.metadata.create_all(bind=self.dao._engine)
-        pass
-
-    def importData(self):
-        if hasattr(self.previous_step, 'data') and self.previous_step.data is not None:
-            self.parseData(self.previous_step.data)
-            self.previous_step.data.to_sql('document', self.dao._engine.raw_connection(),
-                                           if_exists='append')
-        if isinstance(self.workflow.steps[1], PreviousNextText) and self.workflow.steps[
-            1].data is not None and isinstance(self.workflow.steps[1].data, str):
-            task_name = self.workflow.steps[1].data
-            with self.dao.create_session() as session:
-                res = session.query(Task).filter(Task.task_name == task_name).first()
-                if res is None:
-                    session.add(Task(task_name=task_name))
-
-        pass
-
-    def parseData(self, df):
-        """dataset specific, parse meta-data from the existing columns"""
-        if not 'bunch_id' in self.previous_step.data.columns:
-            df.insert(1, 'bunch_id', [name.split('_')[0] for name in df.index], allow_duplicates=True)
-            df['date'] = df.apply(lambda row: row.text[13:row.text.find('\n')].strip(), axis=1)
-            df['dataset_id'] = df.apply(lambda row: 'origin_doc', axis=1)
         pass

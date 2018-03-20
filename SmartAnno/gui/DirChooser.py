@@ -42,8 +42,11 @@ class DirChooser(Step):
     def start(self):
         # display(HTML('<p><b>Welcome to SmartAnno!<br/>First let\'s import txt data from a directory. </p>'))
         # TimerProgressBar(self.intro_wait)
-
         clear_output()
+        if not self.workflow.steps[1].need_import:
+            self.workflow.steps[self.pos_id + 3].setPreviousStep(self.workflow.steps[1])
+            self.workflow.steps[self.pos_id + 3].start()
+            return None
         box = widgets.VBox(layout=widgets.Layout(display='flex', flex_grown='column'))
         self._update(box)
         display(box)

@@ -41,6 +41,10 @@ class Step(object):
     def start(self):
         pass
 
+    def backStart(self):
+        self.start()
+        pass
+
     def resetParameters(self):
         self.data = None
         pass
@@ -51,7 +55,7 @@ class Step(object):
             if isinstance(self.previous_step, Step):
                 self.previous_step.resetParameters()
                 self.workflow.updateStatus(self.previous_step.pos_id)
-                self.previous_step.start()
+                self.previous_step.backStart()
             else:
                 raise TypeError(
                     'Type error for ' + self.name + '\'s next_step. Only Step can be the next_step, where its next_step is ' + str(
@@ -81,7 +85,7 @@ class Workflow(object):
     it can trigger the next step to start."""
     global_id = 0
 
-    def __init__(self, steps=[], name='workflow_' + str(global_id), config_file='conf/smartanno_demo.json'):
+    def __init__(self, steps=[], name='workflow_' + str(global_id), config_file='conf/smartanno_conf.json'):
         Workflow.global_id += 1
         self.name = name
         self.steps = []

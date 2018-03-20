@@ -4,6 +4,23 @@ from sqlalchemy import Column, Integer, String, Table, MetaData, Date, DateTime,
 from sqlalchemy_dao import Model, Dao
 
 
+class Task(Model):
+    id = Column(Integer, primary_key=True)
+    task_name = Column(String, index=True)
+
+    def __repr__(self):
+        return "<Task (id='%s', task_name='%s')>" % (self.id, self.task_name)
+
+
+class Typedef(Model):
+    id = Column(Integer, primary_key=True)
+    type_name = Column(String, index=True)
+    task_id = Column(String, ForeignKey("task.id"))
+
+    def __repr__(self):
+        return "<TypeDef (id='%s', type_name='%s',type_group_id='%s')>" % (self.id, self.type_name, self.task_id)
+
+
 class Document(Model):
     doc_id = Column(Integer, primary_key=True)
     # bunch can be used to represent a visit or a patient for a bunch of documents belows
@@ -23,9 +40,10 @@ class Document(Model):
 class Annotation(Model):
     id = Column(Integer, primary_key=True)
     doc_id = Column(Integer, ForeignKey("document.doc_id"))
-    annotator = Column(String, index=True)
-    run_id = Column(Integer, index=True)
-    type = Column(String, index=True)
+    task_id = Column(String, ForeignKey("task.id"))
+    run_id = Column(String, index=True)
+    type = Column(String, ForeignKey("typedef.type_name"))
+    reviewed_type = Column(String, ForeignKey("typedef.type_name"))
     begin = Column(Integer)
     end = Column(Integer)
     snippet_begin = Column(Integer)
@@ -44,3 +62,14 @@ class Annotation(Model):
                    self.type, self.begin, self.end, self.snippet_begin,
                    self.text, self.snippet, self.features, self.comments,
                    self.create_dtm)
+
+
+class Filter(Model):
+    id = Column(Integer, primary_key=True)
+    task_id = Column(String, ForeignKey("task.id"))
+    keyword = Column(String)
+    type_name = Column(String, ForeignKey("typedef.type_name"))
+
+    def __repr__(self):
+        return "<Filter(id='%s', task_id='%s'," \
+               " keyword='%s',type_name='%s')>" % (self.id, self.task_id, self.keyword, self.type_name)

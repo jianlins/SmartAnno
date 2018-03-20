@@ -1,13 +1,14 @@
 from IPython.core.display import display
 from ipywidgets import widgets
 
-from conf.ConfigReader import ConfigReader
-from gui.ForkWidgets import IntroStep
-from gui.PreviousNextWidgets import PreviousNextTextArea, PreviousNextLabel, PreviousNextHTML, PreviousNextIntSlider
 from gui.DirChooser import DirChooser
 from gui.FileIO import ReadFiles
+from gui.BranchingWidgets import IntroStep
+from gui.PreviousNextWidgets import PreviousNextTextArea, PreviousNextIntSlider, PreviousNextText
 # from gui.SetFilterKeyWords import SetFilterKeyWords
 from gui.Workflow import Workflow
+from utils.AnnotationTypeDef import AnnotationTypeDef
+from utils.DBInitiater import DBInitiater
 from utils.DocsToDB import DocsToDB
 
 
@@ -42,8 +43,14 @@ class GUI:
         self.workflow = Workflow(
             [IntroStep('<p><b>Welcome to SmartAnno!<br/>First let&apos;s import txt data from a directory. </p>'
                        '<br/>', name='intro'),
+             DBInitiater(name='db_initiater'),
+             PreviousNextText(name='tasknamer'),
              DirChooser(name='choosedir'), ReadFiles(name='readfiles'),
              DocsToDB(name='save2db'),
+             AnnotationTypeDef(
+                 '<h4>Annotation types:</h4><p>List all the types you want to identify below. Each type per line.<br/>If you'
+                 'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
+                 'for each sample. </p>', name='types'),
              PreviousNextTextArea(
                  '<h4>Keywords Filter</h4><p>Type your keywords filter below. These key words are <b>optional</b>. They will'
                  ' be used to filter down the samples(documents or snippets). You can set how much percent'
@@ -53,11 +60,8 @@ class GUI:
                  '<p>If not keywords is set, all the samples will be ask to reviewed. </p>', name='keywords'),
              PreviousNextIntSlider(value=60, min=0, max=100, step=10,
                                    description='<h4>Percentage to Filter: </h4><p>Choose how many percent of the samples '
-                                               'you want to use the keywords filter.</p>', name='percent2filter'),
-             PreviousNextTextArea(
-                 '<h4>Annotation types:</h4><p>List all the types you want to identify below. Each type per line.<br/>If you'
-                 'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
-                 'for each sample. </p>', name='types')
+                                               'you want to use the keywords filter.</p>', name='percent2filter')
+
              ])
         self.workflow.start(False)
         pass

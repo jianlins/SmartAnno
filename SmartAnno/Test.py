@@ -1,4 +1,4 @@
-from gui.ForkWidgets import LoopReviews
+from gui.BranchingWidgets import LoopReviews
 
 values = ['yes', 'no', 'no', 'yes']
 descriptions = ['Answer is: ', 'Answer2 is: ', 'Answer3 is: ', 'Answer4 is: ']

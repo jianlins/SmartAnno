@@ -8,9 +8,9 @@ class ConfigReader(object):
     configurations = None
 
     def __init__(self, config_file='conf/smartanno_conf.json'):
+        self.config_file = config_file
         if ConfigReader.configurations is None:
             self.load(config_file)
-        self.config_file = config_file
         pass
 
     def load(self, config_file):
@@ -39,7 +39,6 @@ class ConfigReader(object):
         pass
 
     def saveStatus(self, status=None, status_key='status/default'):
-        print(status)
         if status is not None:
             value = ConfigReader.configurations
             if not status_key.startswith("status/"):
@@ -58,6 +57,5 @@ class ConfigReader(object):
                     else:
                         value[key] = status
                         break
-        print(ConfigReader.configurations)
         with open(self.config_file, 'w') as outfile:
             json.dump(ConfigReader.configurations, outfile, indent=2)
