@@ -68,6 +68,7 @@ class Filter(Model):
     id = Column(Integer, primary_key=True)
     task_id = Column(String, ForeignKey("task.id"))
     keyword = Column(String)
+    type = Column(String, default='orig')
     type_name = Column(String, ForeignKey("typedef.type_name"))
 
     def __repr__(self):

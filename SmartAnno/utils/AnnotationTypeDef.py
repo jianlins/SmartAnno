@@ -41,12 +41,9 @@ class AnnotationTypeDef(PreviousNextTextArea):
         pass
 
     def complete(self):
-        self.data = [item.strip() for item in self.text_area.value.split("\n") if item.strip() != '']
+        self.data = [item.strip() for item in self.text_area.value.split("\n") if len(item.strip()) > 0]
         with self.workflow.dao.create_session() as session:
-            print("insert", self.data)
-            sleep(3)
             session.query(Typedef).filter(Typedef.task_id == self.workflow.task_id).delete()
             session.add_all([Typedef(type_name=type_name, task_id=self.workflow.task_id) for type_name in self.data])
-
         super().complete()
         pass

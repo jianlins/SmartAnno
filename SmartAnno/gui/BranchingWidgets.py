@@ -1,7 +1,7 @@
 import ipywidgets as widgets
 from IPython.core.display import display, clear_output
 
-from gui.ClickResponsiveToggleButtons import ClickResponsiveToggleButtons
+from gui.MyWidgets import ClickResponsiveToggleButtons
 from gui.Workflow import Step, Workflow
 
 """
@@ -36,17 +36,17 @@ class BranchingStep(Step):
         bottom_whitespace = widgets.Label(value='', layout=widgets.Layout(height=bottom))
         return [top_whitespace, separator, bottom_whitespace]
 
-    def addConditions(self):
-        def navigate(b):
-            # print(b)
-            b.linked_step.start()
-            pass
+    def navigate(self, b):
+        # print(b)
+        b.linked_step.start()
+        pass
 
+    def addConditions(self):
         condition_steps = self.branch_steps
         for i in range(0, len(condition_steps)):
             if condition_steps[i] is not None and isinstance(condition_steps[i], Step):
                 self.branch_buttons[i].linked_step = condition_steps[i]
-                self.branch_buttons[i].on_click(navigate)
+                self.branch_buttons[i].on_click(self.navigate)
         return [widgets.HBox(self.branch_buttons, layout=widgets.Layout(left='10%', width='80%'))]
 
 
@@ -153,7 +153,7 @@ class LoopRepeatSteps(Step):
 
     def __init__(self, repeat_steps=[], name=None):
         super().__init__(name)
-        self.loop_workflow = Workflow()
+        self.loop_workflow = Workflow(name=name + "_loop")
         self.loop_workflow.data = dict()
         self.data = self.loop_workflow.data
         for step in repeat_steps:
@@ -163,21 +163,21 @@ class LoopRepeatSteps(Step):
         pass
 
     def appendRepeatStep(self, newRepeatStep):
-        previous_step = None
         if len(self.loop_workflow) > 0:
             previous_step = self.loop_workflow.steps[-1]
+        else:
+            previous_step = self.previous_step
         id = len(self.loop_workflow)
         self.loop_workflow.steps.append(newRepeatStep)
         self.loop_workflow.name_dict[newRepeatStep.name] = id
         self.loop_workflow.step_names.append(newRepeatStep.name)
         # print('attache new step' + newRepeatStep.name + "_" + str(id))
         newRepeatStep.setWorkflow(self.loop_workflow)
-        newRepeatStep.setPreviousRepeat(previous_step)
-        if previous_step is not None:
+        if previous_step is not None and isinstance(previous_step, RepeatStep):
             previous_step.setNextRepeat(newRepeatStep)
+            newRepeatStep.setPreviousRepeat(previous_step)
         newRepeatStep.setPreviousStep(self.previous_step)
         newRepeatStep.setNextStep(self.next_step)
-
         pass
 
     def start(self):

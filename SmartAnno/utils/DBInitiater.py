@@ -57,6 +57,7 @@ class DBInitiater(PreviousNext):
     def initDao(self, dbfile):
         self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
         self.workflow.dao = self.dao
+        self.workflow.dbpath = self.dbfile[self.dbfile.find(':///') + 4:]
         pass
 
     def displayOptions(self):

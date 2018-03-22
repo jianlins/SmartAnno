@@ -25,37 +25,44 @@ class ConfigReader(object):
         else:
             raise FileExistsError('File "' + config_file + '" doesn\'t exist')
 
-    def getValue(self, status_key):
+    def getValue(self, key):
         value = ConfigReader.configurations
-        for key in status_key.split('/'):
+        for key in key.split('/'):
             if key in value:
                 value = value[key]
-        if isinstance(value, dict):
-            return None
+            else:
+                return None
         return value
 
     def refresh(self):
         self.load(self.config_file)
         pass
 
-    def saveStatus(self, status=None, status_key='status/default'):
-        if status is not None:
-            value = ConfigReader.configurations
-            if not status_key.startswith("status/"):
-                status_key = "status/" + status_key
-            keys = status_key.split("/")
+    def setValue(self, key=None, value=None):
+        if value is not None and key is not None:
+            chain = ConfigReader.configurations
+            keys = key.split("/")
             for i in range(0, len(keys)):
                 key = keys[i]
-                if key in value:
-                    if not isinstance(value[key], dict):
-                        value[key] = status
+                if key in chain:
+                    if not isinstance(chain[key], dict):
+                        chain[key] = value
                         break
-                    value = value[key]
+                    chain = chain[key]
                 else:
                     if i < len(keys) - 1:
-                        value[key] = {}
+                        chain[key] = {}
                     else:
-                        value[key] = status
+                        chain[key] = value
                         break
+
+    def saveStatus(self, status=None, status_key='status/default'):
+        if status is not None:
+            if not status_key.startswith("status/"):
+                status_key = "status/" + status_key
+            self.setValue(status_key, status)
+        self.saveConfig()
+
+    def saveConfig(self):
         with open(self.config_file, 'w') as outfile:
             json.dump(ConfigReader.configurations, outfile, indent=2)

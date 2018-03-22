@@ -22,16 +22,17 @@ class DocsToDB(PreviousNext):
     def __init__(self, name=None):
         super().__init__(name)
         self.dao = None
-        self.dbfile = ''
         self.dbpath = ''
         self.remove_old = False
         pass
 
     def start(self):
+        self.dao = self.workflow.dao
+        self.dbpath = self.workflow.dbpath
         with self.workflow.dao.create_session() as session:
-            num_docs = session.query(func.count(Document.id)).first()
-            if num_docs is not None and num_docs > 0:
-                self.displayOptions(num_docs)
+            num_docs = session.query(func.count(Document.doc_id)).first()
+            if num_docs is not None and num_docs[0] > 0:
+                self.displayOptions(num_docs[0])
             else:
                 self.importData()
                 self.next_step.start()
@@ -44,14 +45,10 @@ class DocsToDB(PreviousNext):
         vbox.layout.flex_grown = 'column'
         return vbox
 
-    def initDao(self, dbfile):
-        self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
-        self.workflow.dao = self.dao
-        pass
-
     def displayOptions(self, num_docs):
         clear_output()
-        self.html = widgets.HTML('<h4>There are %s document  database exists, do you want to overwrite?</h4>' % (num_docs))
+        self.html = widgets.HTML(
+            '<h4>There are %s document  database exists, do you want to overwrite?</h4>' % (num_docs))
         self.toggle = widgets.ToggleButtons(
             options=['Yes', 'No'],
             description='',
@@ -79,11 +76,7 @@ class DocsToDB(PreviousNext):
         clear_output(True)
         if self.remove_old:
             os.remove(self.dbpath)
-            self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
             self.createSQLTables()
-        else:
-            self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
-        self.workflow.dao = self.dao
         self.importData()
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
