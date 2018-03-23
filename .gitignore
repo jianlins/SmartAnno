@@ -1,2 +1,3 @@
 SmartAnno/conf/*.json
 SmartAnno/data/*.sqlite
+SmartAnno/models/glove/*

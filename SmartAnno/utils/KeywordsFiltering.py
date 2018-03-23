@@ -83,9 +83,10 @@ class KeywordsFiltering(PreviousNext):
                 type_name = self.types[i]
                 keywords = self.text_areas[i].value.strip()
                 self.filters[type_name] = TreeSet([item.strip() for item in keywords.split("\n") if
-                                           item.strip() != ''])
+                                                   item.strip() != ''])
                 keywords = '\n'.join(self.filters[type_name])
                 session.add(Filter(keyword=keywords, type_name=type_name, task_id=self.workflow.task_id))
         self.workflow.filters = self.filters
+        self.data = self.filters
         super().complete()
         pass

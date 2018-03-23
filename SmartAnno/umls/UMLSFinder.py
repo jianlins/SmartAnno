@@ -11,12 +11,19 @@ class UMLSFinder:
     version = "current"
     uri = "https://uts-ws.nlm.nih.gov"
     content_endpoint = "/rest/search/" + version
-    AuthClient = Authentication(ConfigReader().getValue('api_key'))
+    AuthClient = None
     translator = str.maketrans('', '', string.punctuation)
+    tgt = None
 
-    def __init__(self, api_key, sources=['SNOMEDCT_US'], filter_by_length=0, max_query=50, filter_by_contains=False):
-        UMLSFinder.AuthClient = Authentication(api_key)
-        UMLSFinder.tgt = UMLSFinder.AuthClient.gettgt()
+    def __init__(self, api_key=None, sources=['SNOMEDCT_US'], filter_by_length=0,
+                 max_query=50, filter_by_contains=False):
+        if api_key is None:
+            ConfigReader()
+            api_key = ConfigReader.getValue('api_key')
+        if UMLSFinder.AuthClient is None:
+            UMLSFinder.AuthClient = Authentication(api_key)
+        if UMLSFinder.tgt is None:
+            UMLSFinder.tgt = UMLSFinder.AuthClient.gettgt()
         self.sources = ','.join(sources)
         self.filter_by_length = filter_by_length
         self.max_query = max_query
@@ -24,7 +31,7 @@ class UMLSFinder:
         pass
 
     def setSources(self, sources):
-        self.sources = Set(sources)
+        self.sources = ','.join(sources)
         pass
 
     def search(self, input_phrase):
@@ -62,4 +69,4 @@ class UMLSFinder:
             if jsonData["results"][0]["ui"] == "NONE":
                 break
         # print('\n\n\n##################################################################')
-        return list(results.values())
+        return results.values()

@@ -68,9 +68,6 @@ class PreviousNext(Step):
             my_buttons.append(self.next_button)
         return widgets.HBox(my_buttons, layout=widgets.Layout(left='10%', width='80%'))
 
-    def __repr__(self):
-        return "<" + str(type(self).__name__) + "\tname:" + self.name + ">"
-
 
 class PreviousNextWithOptions(PreviousNext):
     """display toggle buttons, link each option with a next step function"""

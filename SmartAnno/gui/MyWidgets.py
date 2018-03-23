@@ -93,7 +93,7 @@ class ToggleButtonsMultiSelectionInBox(widgets.Box):
         @monitor(self, 'options')
         def _(*_):
             self.buttons = [widgets.ToggleButton(description=label, tooltip=label,
-                                                 layout=widgets.Layout(margin='2', icon='check', width='100%'))
+                                                 layout=widgets.Layout(margin='2', icon='check',width='100%',min_width='160px'))
                             for label in self._selection_obj._options_labels]
             rows = []
             for i in range(0, len(self.buttons), self.num_per_row):

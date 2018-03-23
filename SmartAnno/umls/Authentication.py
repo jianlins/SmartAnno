@@ -26,7 +26,7 @@ class Authentication:
         if apikey is not None:
             self.apikey = apikey
         else:
-            self.apikey = ConfigReader().getValue('api_key')
+            self.apikey = ConfigReader.getValue('api_key')
         self.service = "http://umlsks.nlm.nih.gov"
 
     def gettgt(self):

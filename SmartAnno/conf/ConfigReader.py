@@ -6,11 +6,12 @@ class ConfigReader(object):
     """Read configuration parameters from a json file.
     By default, the file is 'conf/smartanno_conf.json'."""
     configurations = None
+    config_file = ''
 
     def __init__(self, config_file='conf/smartanno_conf.json'):
-        self.config_file = config_file
         if ConfigReader.configurations is None:
             self.load(config_file)
+            ConfigReader.config_file = config_file
         pass
 
     def load(self, config_file):
@@ -25,7 +26,8 @@ class ConfigReader(object):
         else:
             raise FileExistsError('File "' + config_file + '" doesn\'t exist')
 
-    def getValue(self, key):
+    @classmethod
+    def getValue(cls, key):
         value = ConfigReader.configurations
         for key in key.split('/'):
             if key in value:
@@ -35,10 +37,11 @@ class ConfigReader(object):
         return value
 
     def refresh(self):
-        self.load(self.config_file)
+        self.load(ConfigReader.config_file)
         pass
 
-    def setValue(self, key=None, value=None):
+    @classmethod
+    def setValue(cls, key=None, value=None):
         if value is not None and key is not None:
             chain = ConfigReader.configurations
             keys = key.split("/")
@@ -50,19 +53,22 @@ class ConfigReader(object):
                         break
                     chain = chain[key]
                 else:
-                    if i < len(keys) - 1:
+                    if i < len(keys) -1:
                         chain[key] = {}
+                        chain=chain[key]
                     else:
                         chain[key] = value
                         break
 
-    def saveStatus(self, status=None, status_key='status/default'):
+    @classmethod
+    def saveStatus(cls, status=None, status_key='status/default'):
         if status is not None:
             if not status_key.startswith("status/"):
                 status_key = "status/" + status_key
-            self.setValue(status_key, status)
-        self.saveConfig()
+            cls.setValue(status_key, status)
+        cls.saveConfig()
 
-    def saveConfig(self):
-        with open(self.config_file, 'w') as outfile:
+    @classmethod
+    def saveConfig(cls):
+        with open(ConfigReader.config_file, 'w') as outfile:
             json.dump(ConfigReader.configurations, outfile, indent=2)

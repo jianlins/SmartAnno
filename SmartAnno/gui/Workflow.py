@@ -66,6 +66,13 @@ class Step(object):
 
     def complete(self):
         clear_output(True)
+        if self.data is not None and (
+                isinstance(self.data, str) or isinstance(self.data, list)):
+            ConfigReader.setValue("status/" + self.name, self.data)
+            ConfigReader.saveConfig()
+        elif isinstance(self.data, set):
+            ConfigReader.setValue("status/" + self.name, list(self.data))
+            ConfigReader.saveConfig()
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
@@ -78,6 +85,9 @@ class Step(object):
         else:
             print("next step hasn't been set.")
         pass
+
+    def __repr__(self):
+        return "<" + str(type(self).__name__) + "\tname:" + self.name + ">"
 
 
 class Workflow(object):
@@ -97,7 +107,7 @@ class Workflow(object):
             self.append(step)
         pass
 
-    def start(self, restore=True):
+    def start(self, restore=False):
         if restore:
             self.status = self.restoreStatus()
         if len(self.steps) > self.status:
@@ -152,10 +162,10 @@ class Workflow(object):
     def updateStatus(self, status=None):
         if status is not None:
             self.status = status
-        ConfigReader().saveStatus(self.status, status_key='status/' + self.name)
+        ConfigReader.saveStatus(self.status, status_key='status/' + self.name)
 
     def restoreStatus(self):
-        status = ConfigReader().getValue('status/' + self.name)
+        status = ConfigReader.getValue('status/' + self.name)
         if status is None or status == '':
             status = 0
         return status
