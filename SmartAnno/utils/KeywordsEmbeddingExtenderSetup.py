@@ -18,8 +18,19 @@ class KeywordsEmbeddingExtenderSetup(PreviousNext):
         self.glove_path_input = None
         super().__init__(name)
 
+    def backStart(self):
+        rows = self.showWords(self.workflow.filters)
+        self.box = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
+        if hasattr(self, 'to_we_ext_filters') and isinstance(self.to_we_ext_filters, dict):
+            for type_name, toggle in self.to_we_ext_filters.items():
+                if type_name in self.to_we_ext_words:
+                    toggle.value = list(self.to_we_ext_words[type_name])
+        display(self.box)
+        pass
+
     def start(self):
-        clear_output()
+        if not hasattr(self.workflow, 'we_extended'):
+            self.workflow.we_extended = dict()
         rows = self.showWords(self.workflow.filters)
         self.box = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
         display(self.box)

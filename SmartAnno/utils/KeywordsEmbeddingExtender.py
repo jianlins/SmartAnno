@@ -33,6 +33,7 @@ class KeywordsEmbeddingExtender(LoopRepeatSteps):
             for word in step.data:
                 self.data.add(word)
         self.workflow.we_extended = self.data
+
         super().complete()
         pass
 

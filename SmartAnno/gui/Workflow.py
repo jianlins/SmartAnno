@@ -66,13 +66,6 @@ class Step(object):
 
     def complete(self):
         clear_output(True)
-        if self.data is not None and (
-                isinstance(self.data, str) or isinstance(self.data, list)):
-            ConfigReader.setValue("status/" + self.name, self.data)
-            ConfigReader.saveConfig()
-        elif isinstance(self.data, set):
-            ConfigReader.setValue("status/" + self.name, list(self.data))
-            ConfigReader.saveConfig()
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:

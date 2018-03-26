@@ -41,6 +41,7 @@ class KeywordsUMLSExtender(LoopRepeatSteps):
         ConfigReader.saveConfig()
         pass
 
+
     def start(self):
         self.init_real_time()
         self.loop_workflow.start()
@@ -101,7 +102,7 @@ class RepeatMultipleSelection(RepeatStep):
                  name=None):
         self.display_description = widgets.HTML(value=description)
         self.selections = ToggleButtonsMultiSelectionInBox(
-            options=options, num_per_row=5
+            options=options, num_per_row=3
         )
         super().__init__(branch_names, branch_steps, name)
         pass
@@ -131,7 +132,7 @@ class RepeatMultipleSelection(RepeatStep):
     def updateBox(self):
         rows = [self.display_description] + self.addSeparator(top='5px') + \
                [self.selections] + self.addSeparator(top='10px') + self.addConditions()
-        vbox = widgets.VBox(rows, layout=widgets.Layout(width='100%'))
+        vbox = widgets.VBox(rows, layout=widgets.Layout(width='100%',magins='10px'))
         return vbox
 
     def navigate(self, b):

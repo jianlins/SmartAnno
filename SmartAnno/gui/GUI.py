@@ -18,6 +18,7 @@ from utils.KeywordsFiltering import KeywordsFiltering
 from utils.KeywordsUMLSExtender import KeywordsUMLSExtender
 from utils.KeywordsUMLSExtenderSetup import KeywordsUMLSExtenderSetup
 from utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
+from utils.ReviewInitialRB import ReviewInitialRB
 from utils.TaskChooser import TaskChooser
 
 
@@ -72,7 +73,8 @@ class GUI:
                                   filter_by_contains=cr.getValue("umls/filter_by_contains"),
                                   max_query=cr.getValue("umls/max_query")),
              KeywordsEmbeddingExtenderSetup(name='w_e_extender_setup'),
-             KeywordsEmbeddingExtender(name='w_e_extender', max_query=40)
+             KeywordsEmbeddingExtender(name='w_e_extender', max_query=40),
+             ReviewInitialRB(name="rb_review")
              ])
         self.workflow.start(False)
         pass

@@ -20,7 +20,8 @@ class KeywordsUMLSExtenderSetup(PreviousNext):
         super().__init__(name)
 
     def start(self):
-        clear_output()
+        if not hasattr(self.workflow, 'umls_extended'):
+            self.workflow.umls_extended = dict()
         rows = self.showWords(self.workflow.filters)
         self.box = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
         display(self.box)
@@ -31,7 +32,12 @@ class KeywordsUMLSExtenderSetup(PreviousNext):
         self.requestUMLSAPIKey(rows)
         for type_name in filters.keys():
             rows.append(Label(value=type_name + ':'))
-            selections = ToggleButtonsMultiSelection(options=filters[type_name].to_list())
+
+            selections = ToggleButtonsMultiSelection(options=filters[type_name].to_list(),
+                                                     value=list(self.to_ext_words[type_name]) if hasattr(self,
+                                                                                                         'to_ext_words') and isinstance(
+                                                         self.to_ext_words,
+                                                         dict) and type_name in self.to_ext_words else [])
             self.to_umls_ext_filters[type_name] = selections
             rows.append(selections)
             rows += (self.addSeparator())

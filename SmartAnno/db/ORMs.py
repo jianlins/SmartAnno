@@ -22,52 +22,53 @@ class Typedef(Model):
 
 
 class Document(Model):
-    doc_id = Column(Integer, primary_key=True)
+    DOC_ID = Column(Integer, primary_key=True)
     # bunch can be used to represent a visit or a patient for a bunch of documents belows
     # to a same unit
-    dataset_id = Column(String, index=True)
-    bunch_id = Column(String, index=True)
-    doc_name = Column(String, index=True)
-    text = Column(CLOB)
-    date = Column(Date, default=datetime.datetime.utcnow)
-    meta_data = Column(String)
+    DATASET_ID = Column(String, index=True)
+    BUNCH_ID = Column(String, index=True)
+    DOC_NAME = Column(String, index=True)
+    TEXT = Column(CLOB)
+    DATE = Column(Date, default=datetime.datetime.utcnow)
+    META_DATA = Column(String)
 
     def __repr__(self):
         return "<Document(doc_id='%s', bunch_id='%s', doc_name='%s',text='%s',date='%s', meta_data='%s')>" % (
-            self.doc_id, self.bunch_id, self.doc_name, self.text, self.date, self.meta_data)
+            self.doc_id, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.date, self.meta_data)
 
 
 class Annotation(Model):
-    id = Column(Integer, primary_key=True)
-    doc_id = Column(Integer, ForeignKey("document.doc_id"))
-    task_id = Column(String, ForeignKey("task.id"))
-    run_id = Column(String, index=True)
-    type = Column(String, ForeignKey("typedef.type_name"))
-    reviewed_type = Column(String, ForeignKey("typedef.type_name"))
-    begin = Column(Integer)
-    end = Column(Integer)
-    snippet_begin = Column(Integer)
-    text = Column(String)
-    snippet = Column(String)
-    features = Column(String)
-    comments = Column(String)
-    create_dtm = Column(DateTime, default=datetime.datetime.utcnow)
+    ID = Column(Integer, primary_key=True)
+    DOC_ID = Column(Integer, ForeignKey("document.DOC_ID"))
+    TASK_ID = Column(String, ForeignKey("task.id"))
+    RUN_ID = Column(String, index=True)
+    TYPE = Column(String, ForeignKey("typedef.type_name"))
+    REVIEWED_TYPE = Column(String, ForeignKey("typedef.type_name"))
+    BEGIN = Column(Integer)
+    END = Column(Integer)
+    SNIPPET_BEGIN = Column(Integer)
+    TEXT = Column(String)
+    SNIPPET = Column(String)
+    FEATURES = Column(String)
+    COMMENTS = Column(String)
+    CREATE_DTM = Column(DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
         return "<Annotation(id='%s', doc_id='%s'," \
                " run_id='%s',type='%s',begin='%s', end='%s'," \
                "snippet_begin='%s', text='%s',snippet='%s'," \
                "features='%s',comments='%s',create_dtm='%s')>" % (
-                   self.id, self.doc_id, self.run_id,
-                   self.type, self.begin, self.end, self.snippet_begin,
-                   self.text, self.snippet, self.features, self.comments,
-                   self.create_dtm)
+                   self.ID, self.DOC_ID, self.RUN_ID,
+                   self.TYPE, self.BEGIN, self.END, self.SNIPPET_BEGIN,
+                   self.TEXT, self.SNIPPET, self.FEATURES, self.COMMENTS,
+                   self.CREATE_DTM)
 
 
 class Filter(Model):
     id = Column(Integer, primary_key=True)
     task_id = Column(String, ForeignKey("task.id"))
     keyword = Column(String)
+    # differentiate user input or umls extended ('umls') or word embedding extended ('woem')
     type = Column(String, default='orig')
     type_name = Column(String, ForeignKey("typedef.type_name"))
 

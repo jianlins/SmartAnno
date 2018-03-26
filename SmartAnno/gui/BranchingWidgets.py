@@ -91,15 +91,9 @@ class RepeatStep(BranchingStep):
             b.linked_step.start()
         else:
             if b.navigate_direction == 1:
-                if self.next_step is not None:
-                    self.next_step.start()
-                else:
-                    print(b, "the 'linked_step' is not set, neither is the 'next_step'.")
+                self.complete()
             else:
-                if self.previous_step is not None:
-                    self.previous_step.start()
-                else:
-                    print(b, "the 'linked_step' is not set, neither is the 'previous_step'.")
+                self.goBack()
         pass
 
 

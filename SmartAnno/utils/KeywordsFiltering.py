@@ -1,3 +1,5 @@
+from _operator import or_
+
 from IPython.core.display import clear_output, display
 from ipywidgets import widgets
 
@@ -19,7 +21,7 @@ class KeywordsFiltering(PreviousNext):
                              'there will be too many samples with negative findings. </p>'
                              '<p>If not keywords is set, all the samples will be ask to reviewed. </p>',
                  placeholder='each phrase/word per line',
-                 width='550px', height='200px', name=str(Step.global_id + 1)):
+                 width='90%', height='200px', name=str(Step.global_id + 1)):
         self.text_areas = []
         self.title = widgets.HTML(value=description)
         self.filters = dict()
@@ -54,7 +56,8 @@ class KeywordsFiltering(PreviousNext):
             self.types.append(self.neutral_list)
 
         with self.workflow.dao.create_session() as session:
-            records = session.query(Filter).filter(Filter.task_id == self.workflow.task_id)
+            records = session.query(Filter).filter(Filter.task_id == self.workflow.task_id) \
+                .filter(Filter.type == 'orig')
             for record in records:
                 if record.type_name in self.filters:
                     self.filters[record.type_name] = TreeSet([item.strip() for item in record.keyword.split("\n") if
@@ -69,8 +72,18 @@ class KeywordsFiltering(PreviousNext):
             description='"' + type_name + '" :',
             disabled=False,
             layout=widgets.Layout(width=self.width, height=self.height)) for type_name in self.types]
+        if self.width.endswith("%"):
+            column_width = str(int(self.width[:-1]) + 5)+'%'
+        elif self.width.endswith("px"):
+            column_width = str(int(self.width[:-2] + 10))+'px'
+        else:
+            column_width = str(int(self.width) + 10)
+        boxed_text_areas = widgets.HBox([widgets.VBox(self.text_areas[0::2], layout=widgets.Layout(width=column_width)), (
+            widgets.VBox(self.text_areas[1::2], layout=widgets.Layout(width=column_width)) if len(
+                self.text_areas) > 0 else None)],
+                                        layout=widgets.Layout(width='100%'))
 
-        rows = [self.title] + self.text_areas + self.addSeparator() + [
+        rows = [self.title] + [boxed_text_areas] + self.addSeparator() + [
             self.addPreviousNext(self.show_previous, self.show_next)]
         self.box = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
         pass

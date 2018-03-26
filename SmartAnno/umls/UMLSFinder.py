@@ -45,28 +45,34 @@ class UMLSFinder:
             query = {'string': input_phrase, 'ticket': ticket, 'pageNumber': pageNumber, 'sabs': self.sources}
             r = requests.get(UMLSFinder.uri + UMLSFinder.content_endpoint, params=query)
             r.encoding = 'utf-8'
-            items = json.loads(r.text)
-            jsonData = items["result"]
-            for result in jsonData["results"]:
-                try:
-                    new_phrase = result['name'].translate(UMLSFinder.translator)
-                    if self.filter_by_length > 0 and len(new_phrase.split(' ')) > len(
-                            input_phrase.split(' ')) + self.filter_by_length:
-                        continue
-                    if self.filter_by_contains and input_phrase.lower() in new_phrase.lower():
-                        continue
-                    if new_phrase == 'NO RESULTS':
-                        break;
-                    results[new_phrase.lower()] = new_phrase
-                    count += 1
-                    if count >= self.max_query:
-                        break
-                    # print(new_phrase)
-                    # print(result)
-                except:
-                    NameError
-            ##Either our search returned nothing, or we're at the end
-            if jsonData["results"][0]["ui"] == "NONE":
-                break
+            try:
+                items = json.loads(r.text)
+                jsonData = items["result"]
+                for result in jsonData["results"]:
+                    try:
+                        new_phrase = result['name'].translate(UMLSFinder.translator)
+                        if self.filter_by_length > 0 and len(new_phrase.split(' ')) > len(
+                                input_phrase.split(' ')) + self.filter_by_length:
+                            continue
+                        if self.filter_by_contains and input_phrase.lower() in new_phrase.lower():
+                            continue
+                        if new_phrase == 'NO RESULTS':
+                            break;
+                        results[new_phrase.lower()] = new_phrase
+                        count += 1
+                        if count >= self.max_query:
+                            break
+                        # print(new_phrase)
+                        # print(result)
+                    except:
+                        NameError
+                ##Either our search returned nothing, or we're at the end
+                if jsonData["results"][0]["ui"] == "NONE":
+                    break
+            except:
+                print(r.text)
+                ConnectionError
+                from time import sleep
+                sleep(3)
         # print('\n\n\n##################################################################')
         return results.values()

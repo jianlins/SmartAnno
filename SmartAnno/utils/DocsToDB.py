@@ -30,7 +30,7 @@ class DocsToDB(PreviousNext):
         self.dao = self.workflow.dao
         self.dbpath = self.workflow.dbpath
         with self.workflow.dao.create_session() as session:
-            num_docs = session.query(func.count(Document.doc_id)).first()
+            num_docs = session.query(func.count(Document.DOC_ID)).first()
             if num_docs is not None and num_docs[0] > 0:
                 self.displayOptions(num_docs[0])
             else:
@@ -48,7 +48,7 @@ class DocsToDB(PreviousNext):
     def displayOptions(self, num_docs):
         clear_output()
         self.html = widgets.HTML(
-            '<h4>There are %s document  database exists, do you want to overwrite?</h4>' % (num_docs))
+            '<h4>There are %s document in the current database, do you want to overwrite?</h4>' % (num_docs))
         self.toggle = widgets.ToggleButtons(
             options=['Yes', 'No'],
             description='',
@@ -102,11 +102,13 @@ class DocsToDB(PreviousNext):
                                            if_exists='append')
         if isinstance(self.workflow.steps[1], PreviousNextText) and self.workflow.steps[
             1].data is not None and isinstance(self.workflow.steps[1].data, str):
-            task_name = self.workflow.steps[1].data
+            task_name = self.workflow.task_name
             with self.dao.create_session() as session:
                 res = session.query(Task).filter(Task.task_name == task_name).first()
                 if res is None:
                     session.add(Task(task_name=task_name))
+                    res = session.query(Task).filter(Task.task_name == task_name).first()
+                self.workflow.task_id = res.id
 
         pass
 

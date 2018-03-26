@@ -15,8 +15,8 @@ class DBToDataframe(PreviousNext):
     def start(self):
         self.dao = self.workflow.dao
         session = self.dao.create_session()
-        last_run_id = session.query(func.max('run_id')).filter_by(Annotation.task_id == self.workflow.task_id).get(1)
-        s = join(Annotation, Document).select().where(Annotation.run_id == last_run_id)
+        last_run_id = session.query(func.max('run_id')).filter_by(Annotation.TASK_ID == self.workflow.task_id).get(1)
+        s = join(Annotation, Document).select().where(Annotation.RUN_ID == last_run_id)
         self.data = pd.read_sql(s, self.dao._engine)
         if len(self.data) == 0:
             self.data = self.predict()

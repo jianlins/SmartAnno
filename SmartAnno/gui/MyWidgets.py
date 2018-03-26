@@ -1,4 +1,5 @@
 import ipywidgets as widgets
+from IPython.core.display import display
 from traitlets import traitlets
 
 
@@ -76,8 +77,6 @@ class ToggleButtonsMultiSelection(widgets.Box):
         self.add_class('btn-group')
 
 
-
-
 class ToggleButtonsMultiSelectionInBox(widgets.Box):
     description = traitlets.Unicode()
     value = traitlets.Tuple()
@@ -93,7 +92,8 @@ class ToggleButtonsMultiSelectionInBox(widgets.Box):
         @monitor(self, 'options')
         def _(*_):
             self.buttons = [widgets.ToggleButton(description=label, tooltip=label,
-                                                 layout=widgets.Layout(margin='2', icon='check',width='100%',min_width='160px'))
+                                                 layout=widgets.Layout(margin='2', icon='check', width='100%',
+                                                                       min_width='160px'))
                             for label in self._selection_obj._options_labels]
             rows = []
             for i in range(0, len(self.buttons), self.num_per_row):
@@ -107,9 +107,11 @@ class ToggleButtonsMultiSelectionInBox(widgets.Box):
             @monitor(self.buttons, 'value')
             def _(*_):
                 for btn in self.buttons:
-                    btn.button_style = 'info' if btn.value else ''
+                    btn.button_style = 'info' if btn.value or btn.description in self.value else ''
                 self.value = tuple(value
                                    for btn, value in zip(self.buttons, self._selection_obj._options_values)
                                    if btn.value)
 
         self.add_class('btn-group')
+
+display(ToggleButtonsMultiSelectionInBox())
