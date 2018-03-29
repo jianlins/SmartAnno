@@ -121,23 +121,18 @@ class RepeatMultipleSelection(RepeatStep):
         if len(extended) > 0:
             next_step = RepeatMultipleSelection(description=KeywordsUMLSExtender.description % word,
                                                 options=list(extended))
-            next_step.setWorkflow(self.workflow)
-            next_step.setPreviousStep(self.previous_step)
-            next_step.setNextStep(self.next_step)
-            self.setNextRepeat(next_step)
-            next_step.setPreviousRepeat(self)
-            self.workflow.steps.append(next_step)
+            next_step.setCompleteStep(self.branch_buttons[2].linked_step)
+            self.workflow.append(next_step)
         pass
 
     def updateBox(self):
         rows = [self.display_description] + self.addSeparator(top='5px') + \
-               [self.selections] + self.addSeparator(top='10px') + self.addConditions()
+               [self.selections] + self.addSeparator(top='10px') + self.addConditionsWidget()
         vbox = widgets.VBox(rows, layout=widgets.Layout(width='100%',magins='10px'))
         return vbox
 
     def navigate(self, b):
         # print(b)
-        clear_output(True)
         self.data = self.selections.value
         super().navigate(b)
         pass

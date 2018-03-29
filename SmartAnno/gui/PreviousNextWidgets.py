@@ -3,7 +3,7 @@ import ipywidgets as widgets
 import traitlets
 from IPython.core.display import display, clear_output
 
-from gui.Workflow import Step
+from gui.Workflow import Step, logConsole
 
 
 class TimerProgressBar(object):
@@ -23,8 +23,8 @@ class TimerProgressBar(object):
 class PreviousNext(Step):
     def __init__(self, name=str(Step.global_id + 1), show_previous=True, show_next=True):
         super().__init__(name)
-        self.next_button = widgets.Button(description='Next', layout=widgets.Layout(width='90px', left='100px'))
-        self.previous_button = widgets.Button(description='Previous', layout=widgets.Layout(width='90px'))
+        self.next_button = None
+        self.previous_button = None
         self.show_previous = show_previous
         self.show_next = show_next
         self.box = self.createBox()
@@ -47,26 +47,26 @@ class PreviousNext(Step):
         bottom_whitespace = widgets.Label(value='', layout=widgets.Layout(height=bottom))
         return [top_whitespace, separator, bottom_whitespace]
 
-    def addPreviousNext(self, show_previous, show_next):
+    def addPreviousNext(self, show_previous=True, show_next=True):
         def goBack(b):
             self.goBack()
             pass
 
         def goNext(b):
+            logConsole('next clicked')
             self.complete()
             pass
 
-        my_buttons = []
-        if show_previous:
+        if show_previous and self.previous_button is None:
+            self.previous_button = widgets.Button(description='Previous', layout=widgets.Layout(width='90px'))
             self.previous_button.style.button_color = 'SILVER'
             self.previous_button.on_click(goBack)
-            my_buttons.append(self.previous_button)
 
-        if show_next:
+        if show_next and self.next_button is None:
+            self.next_button = widgets.Button(description='Next', layout=widgets.Layout(width='90px', left='100px'))
             self.next_button.style.button_color = 'SANDYBROWN'
             self.next_button.on_click(goNext)
-            my_buttons.append(self.next_button)
-        return widgets.HBox(my_buttons, layout=widgets.Layout(left='10%', width='80%'))
+        return widgets.HBox([self.previous_button, self.next_button], layout=widgets.Layout(left='10%', width='80%'))
 
 
 class PreviousNextWithOptions(PreviousNext):

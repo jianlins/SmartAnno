@@ -61,7 +61,7 @@ class contextItem(object):
         cs = args[1].split(",")
         self.__category = []
         for c in cs:
-            self.__category.append(c.lower().strip())
+            self.__category.append(c.strip())
         self.__re = args[2]  # I need to figure out how to read this raw string in properly
         self.__rule = args[3]
 

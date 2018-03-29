@@ -65,6 +65,7 @@ class KeywordsEmbeddingExtenderSetup(PreviousNext):
                 while GloveModel.glove_model is None:
                     print('.', end='', flush=True)
                     sleep(1)
+            self.setNextStep(self.workflow.steps[self.pos_id + 1])
         else:
             self.setNextStep(self.workflow.steps[self.pos_id + 2])
             self.workflow.steps[self.pos_id + 2].setPreviousStep(self)

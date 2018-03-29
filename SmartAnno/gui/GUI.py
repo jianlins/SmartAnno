@@ -1,24 +1,22 @@
-from threading import Thread
-
 from IPython.core.display import display
 from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
+from gui.BranchingWidgets import IntroStep
 from gui.DirChooser import DirChooser
 from gui.FileIO import ReadFiles
-from gui.BranchingWidgets import IntroStep
-from gui.PreviousNextWidgets import PreviousNextTextArea, PreviousNextIntSlider, PreviousNextText
 # from gui.SetFilterKeyWords import SetFilterKeyWords
 from gui.Workflow import Workflow
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
 from utils.DocsToDB import DocsToDB
+from utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
 from utils.KeywordsEmbeddingExtenderSetup import KeywordsEmbeddingExtenderSetup
 from utils.KeywordsFiltering import KeywordsFiltering
 from utils.KeywordsUMLSExtender import KeywordsUMLSExtender
 from utils.KeywordsUMLSExtenderSetup import KeywordsUMLSExtenderSetup
-from utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
-from utils.ReviewInitialRB import ReviewInitialRB
+from utils.ReviewRBInit import ReviewRBInit
+from utils.ReviewRBLoop import ReviewRBLoop
 from utils.TaskChooser import TaskChooser
 
 
@@ -64,9 +62,9 @@ class GUI:
                  'for each sample. </p>', name='types'),
              KeywordsFiltering(
                  name='keywords'),
-             PreviousNextIntSlider(value=60, min=0, max=100, step=10,
-                                   description='<h4>Percentage to Filter: </h4><p>Choose how many percent of the samples '
-                                               'you want to use the keywords filter.</p>', name='percent2filter'),
+             # PreviousNextIntSlider(value=60, min=0, max=100, step=10,
+             #                       description='<h4>Percentage to Filter: </h4><p>Choose how many percent of the samples '
+             #                                   'you want to use the keywords filter.</p>', name='percent2filter'),
              KeywordsUMLSExtenderSetup(name='umls_extender_setup'),
              KeywordsUMLSExtender(name='umls_extender', sources=cr.getValue("umls/sources"),
                                   filter_by_length=cr.getValue("umls/filter_by_length"),
@@ -74,7 +72,8 @@ class GUI:
                                   max_query=cr.getValue("umls/max_query")),
              KeywordsEmbeddingExtenderSetup(name='w_e_extender_setup'),
              KeywordsEmbeddingExtender(name='w_e_extender', max_query=40),
-             ReviewInitialRB(name="rb_review")
+             ReviewRBInit(name="rb_review_init"),
+             ReviewRBLoop(name='rb_review')
              ])
         self.workflow.start(False)
         pass

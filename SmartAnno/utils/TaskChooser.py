@@ -31,7 +31,7 @@ class TaskChooser(PreviousNextText):
             options=task_names,
             description='',
             disabled=False,
-            value=None,
+            value=None if len(task_names) == 0 else task_names[0],
             button_style='',  # 'success', 'info', 'warning', 'danger' or ''
             layout=widgets.Layout(width='70%')
             #     icons=['check'] * 3

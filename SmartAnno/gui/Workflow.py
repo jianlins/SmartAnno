@@ -1,8 +1,18 @@
 import abc
+import logging
+import logging.config
 
 from IPython.core.display import clear_output
+from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
+
+import os
+
+
+def logConsole(msg):
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        os.write(1, str.encode(msg.__repr__() + '\n'))
 
 
 class Step(object):
@@ -67,6 +77,7 @@ class Step(object):
     def complete(self):
         clear_output(True)
         if self.next_step is not None:
+            logConsole((self, 'workflow complete'))
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
                     self.workflow.updateStatus(self.next_step.pos_id)
@@ -78,6 +89,14 @@ class Step(object):
         else:
             print("next step hasn't been set.")
         pass
+
+    def addSeparator(self, top='5px', bottom='1px', height='10px', width='98%', left='1%'):
+        top_whitespace = widgets.Label(value='', layout=widgets.Layout(height=top))
+        separator = widgets.IntProgress(min=0, max=1, value=1,
+                                        layout=widgets.Layout(left=left, width=width, height=height))
+        separator.style.bar_color = 'GAINSBORO'
+        bottom_whitespace = widgets.Label(value='', layout=widgets.Layout(height=bottom))
+        return [top_whitespace, separator, bottom_whitespace]
 
     def __repr__(self):
         return "<" + str(type(self).__name__) + "\tname:" + self.name + ">"
@@ -103,6 +122,8 @@ class Workflow(object):
     def start(self, restore=False):
         if restore:
             self.status = self.restoreStatus()
+        else:
+            self.status = 0
         if len(self.steps) > self.status:
             self.steps[self.status].start()
 
@@ -124,10 +145,10 @@ class Workflow(object):
 
         self.name_dict[new_step.name] = id
         if previous_step is not None:
-            print('attache new step' + new_step.name + "_" + str(id))
+            logConsole((self, 'attache new step ' + new_step.name + ' ' + str(id)))
             new_step.setPreviousStep(previous_step)
             previous_step.setNextStep(new_step)
-        pass
+            pass
 
     def getStepById(self, step_id):
         return self.steps[step_id]
@@ -162,3 +183,6 @@ class Workflow(object):
         if status is None or status == '':
             status = 0
         return status
+
+    def __repr__(self):
+        return '<%s, %s>' % (type(self), self.name)

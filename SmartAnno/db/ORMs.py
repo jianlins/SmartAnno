@@ -30,11 +30,25 @@ class Document(Model):
     DOC_NAME = Column(String, index=True)
     TEXT = Column(CLOB)
     DATE = Column(Date, default=datetime.datetime.utcnow)
+    REF_DATE = Column(Date, default=datetime.datetime.utcnow)
     META_DATA = Column(String)
 
+    def __init__(self, DOC_ID, DATASET_ID, BUNCH_ID, DOC_NAME, TEXT, DATE, REF_DATE, META_DATA):
+        self.DOC_ID = DOC_ID
+        self.DATASET_ID = DATASET_ID
+        self.BUNCH_ID = BUNCH_ID
+        self.DOC_NAME = DOC_NAME
+        self.TEXT = TEXT
+        self.DATE = DATE
+        self.REF_DATE = REF_DATE
+        self.META_DATA = META_DATA
+
     def __repr__(self):
-        return "<Document(doc_id='%s', bunch_id='%s', doc_name='%s',text='%s',date='%s', meta_data='%s')>" % (
-            self.doc_id, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.date, self.meta_data)
+        return "<Document(DOC_ID='%s', BUNCH_ID='%s', DOC_NAME='%s',TEXT='%s',DATE='%s', REF_DATE='%s',META_DATA='%s')>" % (
+            self.DOC_ID, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE, self.REF_DATE, self.META_DATA)
+
+    def clone(self):
+        return Document()
 
 
 class Annotation(Model):

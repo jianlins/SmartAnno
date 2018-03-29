@@ -39,15 +39,15 @@ class RBDocumentClassifierFactory(object):
         for type_name in final_filters.keys():
             if type_name == 'neutral':
                 continue
-            fi_rules.append('NEG_%s,%s,DEFINITE_NEGATED_EXISTENCE' % type_name)
-            fi_rules.append('NEG_%s,%s,AMBIVALENT_EXISTENCE' % type_name)
-            fi_rules.append('NEG_%s,%s,PROBABLE_NEGATED_EXISTENCE' % type_name)
-            fi_rules.append('HIS_%s,%s,HISTORICAL' % type_name)
-            fi_rules.append('HYP_%s,%s,HYPOTHETICAL' % type_name)
-            fi_rules.append('HYP_%s,%s,FUTURE' % type_name)
-            fi_rules.append('FAM_%s,%s,FAMILY' % type_name)
+            fi_rules.append('NEG_%s,%s,DEFINITE_NEGATED_EXISTENCE' % (type_name, type_name))
+            fi_rules.append('NEG_%s,%s,AMBIVALENT_EXISTENCE' % (type_name, type_name))
+            fi_rules.append('NEG_%s,%s,PROBABLE_NEGATED_EXISTENCE' % (type_name, type_name))
+            fi_rules.append('HIS_%s,%s,HISTORICAL' % (type_name, type_name))
+            fi_rules.append('HYP_%s,%s,HYPOTHETICAL' % (type_name, type_name))
+            fi_rules.append('HYP_%s,%s,FUTURE' % (type_name, type_name))
+            fi_rules.append('FAM_%s,%s,FAMILY' % (type_name, type_name))
 
-            di_rules.append('%s,%s' % type_name)
+            di_rules.append('%s,%s' % (type_name, type_name))
         di_rules[-1] = di_rules[-1].split(',')[0]
         return '\n'.join(fi_rules), '\n'.join(di_rules)
 
@@ -55,7 +55,7 @@ class RBDocumentClassifierFactory(object):
 class RBDocumentClassifier(BaseClassifier):
     def __init__(self, targets=None, modifiers=None, feature_inference_rule=None, document_inference_rule=None,
                  pyrush_rule=None,
-                 expected_values=None, save_markups=True):
+                 expected_values=[], save_markups=True):
         self.document_inferencer = DocumentInferencer(document_inference_rule)
         self.feature_inferencer = FeatureInferencer(feature_inference_rule)
         self.conclusions = []
@@ -65,8 +65,10 @@ class RBDocumentClassifier(BaseClassifier):
         self.expected_values = [value.lower() for value in expected_values]
         self.saved_markups_map = dict()
         self.pyrush = None
-        if pyrush_rule is not None:
+        if pyrush_rule is not None and os.path.isfile(pyrush_rule):
             self.pyrush = RuSH(pyrush_rule)
+        else:
+            print("File not found", os.path.abspath(pyrush_rule))
         self.last_doc_name = ''
 
         if modifiers is not None and targets is not None:
@@ -74,7 +76,7 @@ class RBDocumentClassifier(BaseClassifier):
                 if (modifiers.endswith('.csv') or modifiers.endswith('.tsv') or modifiers.endswith(
                         '.txt') or modifiers.endswith('.yml')) \
                         and (targets.endswith('.csv') or targets.endswith('.tsv') or targets.endswith(
-                    '.txt') or targets.endswith('.yml')):
+                    '.txt') or targets.endswith('.yml') or targets.startswith('Lex\t')):
                     self.setModifiersTargetsFromFiles(modifiers, targets)
             else:
                 self.setModifiersTargets(modifiers, targets)
@@ -141,13 +143,18 @@ class RBDocumentClassifier(BaseClassifier):
         if self.modifiers is None or self.targets is None:
             print('DocumentClassifier\'s "modifiers" and/or "targets" has not been set yet.\n' +
                   'Use function: setModifiersTargets(modifiers, targets) or setModifiersTargetsFromFiles(modifiers_file,' + 'targets_file) to set them up.')
-        context_doc = self.markup_context_document(doc, self.modifiers, self.targets)
-        if self.save_markups and doc_name is not None and len(context_doc.getDocumentGraph().nodes()) > 0:
-            self.saved_markups_map[doc_name] = context_doc
-        markups = get_document_markups(context_doc)
-        annotations, relations, doc_txt = convertMarkups2DF(markups)
-        matched_conclusion_types = self.feature_inferencer.process(annotations, relations)
-        doc_conclusion = self.document_inferencer.process(matched_conclusion_types)
+        try:
+            context_doc = self.markup_context_document(doc, self.modifiers, self.targets)
+            if self.save_markups and doc_name is not None and len(context_doc.getDocumentGraph().nodes()) > 0:
+                self.saved_markups_map[doc_name] = context_doc
+            markups = get_document_markups(context_doc)
+
+            annotations, relations, doc_txt = convertMarkups2DF(markups)
+            matched_conclusion_types = self.feature_inferencer.process(annotations, relations)
+            doc_conclusion = self.document_inferencer.process(matched_conclusion_types)
+        except:
+            # pyConText might through errors in some case, will fix it later
+            doc_conclusion = self.document_inferencer.default_conclusion
         return doc_conclusion
 
     def get_last_context_doc(self):
@@ -181,7 +188,7 @@ class FeatureInferencer(object):
     rule_source_types = []
 
     def __init__(self, ruleFile, header_lines=0, delimiter=','):
-        rules = read_csv_rules(ruleFile, lower=True, header_lines=header_lines, delimiter=delimiter)
+        rules = read_csv_rules(ruleFile, lower=False, header_lines=header_lines, delimiter=delimiter)
         self.match_checker.clear()
         self.inference_map.clear()
         inference_map = self.inference_map
@@ -250,12 +257,12 @@ class DocumentInferencer(object):
     default_conclusion = 'NEG_DOC'
 
     def __init__(self, ruleFile, header_lines=0, delimiter=','):
-        rules = read_csv_rules(ruleFile, lower=True, header_lines=header_lines, delimiter=delimiter)
+        rules = read_csv_rules(ruleFile, lower=False, header_lines=header_lines, delimiter=delimiter)
         rule_id = 0
         for rule in rules:
             doc_type = rule[0]
             # if no evidence type required, this is the default document conclusion type
-            if len(rules) == 1:
+            if len(rule) == 1:
                 self.default_conclusion = doc_type
                 continue
             self.doc_conclusions.append(doc_type)

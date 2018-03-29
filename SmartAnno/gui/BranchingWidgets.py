@@ -1,3 +1,4 @@
+import abc
 from threading import Thread
 from time import sleep
 
@@ -20,6 +21,7 @@ class BranchingStep(Step):
         self.branch_buttons = [widgets.Button(description=d, layout=widgets.Layout(width='90px', left='100px')) for d in
                                branch_names]
         self.branch_steps = branch_steps
+        self.addConditions()
         self.box = self.createBox()
         pass
 
@@ -29,21 +31,21 @@ class BranchingStep(Step):
         pass
 
     def createBox(self):
-        rows = self.addSeparator() + self.addConditions()
+        rows = self.addSeparator() + self.addConditionsWidget()
         vbox = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
         return vbox
 
-    def addSeparator(self, top='5px', bottom='1px', height='10px', width='98%', left='1%'):
-        top_whitespace = widgets.Label(value='', layout=widgets.Layout(height=top))
-        separator = widgets.IntProgress(min=0, max=1, value=1,
-                                        layout=widgets.Layout(left=left, width=width, height=height))
-        separator.style.bar_color = 'GAINSBORO'
-        bottom_whitespace = widgets.Label(value='', layout=widgets.Layout(height=bottom))
-        return [top_whitespace, separator, bottom_whitespace]
-
     def navigate(self, b):
         # print(b)
-        b.linked_step.start()
+        self.updateData()
+        if hasattr(b, 'linked_step'):
+            b.linked_step.start()
+        else:
+            self.complete()
+        pass
+
+    @abc.abstractmethod
+    def updateData(self):
         pass
 
     def addConditions(self):
@@ -51,7 +53,11 @@ class BranchingStep(Step):
         for i in range(0, len(condition_steps)):
             if condition_steps[i] is not None and isinstance(condition_steps[i], Step):
                 self.branch_buttons[i].linked_step = condition_steps[i]
+                self.branch_buttons[i].navigate_direction = 1
                 self.branch_buttons[i].on_click(self.navigate)
+        pass
+
+    def addConditionsWidget(self):
         return [widgets.HBox(self.branch_buttons, layout=widgets.Layout(left='10%', width='80%'))]
 
 
@@ -62,35 +68,50 @@ class RepeatStep(BranchingStep):
         super().__init__(branch_names, branch_steps, name)
         self.branch_buttons[0].navigate_direction = -1
         self.branch_buttons[1].navigate_direction = 1
-        for branch_button in self.branch_buttons:
+        self.branch_buttons[2].navigate_direction = 1
+        for i in range(0, len(self.branch_buttons)):
+            branch_button = self.branch_buttons[i]
+            branch_button.linked_step = branch_steps[i]
             branch_button.on_click(self.navigate)
         self.resetParameters()
         pass
 
     def createBox(self):
-        rows = self.addSeparator() + self.addConditions()
+        rows = self.addSeparator() + self.addConditionsWidget()
         vbox = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
         return vbox
 
-    def setPreviousRepeat(self, previous_repeat_step):
-        if isinstance(previous_repeat_step, Step):
-            self.branch_buttons[0].linked_step = previous_repeat_step
+    def setPreviousStep(self, previous_step):
+        if isinstance(previous_step, Step):
+            self.branch_buttons[0].linked_step = previous_step
         else:
-            print(previous_repeat_step, 'is not an instance of Step')
+            print(self, 'setPreviousStep', previous_step, 'is not an instance of Step')
         pass
 
-    def setNextRepeat(self, next_repeat_step):
-        if isinstance(next_repeat_step, Step):
-            self.branch_buttons[1].linked_step = next_repeat_step
+    def setNextStep(self, next_step):
+        if isinstance(next_step, Step):
+            self.branch_buttons[1].linked_step = next_step
         else:
-            print(next_repeat_step, 'is not an instance of Step')
+            print(self, 'setNextStep', next_step, 'is not an instance of Step')
+        pass
+
+    def setCompleteStep(self, complete_step):
+        if isinstance(complete_step, Step):
+            if len(self.branch_buttons) > 2:
+                self.branch_buttons[2].linked_step = complete_step
+        else:
+            print(self, 'setCompleteStep', complete_step, 'is not an instance of Step')
         pass
 
     def navigate(self, b):
+        clear_output(True)
+        self.updateData()
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             b.linked_step.start()
         else:
-            if b.navigate_direction == 1:
+            if hasattr(self.branch_buttons[-1], 'linked_step') and self.branch_buttons[-1].linked_step is not None:
+                self.branch_buttons[-1].linked_step.start()
+            elif not hasattr(b, 'navigate_direction') or b.navigate_direction == 1:
                 self.complete()
             else:
                 self.goBack()
@@ -99,25 +120,39 @@ class RepeatStep(BranchingStep):
 
 class RepeatHTMLToggleStep(RepeatStep):
     def __init__(self, value=None, description='', options=[], tooltips=[],
-                 branch_names=['Previous', 'Next', 'Complete'], branch_steps=[None, None, None],
-                 name=None):
+                 branch_names=['Previous', 'Next', 'Complete'], branch_steps=[None, None, None], js='', end_js='',
+                 name=None, button_style='info'):
         self.display_description = widgets.HTML(value=description)
         self.toggle = ClickResponsiveToggleButtons(
             options=options,
             description='',
             disabled=False,
             value=value,
-            button_style='info',  # 'success', 'info', 'warning', 'danger' or ''
+            button_style=button_style,  # 'success', 'info', 'warning', 'danger' or ''
             tooltips=tooltips,
             layout=widgets.Layout(width='70%')
             #     icons=['check'] * 3
         )
+        self.js = js
+        self.end_js = end_js
         self.toggle.on_click(self.on_click_answer)
         super().__init__(branch_names, branch_steps, name)
         pass
 
+    def start(self):
+        if len(self.js) > 0:
+            display(widgets.HTML(self.js))
+        display(self.box)
+        pass
+
     def on_click_answer(self, toggle):
-        self.data = toggle.value
+        if len(self.end_js) > 0:
+            display(widgets.HTML(self.end_js))
+        self.navigate(self.branch_buttons[1])
+        pass
+
+    def updateData(self):
+        self.data = self.toggle.value
         # when choose a option, automatically move to next case
         if self.workflow is not None:
             if self.workflow.data is not None:
@@ -134,14 +169,11 @@ class RepeatHTMLToggleStep(RepeatStep):
                 self.workflow.data = {'reviewed': [self.data]}
         else:
             print('the workflow is not set for the repeated step')
-        print(self.workflow.data)
-        self.navigate(self.branch_buttons[1])
-
         pass
 
     def createBox(self):
-        rows = [self.display_description] + self.addSeparator(top='5px') + \
-               [self.toggle] + self.addSeparator(top='10px') + self.addConditions()
+        rows = [self.display_description] + \
+               [self.toggle] + self.addSeparator(top='10px') + self.addConditionsWidget()
         vbox = widgets.VBox(rows)
         vbox.layout.flex_grown = 'column'
         return vbox
@@ -166,17 +198,30 @@ class LoopRepeatSteps(Step):
             previous_step = self.loop_workflow.steps[-1]
         else:
             previous_step = self.previous_step
-        id = len(self.loop_workflow)
-        self.loop_workflow.steps.append(newRepeatStep)
-        self.loop_workflow.name_dict[newRepeatStep.name] = id
-        self.loop_workflow.step_names.append(newRepeatStep.name)
-        # print('attache new step' + newRepeatStep.name + "_" + str(id))
-        newRepeatStep.setWorkflow(self.loop_workflow)
-        if previous_step is not None and isinstance(previous_step, RepeatStep):
-            previous_step.setNextRepeat(newRepeatStep)
-            newRepeatStep.setPreviousRepeat(previous_step)
-        newRepeatStep.setPreviousStep(self.previous_step)
-        newRepeatStep.setNextStep(self.next_step)
+        if len(self.loop_workflow.steps) == 0:
+            newRepeatStep.setPreviousStep(previous_step)
+        if self.next_step is not None:
+            newRepeatStep.setCompleteStep(self.next_step)
+
+        self.loop_workflow.append(newRepeatStep)
+
+        # self.loop_workflow.steps.append(newRepeatStep)
+        # self.loop_workflow.name_dict[newRepeatStep.name] = id
+        # self.loop_workflow.step_names.append(newRepeatStep.name)
+        # # print('attache new step' + newRepeatStep.name + "_" + str(id))
+        # newRepeatStep.setWorkflow(self.loop_workflow)
+        # if previous_step is not None and isinstance(previous_step, RepeatStep):
+        #     previous_step.setNextRepeat(newRepeatStep)
+        #     newRepeatStep.setPreviousRepeat(previous_step)
+        # newRepeatStep.setPreviousStep(self.previous_step)
+        # newRepeatStep.setNextStep(self.next_step)
+        pass
+
+    def setNextStep(self, next_step):
+        # need to update every embedded repeat steps
+        for repeat_step in self.loop_workflow.steps:
+            repeat_step.setCompleteStep(next_step)
+        super().setNextStep(next_step)
         pass
 
     def start(self):

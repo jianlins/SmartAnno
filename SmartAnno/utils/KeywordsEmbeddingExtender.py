@@ -37,6 +37,7 @@ class KeywordsEmbeddingExtender(LoopRepeatSteps):
         super().complete()
         pass
 
+
     def init_real_time(self):
         word_dict = dict()
         self.loop_workflow.steps.clear()
@@ -77,10 +78,6 @@ class RepeatWEMultipleSelection(RepeatMultipleSelection):
         if len(extended) > 0:
             next_step = RepeatWEMultipleSelection(description=KeywordsEmbeddingExtender.description % word,
                                                   options=list(extended))
-            next_step.setWorkflow(self.workflow)
-            next_step.setPreviousStep(self.previous_step)
-            next_step.setNextStep(self.next_step)
-            self.setNextRepeat(next_step)
-            next_step.setPreviousRepeat(self)
-            self.workflow.steps.append(next_step)
+            next_step.setCompleteStep(self.branch_buttons[2].linked_step)
+            self.workflow.append(next_step)
         pass
