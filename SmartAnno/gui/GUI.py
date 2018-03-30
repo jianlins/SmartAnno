@@ -2,7 +2,6 @@ from IPython.core.display import display
 from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
-from gui.BranchingWidgets import IntroStep
 from gui.DirChooser import DirChooser
 from gui.FileIO import ReadFiles
 # from gui.SetFilterKeyWords import SetFilterKeyWords
@@ -10,6 +9,7 @@ from gui.Workflow import Workflow
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
 from utils.DocsToDB import DocsToDB
+from utils.IntroStep import IntroStep
 from utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
 from utils.KeywordsEmbeddingExtenderSetup import KeywordsEmbeddingExtenderSetup
 from utils.KeywordsFiltering import KeywordsFiltering

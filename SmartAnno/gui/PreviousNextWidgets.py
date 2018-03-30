@@ -66,7 +66,85 @@ class PreviousNext(Step):
             self.next_button = widgets.Button(description='Next', layout=widgets.Layout(width='90px', left='100px'))
             self.next_button.style.button_color = 'SANDYBROWN'
             self.next_button.on_click(goNext)
+        if not show_previous:
+            self.previous_button.disabled=True
+        if  not show_next:
+            self.next_button.disabled = True
         return widgets.HBox([self.previous_button, self.next_button], layout=widgets.Layout(left='10%', width='80%'))
+
+
+class PreviousNextWithOtherBranches(PreviousNext):
+    """enable optional branch buttons (navigate to other steps) besides of the default 'previous' and 'next' buttons"""
+
+    def __init__(self, name=str(Step.global_id + 1), branch_names=[], branch_steps=[], show_previous=True,
+                 show_next=True):
+        self.branch_steps = branch_steps
+        self.created_branch_names = set()
+        self.branch_steps = branch_steps
+        self.branch_names = branch_names
+        self.addConditions()
+
+        super().__init__(name, show_previous, show_next)
+
+    def navigate(self, b):
+        if hasattr(b, 'linked_step'):
+            self.updateData()
+            b.linked_step.start()
+        else:
+            self.complete()
+        pass
+
+    def complete(self):
+        self.updateData()
+        super().complete()
+        pass
+
+    def addConditions(self, branch_names=[], branch_steps=[]):
+        if len(branch_steps) == 0:
+            branch_steps = self.branch_steps
+            branch_names = self.branch_names
+        self.branch_buttons = [None] * len(branch_names)
+        for i in range(0, len(branch_steps)):
+            if branch_steps[i] is not None and isinstance(branch_steps[i], Step):
+                self.branch_buttons[i] = widgets.Button(description=branch_names[i],
+                                                        layout=widgets.Layout(width='100px'))
+                self.branch_buttons[i].linked_step = branch_steps[i]
+                self.branch_buttons[i].on_click(self.navigate)
+        pass
+
+    def addCondition(self, branch_name, linked_step, tooltip=''):
+        b = widgets.Button(description=branch_name, tooltip=tooltip, layout=widgets.Layout(width='100px'))
+        b.linked_step = linked_step
+        b.on_click(self.navigate)
+        if branch_name not in self.created_branch_names:
+            self.branch_buttons.append(b)
+            self.created_branch_names.add(branch_name)
+        pass
+
+    def addPreviousNext(self, show_previous=True, show_next=True):
+        def goBack(b):
+            self.goBack()
+            pass
+
+        def goNext(b):
+            logConsole('next clicked')
+            self.complete()
+            pass
+
+        if show_previous and self.previous_button is None:
+            self.previous_button = widgets.Button(description='Previous', layout=widgets.Layout(width='90px'))
+            self.previous_button.style.button_color = 'SILVER'
+            self.previous_button.on_click(goBack)
+        if show_next and self.next_button is None:
+            self.next_button = widgets.Button(description='Next', layout=widgets.Layout(width='90px'))
+            self.next_button.style.button_color = 'SANDYBROWN'
+            self.next_button.on_click(goNext)
+        if not show_previous:
+            self.previous_button.disabled=True
+        if  not show_next:
+            self.next_button.disabled = True
+        return widgets.HBox(self.branch_buttons + [self.previous_button, self.next_button],
+                            layout=widgets.Layout(left='10%', width='80%'))
 
 
 class PreviousNextWithOptions(PreviousNext):

@@ -1,4 +1,4 @@
 SmartAnno/conf/*.json
 SmartAnno/data/*.sqlite
-SmartAnno/models/glove/*
+SmartAnno/models/saved/*
 SmartAnno/logging.ini

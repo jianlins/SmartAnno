@@ -1,17 +1,21 @@
 import random
+from collections import OrderedDict
+from threading import Thread
+from time import sleep
 
 import spacy
-from IPython.core.display import display
+from IPython.core.display import display, clear_output
 from ipywidgets import widgets
 from spacy.matcher import PhraseMatcher
-from sqlalchemy import or_
+from sqlalchemy import or_, delete
 
-from db.ORMs import Document
-from gui.PreviousNextWidgets import PreviousNextHTML
+from db.ORMs import Document, Annotation
+from gui.PreviousNextWidgets import PreviousNextHTML, PreviousNextWithOtherBranches
 from gui.Workflow import Step, logConsole
+from models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
 
 
-class ReviewRBInit(PreviousNextHTML):
+class ReviewRBInit(PreviousNextWithOtherBranches):
     """Start review samples with rule-based method in the backend.
     This is more efficient and practical when reviewed data are relatively small at the beginning."""
 
@@ -26,11 +30,20 @@ class ReviewRBInit(PreviousNextHTML):
         self.samples = {"contain": [], "notcontain": []}
         self.box = None
         self.data = None
-        super().__init__(description=description, name=name)
+        self.ready = False
+        # reset, continue, addmore,
+        self.move_next_option = ''
+
+        self.previousReviewed = OrderedDict()
+        self.sampler = None
+        super().__init__(name=name)
         pass
 
     def start(self):
+        print('Please wait for reading data from db.', end='', flush=True)
+        self.backgroundPrinting()
         self.init_real_time()
+        clear_output(True)
         self.updateBox()
         display(self.box)
         pass
@@ -46,8 +59,13 @@ class ReviewRBInit(PreviousNextHTML):
         if recommended_samples > 400:
             recommended_samples = 400
         self.sample_size_input = widgets.BoundedIntText(value=recommended_samples, min=min_samples,
-                                                        max=total_contain+total_not_contain, step=5,
-                                                        description='Total samples you want to sample:')
+                                                        max=total_contain + total_not_contain, step=1,
+                                                        description='Total samples you want to sample:',
+                                                        style=dict(description_width='initial'))
+        sidenote = None
+        if len(self.previousReviewed) > 0:
+            sidenote = widgets.HTML(
+                value='<p>If you choose <span style="background-color:  #E8E8E8">AddExtraSampling</span>, then this number will be the amount of extra samples that you want to add.')
         desc2 = widgets.HTML(value='<h4>Percentage to Filter: </h4><p>Choose how many percent of the samples '
                                    'you want to contain the filter keywords. The rest percentage will be sampled '
                                    'randomly from the samples that do not have any filter keywords.</p>')
@@ -63,14 +81,19 @@ class ReviewRBInit(PreviousNextHTML):
             readout=True,
             readout_format='d'
         )
-        self.box = widgets.VBox([desc, self.sample_size_input] + self.addSeparator(top='10px') + [desc2,
-                                                                                                  self.percent_slider] + self.addSeparator(
-            top='10px') + [self.addPreviousNext()])
+        rows = [desc, self.sample_size_input]
+        if sidenote is not None:
+            rows.append(sidenote)
+        rows += self.addSeparator(top='10px') + [desc2,
+                                                 self.percent_slider] + self.addSeparator(
+            top='10px') + [self.addPreviousNext(self.show_previous, self.show_next)]
+        self.box = widgets.VBox(rows)
         pass
 
     def init_real_time(self):
         self.workflow.final_filters = {**self.workflow.filters, **self.workflow.umls_extended,
                                        **self.workflow.we_extended}
+        self.checkPreviousReviews()
         self.initSpacyNER()
         self.queryDocs()
         pass
@@ -85,6 +108,29 @@ class ReviewRBInit(PreviousNextHTML):
             self.matcher.add(type_name, None, *phrases)
         pass
 
+    def checkPreviousReviews(self):
+        """check if there is any samples have been reviewed before for the same task.
+        If so, then let the user to choose how to proceed."""
+        un_reviewed = 0
+        with self.workflow.dao.create_session() as session:
+            anno_iter = session.query(Annotation).filter(Annotation.TASK_ID == self.workflow.task_id)
+            for anno in anno_iter:
+                self.previousReviewed[anno.DOC_ID] = anno.clone()
+                logConsole(('anno clone',anno.clone()))
+                if anno.REVIEWED_TYPE is None or anno.REVIEWED_TYPE == "":
+                    un_reviewed += 1
+
+        if len(self.previousReviewed) > 0:
+            self.addCondition("ResetSampling", self.next_step, 'Remove previous reviewed data and restart sampling')
+            self.addCondition("AddExtraSampling", self.next_step, 'Keep previous reviewed data and add extra samples')
+            self.show_next = False
+        else:
+            self.show_next = True
+        if un_reviewed > 0:
+            self.addCondition("ContinueReview", self.next_step,
+                              'Don\'t sampling, just continue to finish reviewing previous sampled data')
+        pass
+
     def queryDocs(self):
         self.samples = {"contain": [], "notcontain": []}
         with self.workflow.dao.create_session() as session:
@@ -95,47 +141,114 @@ class ReviewRBInit(PreviousNextHTML):
                 else:
                     self.samples['notcontain'].append(doc.DOC_ID)
                 pass
+        self.ready = True
+        pass
 
+    def backgroundPrinting(self):
+        thread_gm = Thread(target=self.printWaiting)
+        thread_gm.start()
+        pass
 
+    def printWaiting(self):
+        while self.ready is False:
+            print('.', end='', flush=True)
+            sleep(1)
         pass
 
     def complete(self):
-        self.getSampledDocs()
-        super().complete()
+        clear_output(True)
+        if len(self.previousReviewed) > 0:
+            self.continueReview()
+        else:
+            self.addExtra()
+        if self.next_step is not None:
+            logConsole((self, 'workflow complete'))
+            if isinstance(self.next_step, Step):
+                if self.workflow is not None:
+                    self.workflow.updateStatus(self.next_step.pos_id)
+                self.next_step.start()
+            else:
+                raise TypeError(
+                    'Type error for ' + self.name + '\'s next_step. Only Step can be the next_step, where its next_step is ' + str(
+                        type(self.next_step)))
+        else:
+            print("next step hasn't been set.")
         pass
 
-    def getSampledDocs(self):
+    def navigate(self, b):
+        clear_output(True)
+        if b.description.startswith("Add"):
+            self.move_next_option = "A"
+        elif b.description.startswith("Continue"):
+            self.move_next_option = "C"
+        else:
+            # else reset
+            self.move_next_option = "R"
+        if hasattr(b, 'linked_step'):
+            self.updateData()
+            b.linked_step.start()
+        else:
+            self.complete()
+        pass
+
+    def updateData(self):
+        """data related operations when click a button to move on to next step"""
+        if self.move_next_option == "R":
+            self.restSampling()
+        elif self.move_next_option == "A":
+            self.addExtra()
+        else:
+            self.continueReview()
+        pass
+
+    def addExtra(self):
+        logConsole("add extra samples")
+        self.getSampledDocs(set(self.previousReviewed.keys()))
+        pass
+
+    def continueReview(self):
+        logConsole("continue review")
+        docs = []
+
+        self.workflow.filter_percent = 0.01 * self.percent_slider.value
+        with self.workflow.dao.create_session() as session:
+            # doc_iter = session.query(Annotation,Document).select_from(Document).join(Document.DOC_ID).filter(
+            #     Annotation.TASK_ID == self.workflow.task_id)
+            doc_iter = session.query(Document).filter(Document.DOC_ID == Annotation.DOC_ID).filter(
+                Annotation.TASK_ID == self.workflow.task_id)
+            for doc in doc_iter:
+                docs.append(doc.clone())
+        self.data = {'docs': docs, 'if_contains': dict(), 'annos': self.previousReviewed}
+        self.workflow.sample_size = len(docs)
+        self.workflow.samples = self.data
+        pass
+
+    def restSampling(self):
+        """discard previous sampling and reviewed data, start a new sampling"""
+        logConsole('reset sampling')
+        with self.workflow.dao.create_session() as session:
+            anno_iter = session.query(Annotation).filter(Annotation.TASK_ID == self.workflow.task_id)
+            for anno in anno_iter:
+                session.delete(anno)
+            session.commit()
+        self.getSampledDocs()
+        pass
+
+    def getSampledDocs(self, exclusion_ids=set()):
         self.workflow.sample_size = self.sample_size_input.value
         self.workflow.filter_percent = 0.01 * self.percent_slider.value
-        random.shuffle(self.samples['contain'])
-        random.shuffle(self.samples['notcontain'])
-        contain_size = int(self.workflow.sample_size * self.workflow.filter_percent)
-        notcontain_size = self.workflow.sample_size - contain_size
-        if contain_size > len(self.samples['contain']):
-            contain_size = len(self.samples['contain'])
-            notcontain_size = self.workflow.sample_size - contain_size
-        if notcontain_size > len(self.samples['notcontain']):
-            notcontain_size = len(self.samples['notcontain'])
-        self.workflow.sample_size = contain_size + notcontain_size
-        self.workflow.filter_percent = 100.0 * contain_size / self.workflow.sample_size
-
-        contain_docids = self.samples['contain'][:contain_size]
-        notcontain_docids = self.samples['notcontain'][:notcontain_size]
-        self.workflow.samples = {'docs': [], 'if_contains': {}}
-
-        with self.workflow.dao.create_session() as session:
-            doc_iter = session.query(Document).filter(Document.DATASET_ID == 'origin_doc').filter(
-                or_(Document.DOC_ID.in_(contain_docids), Document.DOC_ID.in_(notcontain_docids)))
-            for doc in doc_iter:
-                if doc.DOC_ID in contain_docids:
-                    self.workflow.samples['docs'].append(
-                        Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
-                                 doc.REF_DATE, doc.META_DATA))
-                    self.workflow.samples['if_contains'][doc.DOC_ID] = 'contain'
-                else:
-                    self.workflow.samples['docs'].append(
-                        Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
-                                 doc.REF_DATE, doc.META_DATA))
-                    self.workflow.samples['if_contains'][doc.DOC_ID] = 'notcontain'
-        self.data = self.workflow.samples
+        self.sampler = KeywordStratefiedSampler(filter_percent=self.workflow.filter_percent, dao=self.workflow.dao,
+                                                stratefied_sets=self.samples, exclusions=exclusion_ids)
+        docs, if_contains = self.sampler.sampling(self.workflow.sample_size)
+        self.data = {'docs': docs, 'if_contains': if_contains, 'annos': self.previousReviewed}
+        if self.move_next_option == 'R':
+            self.workflow.sample_size = self.sampler.adjusted_sample_size
+            self.workflow.filter_percent = self.sampler.adjusted_filter_percent
+            self.workflow.samples = self.data
+            with self.workflow.dao.create_session() as session:
+                for doc in docs:
+                    session.add(Annotation(TASK_ID=self.workflow.task_id,
+                                           DOC_ID=doc.DOC_ID))
+        else:
+            self.continueReview()
         pass

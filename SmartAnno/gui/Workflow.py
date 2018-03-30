@@ -8,11 +8,11 @@ from ipywidgets import widgets
 from conf.ConfigReader import ConfigReader
 
 import os
-
-
 def logConsole(msg):
     if logging.getLogger().isEnabledFor(logging.DEBUG):
+        os.write(1, str(logging.getLogger().level).encode('UTF-8'))
         os.write(1, str.encode(msg.__repr__() + '\n'))
+
 
 
 class Step(object):
