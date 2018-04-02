@@ -1,6 +1,5 @@
-from IPython.core.display import display, clear_output
-from ipywidgets import widgets, Label, Layout
-from conf.ConfigReader import ConfigReader
+from IPython.core.display import display
+from ipywidgets import widgets, Label
 from gui.MyWidgets import ToggleButtonsMultiSelection
 from gui.PreviousNextWidgets import PreviousNext
 from utils.TreeSet import TreeSet
@@ -58,7 +57,7 @@ class KeywordsEmbeddingExtenderSetup(PreviousNext):
 
         if not no_word_selected:
             self.workflow.to_we_ext_words = self.to_we_ext_words
-            from utils.GloveModel import GloveModel
+            from models.GloveModel import GloveModel
             from time import sleep
             if GloveModel.glove_model is None:
                 print('Please wait for glove model to get ready.', end='', flush=True)

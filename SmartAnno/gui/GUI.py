@@ -7,6 +7,7 @@ from gui.FileIO import ReadFiles
 # from gui.SetFilterKeyWords import SetFilterKeyWords
 from gui.PreviousNextWidgets import PreviousNextHTML
 from gui.Workflow import Workflow
+from models.BaseClassifier import NotTrained
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
 from utils.DocsToDB import DocsToDB
@@ -29,7 +30,7 @@ class GUI:
         self.data = None
         self.dir_chooser = None
         self.data = None
-        self.ready = False
+        self.status = NotTrained
         self.workflow = None
         self.setUpStage()
 

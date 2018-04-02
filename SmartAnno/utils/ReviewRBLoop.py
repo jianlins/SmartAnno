@@ -9,6 +9,7 @@ from db.ORMs import Annotation
 from gui.BranchingWidgets import LoopRepeatSteps, RepeatHTMLToggleStep
 from gui.Workflow import Step, logConsole
 from models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
+from utils.ReviewRBInit import ReviewRBInit
 
 
 class ReviewRBLoop(LoopRepeatSteps):
@@ -44,10 +45,13 @@ function setFocusToTextBox(){
         self.matcher = None
         self.metaColumns = ConfigReader().getValue("review/meta_columns")
         self.div_height = ConfigReader().getValue("review/div_height")
+        logConsole(('self.div_height:', self.div_height))
         self.show_meta_name = ConfigReader().getValue("review/show_meta_name")
         self.hightligh_span_tag = ' <span class="highlighter" style="background-color:  %s ">' % ConfigReader().getValue(
             "review/highlight_color")
+
         super().__init__([], name=name)
+
         pass
 
     def start(self):
@@ -110,7 +114,9 @@ function setFocusToTextBox(){
         """generate scrollable div to display the text content with keywords highlighted"""
         div = ''
         # div = '<button type="button" onclick="setFocusToTextBox()">Focus on next highlight</button>'
-        div += '<div id="d1" style="overflow-y: scroll; height:400px;border:1px solid;border-color:#e5e8e8; ">'
+        div += '<div id="d1" style="overflow-y: scroll; height:' + self.div_height \
+               + ';border:1px solid;border-color:#e5e8e8; ">'
+        logConsole(('self.div_height:', self.div_height))
         spacy_doc = self.nlp(doc.TEXT)
         matches = self.matcher(spacy_doc)
         # consolePrint(matches)
@@ -134,8 +140,8 @@ function setFocusToTextBox(){
         ReviewRBLoop.rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(self.workflow.final_filters)
         self.loop_workflow.filters = self.workflow.filters
         self.readData()
-        self.nlp = self.workflow.steps[self.pos_id - 1].nlp
-        self.matcher = self.workflow.steps[self.pos_id - 1].matcher
+        self.nlp = ReviewRBInit.nlp
+        self.matcher = ReviewRBInit.matcher
 
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):

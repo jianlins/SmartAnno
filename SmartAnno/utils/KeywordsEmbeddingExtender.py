@@ -1,13 +1,6 @@
-from collections import Set
-from time import sleep
-
-from IPython.core.display import clear_output, display
-from ipywidgets import widgets
-
-from gui.BranchingWidgets import LoopRepeatSteps, RepeatStep
-from gui.MyWidgets import ToggleButtonsMultiSelectionInBox
+from gui.BranchingWidgets import LoopRepeatSteps
 from gui.Workflow import Step
-from utils.GloveModel import GloveModel
+from models.GloveModel import GloveModel
 from utils.KeywordsUMLSExtender import RepeatMultipleSelection
 from utils.TreeSet import TreeSet
 

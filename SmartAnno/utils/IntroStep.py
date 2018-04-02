@@ -5,7 +5,7 @@ from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
 from gui.BranchingWidgets import BranchingStep
-from utils.GloveModel import GloveModel
+from models.GloveModel import GloveModel
 
 
 class IntroStep(BranchingStep):

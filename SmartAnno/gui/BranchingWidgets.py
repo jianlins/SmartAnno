@@ -2,7 +2,9 @@ import abc
 
 import ipywidgets as widgets
 from IPython.core.display import display, clear_output
+from ipywidgets import Layout
 
+from conf.ConfigReader import ConfigReader
 from gui.MyWidgets import ClickResponsiveToggleButtons
 from gui.Workflow import Step, Workflow, logConsole
 
@@ -41,7 +43,7 @@ class BranchingStep(Step):
         pass
 
     @abc.abstractmethod
-    def updateData(self,*args):
+    def updateData(self, *args):
         pass
 
     def addConditions(self):
@@ -102,7 +104,7 @@ class RepeatStep(BranchingStep):
     def navigate(self, b):
         clear_output(True)
         self.updateData(b)
-        logConsole((b, hasattr(b,"linked_step")))
+        logConsole((b, hasattr(b, "linked_step")))
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             b.linked_step.start()
         else:
@@ -120,7 +122,7 @@ class RepeatHTMLToggleStep(RepeatStep):
                  branch_names=['Previous', 'Next', 'Complete'], branch_steps=[None, None, None], js='', end_js='',
                  name=None, button_style='info', reviewed=False):
         self.display_description = widgets.HTML(value=description)
-        self.reviewed=reviewed
+        self.reviewed = reviewed
         self.toggle = ClickResponsiveToggleButtons(
             options=options,
             description='',
@@ -146,7 +148,7 @@ class RepeatHTMLToggleStep(RepeatStep):
     def on_click_answer(self, toggle):
         if len(self.end_js) > 0:
             display(widgets.HTML(self.end_js))
-        self.reviewed=True
+        self.reviewed = True
         self.navigate(self.branch_buttons[1])
         pass
 
@@ -204,7 +206,6 @@ class LoopRepeatSteps(Step):
         if self.next_step is not None:
             newRepeatStep.setCompleteStep(self.next_step)
 
-
         self.loop_workflow.append(newRepeatStep)
 
         pass
@@ -230,5 +231,3 @@ class LoopReviews(LoopRepeatSteps):
             repeat_steps.append(RepeatHTMLToggleStep(values[i], descriptions[i], options, tooltips))
         super().__init__(repeat_steps, name)
         pass
-
-

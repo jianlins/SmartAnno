@@ -1,12 +1,13 @@
 {
   "api_key": "",
+  "api_key_comment": "api key for UMLS access",
   "db": "sqlite+pysqlite:///data/demo.sqlite",
   "learning_steps": 10,
-  "learning_steps_meaning": "reclassify the rest of samples after review every # of samples",
+  "learning_steps_comment": "reclassify the rest of samples after review every # of samples",
   "status": {
     "default": 0,
     "workflow1": 1,
-    "workflow_0": 12,
+    "workflow_0": 1,
     "tasknamer_2": "task1",
     "types_6": [
       "Typea",
@@ -48,13 +49,16 @@
     "max_query": 50
   },
   "review": {
-    "div_height": "600px",
+    "review_comment": "configurations of sample data reviewing window",
+    "div_height": "200px",
+    "div_height_comment": "height of textarea to display the sample",
     "meta_columns": [
       "DOC_ID",
       "DATE",
       "REF_DATE"
     ],
-    "rb_model_threshold": 20,
+    "rb_model_threshold": 2,
+    "rb_model_threshold_comment": "max_documents_for_rb_model",
     "show_meta_name": true
   },
   "cnn_model": {

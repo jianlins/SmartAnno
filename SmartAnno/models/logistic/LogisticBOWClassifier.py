@@ -11,21 +11,21 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
 from gui.Workflow import logConsole
-from models.BaseClassifier import BaseClassifier
+from models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotTrained
 
 not_met_suffix = '_not_met'
 
 
 class LogisticBOWClassifier(BaseClassifier):
+    # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
+    # These parameters will be shown in GUI ask for users' configuration
+    cv = 4
+    workers = -1
+    iterations = 1
+    train_size = 0.8
+    random_state = 777
 
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
-        # customized parameters
-        self.cv = kwargs['cv'] if 'cv' in kwargs else 4
-        self.workers = kwargs['workers'] if 'workers' in kwargs else -1
-        self.iterations = kwargs['iterations'] if 'iterations' in kwargs else 1
-        self.train_size = kwargs['train_size'] if 'train_size' in kwargs else 0.8
-        self.random_state = kwargs['random_state'] if 'random_state' in kwargs else 777
-
         # generic parameters
         if params is None:
             self.params = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3)],
@@ -42,11 +42,20 @@ class LogisticBOWClassifier(BaseClassifier):
                                       ])
         else:
             self.pipeline = pipeline
-        super(LogisticBOWClassifier, self).__init__(task_name, pipeline, params, model_file)
+        super(LogisticBOWClassifier, self).__init__(task_name, pipeline, params, model_file, kwargs)
+
+        pass
+
+    def defineModel(self):
+        LogisticBOWClassifier.model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
+                                                         n_iter=self.iterations,
+                                                         cv=self.cv,
+                                                         n_jobs=self.workers)
+        LogisticBOWClassifier.status = NotTrained
         pass
 
     def train(self, x, y, class_names):
-        LogisticBOWClassifier.ready = False
+        LogisticBOWClassifier.status = InTraining
         stats = Counter(y)
         for classname, count in stats.items():
             if count < self.cv:
@@ -81,29 +90,25 @@ class LogisticBOWClassifier(BaseClassifier):
             return
 
         # now we can train a model
-        self.model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-                                        n_iter=self.iterations,
-                                        cv=self.cv,
-                                        n_jobs=self.workers)
 
         logConsole('Fitting model now for iterations = {}'.format(self.iterations))
-        self.model.fit(X_text_train, y_train)
+        LogisticBOWClassifier.model.fit(X_text_train, y_train)
 
         # print performances
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            print('Best params for the model : {}'.format(self.model.best_params_))
+            print('Best params for the model : {}'.format(LogisticBOWClassifier.model.best_params_))
 
             print('REPORT for TRAINING set and task : {}'.format(self.task_name))
-            print(metrics.classification_report(y_train, self.model.predict(X_text_train),
+            print(metrics.classification_report(y_train, LogisticBOWClassifier.model.predict(X_text_train),
                                                 target_names=class_names))
 
             print('REPORT for TEST set and task : {}'.format(self.task_name))
-            print(metrics.classification_report(y_test, self.model.predict(X_text_test),
+            print(metrics.classification_report(y_test, LogisticBOWClassifier.model.predict(X_text_test),
                                                 target_names=class_names))
-        LogisticBOWClassifier.ready = True
+        LogisticBOWClassifier.status = ReadyTrained
 
     pass
 
     def classify(self, txt):
-        output = self.model.predict([txt])[0]
+        output = LogisticBOWClassifier.model.predict([txt])[0]
         return output
