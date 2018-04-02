@@ -207,16 +207,6 @@ class LoopRepeatSteps(Step):
 
         self.loop_workflow.append(newRepeatStep)
 
-        # self.loop_workflow.steps.append(newRepeatStep)
-        # self.loop_workflow.name_dict[newRepeatStep.name] = id
-        # self.loop_workflow.step_names.append(newRepeatStep.name)
-        # # print('attache new step' + newRepeatStep.name + "_" + str(id))
-        # newRepeatStep.setWorkflow(self.loop_workflow)
-        # if previous_step is not None and isinstance(previous_step, RepeatStep):
-        #     previous_step.setNextRepeat(newRepeatStep)
-        #     newRepeatStep.setPreviousRepeat(previous_step)
-        # newRepeatStep.setPreviousStep(self.previous_step)
-        # newRepeatStep.setNextStep(self.next_step)
         pass
 
     def setNextStep(self, next_step):

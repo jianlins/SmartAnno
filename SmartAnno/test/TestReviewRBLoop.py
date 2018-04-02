@@ -1,16 +1,15 @@
 
+import logging
+
+import sqlalchemy_dao
+from sqlalchemy_dao import Dao
+
+from conf.ConfigReader import ConfigReader
+from gui.PreviousNextWidgets import PreviousNextHTML
+from gui.Workflow import Workflow
 from utils.ReviewRBInit import ReviewRBInit
 from utils.ReviewRBLoop import ReviewRBLoop
-from gui.Workflow import Workflow
-from sqlalchemy_dao import Dao
-from db.ORMs import Document
-from utils.IntroStep import IntroStep
-from gui.PreviousNextWidgets import PreviousNextHTML
-import sqlalchemy_dao
-import os
-from  conf.ConfigReader import ConfigReader
 
-import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
 ConfigReader('../conf/smartanno_conf.json')

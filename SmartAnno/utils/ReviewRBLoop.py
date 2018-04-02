@@ -161,7 +161,7 @@ class ReviewRB(RepeatHTMLToggleStep):
         self.prediction = value
         self.reviewed = reviewed
         self.logger = logging.getLogger(__name__)
-        self.progress = widgets.IntProgress(min=0, max=len(self.master.docs), value=0,
+        self.progress = widgets.IntProgress(min=1, max=len(self.master.docs), value=1,
                                             layout=widgets.Layout(width='90%', height='14px'),
                                             style=dict(description_width='initial'))
 
@@ -176,7 +176,7 @@ class ReviewRB(RepeatHTMLToggleStep):
         if len(self.master.js) > 0:
             display(widgets.HTML(self.master.js))
         self.toggle.button_style = 'success'
-        self.progress.value = self.pos_id
+        self.progress.value = self.pos_id + 1
         self.progress.description = 'Progress: ' + str(self.progress.value) + '/' + str(self.progress.max)
         clear_output(True)
         display(self.box)
@@ -220,30 +220,33 @@ class ReviewRB(RepeatHTMLToggleStep):
             return
         if self.master is None:
             return
-        if self.pos_id + 1 >= len(self.master.docs):
-            return
         if self.next_step is None:
-            doc = self.master.docs[self.pos_id + 1]
-            logConsole(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
-            content = self.master.genContent(doc)
-            reviewed = False
-            if doc.DOC_ID in self.master.annos and self.master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
-                prediction = self.master.annos[doc.DOC_ID].REVIEWED_TYPE
-                reviewed = True
+            if self.pos_id < len(self.master.docs) - 1:
+                doc = self.master.docs[self.pos_id + 1]
+                logConsole(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
+                content = self.master.genContent(doc)
+                reviewed = False
+                if doc.DOC_ID in self.master.annos and self.master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
+                    prediction = self.master.annos[doc.DOC_ID].REVIEWED_TYPE
+                    reviewed = True
+                else:
+                    prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
+                repeat_step = ReviewRB(description=content, options=self.master.workflow.types, value=prediction,
+                                       js=self.js, master=self.master, reviewed=reviewed,
+                                       button_style='success' if reviewed else 'info')
+                self.master.appendRepeatStep(repeat_step)
             else:
-                prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
-            repeat_step = ReviewRB(description=content, options=self.master.workflow.types, value=prediction,
-                                   js=self.js, master=self.master, reviewed=reviewed,
-                                   button_style='success' if reviewed else 'info')
-            self.master.appendRepeatStep(repeat_step)
-
+                logConsole(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
+                            'master\'s next step', self.master.next_step))
+                self.next_step = self.master.next_step
+                self.branch_buttons[1].linked_step = self.master.next_step
         pass
 
     def navigate(self, b):
         clear_output(True)
         self.updateData(b)
         logConsole(('navigate to b: ', b, hasattr(b, "linked_step")))
-        logConsole(('navigate to branchbutton -1', hasattr(self.branch_buttons[1], 'linked_step'),
+        logConsole(('navigate to branchbutton 1', hasattr(self.branch_buttons[1], 'linked_step'),
                     self.branch_buttons[1].linked_step))
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             b.linked_step.start()
