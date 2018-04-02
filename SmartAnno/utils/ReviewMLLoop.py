@@ -1,7 +1,7 @@
 import logging
 from threading import Thread
 
-from IPython.core.display import display
+from IPython.core.display import display, clear_output
 from ipywidgets import widgets
 from sqlalchemy import and_
 
@@ -9,7 +9,6 @@ from conf.ConfigReader import ConfigReader
 from db.ORMs import Annotation
 from gui.BranchingWidgets import RepeatHTMLToggleStep
 from gui.Workflow import Step, logConsole
-from models.BaseClassifier import BaseClassifier
 from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from utils.ReviewRBLoop import ReviewRBLoop
 
@@ -40,7 +39,7 @@ class ReviewMLLoop(ReviewRBLoop):
         self.annos = self.data['annos']
 
     def initTraining(self):
-        self.ml_classifier.train(self.docs, self.annos)
+        self.ml_classifier.train(self.docs, [self.reviewed[doc.DOC_ID] for doc in self.docs])
 
     def backgroundTraining(self):
         thread_gm = Thread(target=self.initTraining)
@@ -50,7 +49,6 @@ class ReviewMLLoop(ReviewRBLoop):
     def init_real_time(self):
         self.loop_workflow.filters = self.workflow.filters
         self.readData()
-        self.backgroundTraining()
         self.nlp = self.workflow.steps[self.pos_id - 1].nlp
         self.matcher = self.workflow.steps[self.pos_id - 1].matcher
 
@@ -63,9 +61,9 @@ class ReviewMLLoop(ReviewRBLoop):
                 prediction = self.annos[doc.DOC_ID].REVIEWED_TYPE
                 reviewed = True
             else:
-                prediction = self.ml_classifier.classify(doc.TEXT, doc.DOC_NAME)
+                prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
             repeat_step = ReviewML(description=content, options=self.workflow.types, value=prediction,
-                                   js=self.js, loop_master=self, reviewed=reviewed,
+                                   js=self.js, master=self, reviewed=reviewed,
                                    button_style=('success' if reviewed else 'info'))
             self.appendRepeatStep(repeat_step)
 
@@ -77,12 +75,12 @@ class ReviewML(RepeatHTMLToggleStep):
 
     def __init__(self, value=None, description='', options=[], tooltips=[],
                  branch_names=['Previous', 'Next', 'Complete'], branch_steps=[None, None, None], js='', end_js='',
-                 name=None, loop_master=None, button_style='info', reviewed=False):
-        self.loop_master = loop_master
+                 name=None, master=None, button_style='info', reviewed=False):
+        self.master = master
         self.prediction = value
         self.reviewed = reviewed
         self.logger = logging.getLogger(__name__)
-        self.progress = widgets.IntProgress(min=0, max=len(self.loop_master.docs), value=0,
+        self.progress = widgets.IntProgress(min=1, max=len(self.master.docs), value=1,
                                             layout=widgets.Layout(width='90%', height='14px'),
                                             style=dict(description_width='initial'))
 
@@ -94,33 +92,37 @@ class ReviewML(RepeatHTMLToggleStep):
     def start(self):
         """In running time, start to display a sample in the notebook output cell"""
         logConsole(('start step id/total steps', self.pos_id, len(self.workflow.steps)))
-        if len(self.loop_master.js) > 0:
-            display(widgets.HTML(self.loop_master.js))
-        self.progress.value = self.pos_id
+        if len(self.master.js) > 0:
+            display(widgets.HTML(self.master.js))
+        self.toggle.button_style = 'success'
+        self.progress.value = self.pos_id + 1
         self.progress.description = 'Progress: ' + str(self.progress.value) + '/' + str(self.progress.max)
+        clear_output(True)
         display(self.box)
-        logConsole(('self.pos_id:', self.pos_id, 'len(self.master.docs):', len(self.loop_master.docs),
-                    'start init next step'))
         self.initNextDoc()
         pass
 
-    def updateData(self,*args):
+    def updateData(self, *args):
         """save the reviewed data"""
         self.data = self.toggle.value
         self.toggle.button_style = 'success'
-        with self.loop_master.workflow.dao.create_session() as session:
-            logConsole(('update data:', self.pos_id, len(self.loop_master.docs)))
-            anno = session.query(Annotation).filter(
-                and_(Annotation.DOC_ID == self.loop_master.docs[self.pos_id].DOC_ID,
-                     Annotation.TASK_ID == self.loop_master.workflow.task_id)).first()
-            if anno is not None:
-                anno.REVIEWED_TYPE = self.toggle.value
-                anno.TYPE = self.prediction
-            else:
-                session.add(Annotation(TASK_ID=self.loop_master.workflow.task_id,
-                                       DOC_ID=self.loop_master.docs[self.pos_id].DOC_ID,
-                                       TYPE=self.prediction,
-                                       REVIEWED_TYPE=self.toggle.value))
+        if self.reviewed:
+            self.master.reviewed[self.master.docs[self.pos_id].DOC_ID] = self.toggle.value
+            with self.master.workflow.dao.create_session() as session:
+                logConsole(('update data:', self.pos_id, len(self.master.docs)))
+                anno = session.query(Annotation).filter(
+                    and_(Annotation.DOC_ID == self.master.docs[self.pos_id].DOC_ID,
+                         Annotation.TASK_ID == self.master.workflow.task_id)).first()
+                if anno is not None:
+                    anno.REVIEWED_TYPE = self.toggle.value
+                    anno.TYPE = self.prediction
+                else:
+                    anno = Annotation(TASK_ID=self.master.workflow.task_id,
+                                      DOC_ID=self.master.docs[self.pos_id].DOC_ID,
+                                      TYPE=self.prediction,
+                                      REVIEWED_TYPE=self.toggle.value)
+                    session.add(anno)
+                self.master.annos[self.master.docs[self.pos_id].DOC_ID] = anno.clone()
         pass
 
     def createBox(self):
@@ -135,23 +137,45 @@ class ReviewML(RepeatHTMLToggleStep):
         """while displaying the current sample, prepare for the next sample"""
         if self.workflow is None:
             return
-        if self.loop_master is None:
-            return
-        if self.pos_id + 1 >= len(self.loop_master.docs):
+        if self.master is None:
             return
         if self.next_step is None:
-            doc = self.loop_master.docs[self.pos_id + 1]
-            content = self.loop_master.genContent(doc)
-            reviewed = False
-            if doc.DOC_ID in self.loop_master.annos and self.loop_master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
-                prediction = self.loop_master.annos[doc.DOC_ID].REVIEWED_TYPE
-                reviewed = True
+            if self.pos_id < len(self.master.docs) - 1:
+                doc = self.master.docs[self.pos_id + 1]
+                logConsole(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
+                content = self.master.genContent(doc)
+                reviewed = False
+                if doc.DOC_ID in self.master.annos and self.master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
+                    prediction = self.master.annos[doc.DOC_ID].REVIEWED_TYPE
+                    reviewed = True
+                else:
+                    prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
+                repeat_step = ReviewRB(description=content, options=self.master.workflow.types, value=prediction,
+                                       js=self.js, master=self.master, reviewed=reviewed,
+                                       button_style='success' if reviewed else 'info')
+                self.master.appendRepeatStep(repeat_step)
             else:
-                prediction = self.loop_master.ml_classifier.classify(doc.TEXT, doc.DOC_NAME)
-            repeat_step = ReviewML(description=content, options=self.loop_master.workflow.types, value=prediction,
-                                   js=self.js, master=self.loop_master, reviewed=reviewed,
-                                   button_style='success' if reviewed else 'info')
-            self.loop_master.appendRepeatStep(repeat_step)
+                logConsole(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
+                            'master\'s next step', self.master.next_step))
+                self.next_step = self.master.next_step
+                self.branch_buttons[1].linked_step = self.master.next_step
+        pass
+
+    def navigate(self, b):
+        clear_output(True)
+        self.updateData(b)
+        logConsole(('navigate to b: ', b, hasattr(b, "linked_step")))
+        logConsole(('navigate to branchbutton 1', hasattr(self.branch_buttons[1], 'linked_step'),
+                    self.branch_buttons[1].linked_step))
+        if hasattr(b, 'linked_step') and b.linked_step is not None:
+            b.linked_step.start()
+        else:
+            if hasattr(self.branch_buttons[1], 'linked_step') and self.branch_buttons[1].linked_step is not None:
+                self.branch_buttons[1].linked_step.start()
+            elif not hasattr(b, 'navigate_direction') or b.navigate_direction == 1:
+                self.complete()
+            else:
+                self.goBack()
         pass
 
     pass

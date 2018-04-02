@@ -68,6 +68,10 @@ function setFocusToTextBox(){
 
     def readData(self):
         self.data = self.workflow.steps[self.pos_id - 1].data
+        # if go back to reset the reviewed data
+        if self.workflow.steps[self.pos_id - 1].move_next_option == 'R':
+            self.data['annos'].clear()
+            self.reviewed.clear()
         self.docs = self.data['docs']
         self.if_contains = self.data['if_contains']
         self.annos = self.data['annos']

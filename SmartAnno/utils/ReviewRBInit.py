@@ -232,7 +232,6 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             for anno in anno_iter:
                 session.delete(anno)
             session.commit()
-
         self.getSampledDocs()
         pass
 
