@@ -68,25 +68,24 @@ class Annotation(Model):
     COMMENTS = Column(String)
     CREATE_DTM = Column(DateTime, default=datetime.datetime.utcnow)
 
-
     def __repr__(self):
         return "<Annotation(ID='%s', DOC_ID='%s'," \
-               " RUN_ID='%s',TYPE='%s',BEGIN='%s', END='%s'," \
+               " RUN_ID='%s',TYPE='%s',REVIEWED_TYPE='%s',BEGIN='%s', END='%s'," \
                "SNIPPET_BEGIN='%s', TEXT='%s',SNIPPET='%s'," \
                "FEATURES='%s',COMMENTS='%s',CREATE_DTM='%s')>" % (
                    self.ID, self.DOC_ID, self.RUN_ID,
-                   self.TYPE, self.BEGIN, self.END, self.SNIPPET_BEGIN,
+                   self.TYPE, self.REVIEWED_TYPE, self.BEGIN, self.END, self.SNIPPET_BEGIN,
                    self.TEXT, self.SNIPPET, self.FEATURES, self.COMMENTS,
                    self.CREATE_DTM)
 
     def clone(self):
         return Annotation(ID=self.ID, DOC_ID=self.DOC_ID, TASK_ID=self.TASK_ID,
-                   RUN_ID=self.RUN_ID,
-                   TYPE=self.TYPE, REVIEWED_TYPE=self.REVIEWED_TYPE,
-                   BEGIN=self.BEGIN, END=self.END,
-                   SNIPPET_BEGIN=self.SNIPPET_BEGIN, TEXT=self.TEXT,
-                   SNIPPET=self.SNIPPET, FEATURES=self.FEATURES,
-                   COMMENTS=self.COMMENTS, CREATE_DTM=self.CREATE_DTM)
+                          RUN_ID=self.RUN_ID,
+                          TYPE=self.TYPE, REVIEWED_TYPE=self.REVIEWED_TYPE,
+                          BEGIN=self.BEGIN, END=self.END,
+                          SNIPPET_BEGIN=self.SNIPPET_BEGIN, TEXT=self.TEXT,
+                          SNIPPET=self.SNIPPET, FEATURES=self.FEATURES,
+                          COMMENTS=self.COMMENTS, CREATE_DTM=self.CREATE_DTM)
 
 
 class Filter(Model):

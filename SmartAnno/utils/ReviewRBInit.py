@@ -35,6 +35,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
         self.move_next_option = ''
 
         self.previousReviewed = OrderedDict()
+        self.un_reviewed = 0
         self.sampler = None
         super().__init__(name=name)
         pass
@@ -116,7 +117,6 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             anno_iter = session.query(Annotation).filter(Annotation.TASK_ID == self.workflow.task_id)
             for anno in anno_iter:
                 self.previousReviewed[anno.DOC_ID] = anno.clone()
-                logConsole(('anno clone',anno.clone()))
                 if anno.REVIEWED_TYPE is None or anno.REVIEWED_TYPE == "":
                     un_reviewed += 1
 
@@ -126,6 +126,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             self.show_next = False
         else:
             self.show_next = True
+        self.un_reviewed = un_reviewed
         if un_reviewed > 0:
             self.addCondition("ContinueReview", self.next_step,
                               'Don\'t sampling, just continue to finish reviewing previous sampled data')
@@ -191,7 +192,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             self.complete()
         pass
 
-    def updateData(self):
+    def updateData(self,*args):
         """data related operations when click a button to move on to next step"""
         if self.move_next_option == "R":
             self.restSampling()
@@ -231,6 +232,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             for anno in anno_iter:
                 session.delete(anno)
             session.commit()
+
         self.getSampledDocs()
         pass
 
@@ -241,7 +243,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
                                                 stratefied_sets=self.samples, exclusions=exclusion_ids)
         docs, if_contains = self.sampler.sampling(self.workflow.sample_size)
         self.data = {'docs': docs, 'if_contains': if_contains, 'annos': self.previousReviewed}
-        if self.move_next_option == 'R':
+        if len(docs) > 0:
             self.workflow.sample_size = self.sampler.adjusted_sample_size
             self.workflow.filter_percent = self.sampler.adjusted_filter_percent
             self.workflow.samples = self.data
@@ -249,6 +251,6 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
                 for doc in docs:
                     session.add(Annotation(TASK_ID=self.workflow.task_id,
                                            DOC_ID=doc.DOC_ID))
-        else:
+        if self.un_reviewed > 0:
             self.continueReview()
         pass

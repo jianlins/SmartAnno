@@ -5,6 +5,7 @@ from conf.ConfigReader import ConfigReader
 from gui.DirChooser import DirChooser
 from gui.FileIO import ReadFiles
 # from gui.SetFilterKeyWords import SetFilterKeyWords
+from gui.PreviousNextWidgets import PreviousNextHTML
 from gui.Workflow import Workflow
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
@@ -57,7 +58,7 @@ class GUI:
              DirChooser(name='choosedir'), ReadFiles(name='readfiles'),
              DocsToDB(name='save2db'),
              AnnotationTypeDef(
-                 '<h4>Annotation types:</h4><p>List all the types you want to identify below. Each type per line.<br/>If you'
+                 '<h3>Annotation types:</h3><p>List all the types you want to identify below. Each type per line.<br/>If you'
                  'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
                  'for each sample. </p>', name='types'),
              KeywordsFiltering(
@@ -73,7 +74,11 @@ class GUI:
              KeywordsEmbeddingExtenderSetup(name='w_e_extender_setup'),
              KeywordsEmbeddingExtender(name='w_e_extender', max_query=40),
              ReviewRBInit(name="rb_review_init"),
-             ReviewRBLoop(name='rb_review')
+             ReviewRBLoop(name='rb_review'),
+             PreviousNextHTML(
+                 description='<h3>Start ML model training</h3><p>Now the total number of the reviewed samples reaches the '
+                             'threshold of your setting. Machine learning models will start to run in the '
+                             'backend to learning the reviewed data and preannotating the unreviewed data. </p>')
              ])
         self.workflow.start(False)
         pass

@@ -4,7 +4,7 @@ import ipywidgets as widgets
 from IPython.core.display import display, clear_output
 
 from gui.MyWidgets import ClickResponsiveToggleButtons
-from gui.Workflow import Step, Workflow
+from gui.Workflow import Step, Workflow, logConsole
 
 """
 This file contains branching widgets
@@ -33,7 +33,7 @@ class BranchingStep(Step):
 
     def navigate(self, b):
         # print(b)
-        self.updateData()
+        self.updateData(b)
         if hasattr(b, 'linked_step'):
             b.linked_step.start()
         else:
@@ -41,7 +41,7 @@ class BranchingStep(Step):
         pass
 
     @abc.abstractmethod
-    def updateData(self):
+    def updateData(self,*args):
         pass
 
     def addConditions(self):
@@ -101,7 +101,8 @@ class RepeatStep(BranchingStep):
 
     def navigate(self, b):
         clear_output(True)
-        self.updateData()
+        self.updateData(b)
+        logConsole((b, hasattr(b,"linked_step")))
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             b.linked_step.start()
         else:
@@ -117,8 +118,9 @@ class RepeatStep(BranchingStep):
 class RepeatHTMLToggleStep(RepeatStep):
     def __init__(self, value=None, description='', options=[], tooltips=[],
                  branch_names=['Previous', 'Next', 'Complete'], branch_steps=[None, None, None], js='', end_js='',
-                 name=None, button_style='info'):
+                 name=None, button_style='info', reviewed=False):
         self.display_description = widgets.HTML(value=description)
+        self.reviewed=reviewed
         self.toggle = ClickResponsiveToggleButtons(
             options=options,
             description='',
@@ -144,10 +146,11 @@ class RepeatHTMLToggleStep(RepeatStep):
     def on_click_answer(self, toggle):
         if len(self.end_js) > 0:
             display(widgets.HTML(self.end_js))
+        self.reviewed=True
         self.navigate(self.branch_buttons[1])
         pass
 
-    def updateData(self):
+    def updateData(self, *args):
         self.data = self.toggle.value
         # when choose a option, automatically move to next case
         if self.workflow is not None:
@@ -194,10 +197,13 @@ class LoopRepeatSteps(Step):
             previous_step = self.loop_workflow.steps[-1]
         else:
             previous_step = self.previous_step
+        #  first step in the loop, set previous step to the previous step outside the loop
         if len(self.loop_workflow.steps) == 0:
             newRepeatStep.setPreviousStep(previous_step)
+        #  if the loop master step has next step, assign the complete buttons of repeat steps linked to that step.
         if self.next_step is not None:
             newRepeatStep.setCompleteStep(self.next_step)
+
 
         self.loop_workflow.append(newRepeatStep)
 

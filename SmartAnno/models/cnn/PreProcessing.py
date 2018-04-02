@@ -18,6 +18,7 @@ class PreProcessing:
                  filter_file='conf/keywords_filter.txt',
                  stopwords_file='conf/stop_words.txt',
                  word2vec_file='models/glove.word2vec.txt.bin',
+                 rush_rules='conf/rush_rules.tsv',
                  max_token_per_sentence=150):
         # each time we only train/predict a models for one annotation type
         # set an arbitrary max length of sentences, so that we can pad sentences without knowing the max length of sentences in testing set.
@@ -26,7 +27,7 @@ class PreProcessing:
         self.annotation_type = annotation_type
         self.default_value = default_value
         self.real_max_length = 0
-        self.rush = RuSH('conf/rush_rules.tsv')
+        self.rush = RuSH(rush_rules)
         self.html_tokens_p = re.compile('^\&[a-z]{2,4}\;$')
         self.punctuations = set(string.punctuation)
         # keep '?'

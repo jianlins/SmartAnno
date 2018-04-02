@@ -53,6 +53,8 @@ class RBDocumentClassifierFactory(object):
 
 
 class RBDocumentClassifier(BaseClassifier):
+    ready = True
+
     def __init__(self, targets=None, modifiers=None, feature_inference_rule=None, document_inference_rule=None,
                  pyrush_rule=None,
                  expected_values=[], save_markups=True):
@@ -80,6 +82,7 @@ class RBDocumentClassifier(BaseClassifier):
                     self.setModifiersTargetsFromFiles(modifiers, targets)
             else:
                 self.setModifiersTargets(modifiers, targets)
+        RBDocumentClassifier.classifier = self
 
     def setModifiersTargets(self, modifiers, targets):
         self.modifiers = modifiers
@@ -156,6 +159,10 @@ class RBDocumentClassifier(BaseClassifier):
             # pyConText might through errors in some case, will fix it later
             doc_conclusion = self.document_inferencer.default_conclusion
         return doc_conclusion
+
+    def train(self, x, y):
+        """just for implement the interface"""
+        pass
 
     def get_last_context_doc(self):
         if self.last_doc_name in self.saved_markups_map:
