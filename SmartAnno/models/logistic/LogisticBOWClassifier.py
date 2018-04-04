@@ -25,6 +25,7 @@ class LogisticBOWClassifier(BaseClassifier):
     train_size = 0.8
     random_state = 777
 
+
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         # generic parameters
         if params is None:
@@ -42,30 +43,30 @@ class LogisticBOWClassifier(BaseClassifier):
                                       ])
         else:
             self.pipeline = pipeline
-        super(LogisticBOWClassifier, self).__init__(task_name, pipeline, params, model_file, kwargs)
-
+        super().__init__(task_name, pipeline, params, model_file, **kwargs)
         pass
 
     def defineModel(self):
-        LogisticBOWClassifier.model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-                                                         n_iter=self.iterations,
-                                                         cv=self.cv,
-                                                         n_jobs=self.workers)
-        LogisticBOWClassifier.status = NotTrained
-        pass
+        model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
+                                   n_iter=self.iterations,
+                                   cv=self.cv,
+                                   n_jobs=self.workers)
+        return model
 
-    def train(self, x, y, class_names):
+    def train(self, x, y):
+        logConsole('training...')
         LogisticBOWClassifier.status = InTraining
         stats = Counter(y)
         for classname, count in stats.items():
             if count < self.cv:
                 logConsole(
                     'TEST data does not have enoguh examples for all classes.  Skipping training for class : {}'.format(
-                        classname))
+                        self.task_name))
                 return
 
         # before we run a search, let's do an 80-20 split for (CV/Validation )
         # even if we do not have a lot of data to work with
+
         X_text_train, X_text_test, y_train, y_test = train_test_split(x, y,
                                                                       stratify=y,
                                                                       train_size=self.train_size,
@@ -92,23 +93,24 @@ class LogisticBOWClassifier(BaseClassifier):
         # now we can train a model
 
         logConsole('Fitting model now for iterations = {}'.format(self.iterations))
-        LogisticBOWClassifier.model.fit(X_text_train, y_train)
+
+        self.model.fit(X_text_train, y_train)
 
         # print performances
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            print('Best params for the model : {}'.format(LogisticBOWClassifier.model.best_params_))
+            logConsole('Best params for the model : {}'.format(self.model.best_params_))
 
-            print('REPORT for TRAINING set and task : {}'.format(self.task_name))
-            print(metrics.classification_report(y_train, LogisticBOWClassifier.model.predict(X_text_train),
-                                                target_names=class_names))
+            logConsole('REPORT for TRAINING set and task : {}'.format(self.task_name))
+            logConsole(metrics.classification_report(y_train, self.model.predict(X_text_train),
+                                                     target_names=self.task_name))
 
-            print('REPORT for TEST set and task : {}'.format(self.task_name))
-            print(metrics.classification_report(y_test, LogisticBOWClassifier.model.predict(X_text_test),
-                                                target_names=class_names))
+            logConsole('REPORT for TEST set and task : {}'.format(self.task_name))
+            logConsole(metrics.classification_report(y_test, self.model.predict(X_text_test),
+                                                     target_names=self.task_name))
         LogisticBOWClassifier.status = ReadyTrained
 
     pass
 
     def classify(self, txt):
-        output = LogisticBOWClassifier.model.predict([txt])[0]
+        output = self.model.predict([txt])[0]
         return output

@@ -29,8 +29,19 @@ class KeywordStratefiedSampler(BaseSampler):
         if contain_size > len(self.stratefied_sets['contain']):
             contain_size = len(self.stratefied_sets['contain'])
             notcontain_size = self.sample_size - contain_size
+            logConsole(
+                'Sampling adjustment: not enough samples that contain the filter keywords, reduce the contain_size to ' + str(
+                    contain_size) + '; and notcontain_size has been adjusted to ' + str(notcontain_size))
         if notcontain_size > len(self.stratefied_sets['notcontain']):
             notcontain_size = len(self.stratefied_sets['notcontain'])
+            logConsole(
+                'Sampling adjustment: not enough samples that do not contain the filter keywords, reduce the notcontain_size to ' + str(
+                    notcontain_size))
+            logConsole(
+                'Sampling adjustment: total sample size has been adjusted to ' + str(contain_size + notcontain_size))
+            logConsole(
+                'Sampling adjustment: filter percentage has been adjusted to ' + str(
+                    100.0 * contain_size / self.sample_size))
         self.adjusted_sample_size = contain_size + notcontain_size
         self.adjusted_filter_percent = 100.0 * contain_size / self.sample_size
 

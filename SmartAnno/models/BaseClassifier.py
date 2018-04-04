@@ -2,6 +2,8 @@ import abc
 from sklearn.externals import joblib
 import os
 
+from gui.Workflow import logConsole
+
 NotTrained = 0
 InTraining = 1
 ReadyTrained = 2
@@ -10,7 +12,7 @@ ReadyTrained = 2
 class BaseClassifier:
     # indicate the status of classifier
     status = NotTrained
-    model = None
+    instance = None
 
     # add optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
@@ -20,22 +22,24 @@ class BaseClassifier:
         if model_file is None:
             model_file = 'models/saved/' + str(type(self)) + '_' + task_name
         self.model_file = model_file
+        self.model = None
         if os.path.isfile(self.model_file):
-            self.loadModel()
+            self.model = self.loadModel()
+            BaseClassifier.status = ReadyTrained
         else:
-            self.defineModel()
+            self.model = self.defineModel()
+            BaseClassifier.status = NotTrained
         #  automatically set customized parameters to self object
         for name, value in kwargs.items():
             setattr(self, name, value)
+        BaseClassifier.instance = self
         pass
 
     @abc.abstractmethod
     def defineModel(self):
         """separate the definition, because at most of the time, you would want to automatically load previously trained
         model instead. """
-        BaseClassifier.status = NotTrained
-        BaseClassifier.model = None
-        pass
+        return None
 
     @abc.abstractmethod
     def classify(self, txt):
@@ -43,16 +47,17 @@ class BaseClassifier:
 
     @abc.abstractmethod
     def train(self, x, y):
+        logConsole('error, abstract method called')
         # [] to return Documents, dict() to return grouping information
         pass
 
     def saveModel(self):
         """will be automatically saved when user click complete"""
-        joblib.dump(BaseClassifier.model, self.model_file)
+        joblib.dump(self.model, self.model_file)
         pass
 
     def loadModel(self):
         """will be automatically load when initiate the classifier if self.model_file exists."""
-        BaseClassifier.model = joblib.load(self.model_file)
+        model = joblib.load(self.model_file)
         BaseClassifier.status = ReadyTrained
-        pass
+        return model

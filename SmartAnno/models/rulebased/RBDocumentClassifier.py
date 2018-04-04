@@ -82,7 +82,7 @@ class RBDocumentClassifier(BaseClassifier):
                     self.setModifiersTargetsFromFiles(modifiers, targets)
             else:
                 self.setModifiersTargets(modifiers, targets)
-        RBDocumentClassifier.model = self
+        RBDocumentClassifier.instance = self
 
     def setModifiersTargets(self, modifiers, targets):
         self.modifiers = modifiers

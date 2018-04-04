@@ -181,13 +181,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
 
     def navigate(self, b):
         clear_output(True)
-        if b.description.startswith("Add"):
-            self.move_next_option = "A"
-        elif b.description.startswith("Continue"):
-            self.move_next_option = "C"
-        else:
-            # else reset
-            self.move_next_option = "R"
+        self.move_next_option = b.description[0].upper()
         if hasattr(b, 'linked_step'):
             self.updateData()
             b.linked_step.start()

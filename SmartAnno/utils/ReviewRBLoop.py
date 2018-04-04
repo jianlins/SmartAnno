@@ -79,6 +79,7 @@ function setFocusToTextBox(){
         self.docs = self.data['docs']
         self.if_contains = self.data['if_contains']
         self.annos = self.data['annos']
+        self.data['reviewed'] = self.reviewed
         logConsole(('self.docs', len(self.docs)))
         logConsole(('self.if_contains', len(self.if_contains)))
         logConsole(('self.annos', len(self.annos)))
@@ -231,7 +232,8 @@ class ReviewRB(RepeatHTMLToggleStep):
         if self.master is None:
             return
         if self.next_step is None:
-            if self.pos_id < len(self.master.docs) - 1:
+            # if reach the limit of rule-base preannotation max documents or the end of samples, jump to complete
+            if self.pos_id < len(self.master.docs) - 1 and self.pos_id < self.master.threshold - 1:
                 doc = self.master.docs[self.pos_id + 1]
                 logConsole(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
                 content = self.master.genContent(doc)
@@ -250,6 +252,8 @@ class ReviewRB(RepeatHTMLToggleStep):
                             'master\'s next step', self.master.next_step))
                 self.next_step = self.master.next_step
                 self.branch_buttons[1].linked_step = self.master.next_step
+        elif self.pos_id >= self.master.threshold - 1:
+            self.navigate(self.branch_buttons[2])
         pass
 
     def navigate(self, b):
@@ -259,12 +263,16 @@ class ReviewRB(RepeatHTMLToggleStep):
         logConsole(('navigate to branchbutton 1', hasattr(self.branch_buttons[1], 'linked_step'),
                     self.branch_buttons[1].linked_step))
         if hasattr(b, 'linked_step') and b.linked_step is not None:
-            b.linked_step.start()
+            if b.description == 'Complete':
+                self.master.complete()
+            else:
+                b.linked_step.start()
         else:
             if hasattr(self.branch_buttons[1], 'linked_step') and self.branch_buttons[1].linked_step is not None:
                 self.branch_buttons[1].linked_step.start()
             elif not hasattr(b, 'navigate_direction') or b.navigate_direction == 1:
-                self.complete()
+                logConsole('Button ' + str(b) + '\'s linked_step is not set. Assume complete the Repeat loop.')
+                self.master.complete()
             else:
                 self.goBack()
         pass

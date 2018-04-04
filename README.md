@@ -16,11 +16,11 @@ pip install smartanno
 
 Within a jupyter notebook, add a python cell, type: 
 ```python
-from gui.GUI import GUI
-gui=GUI()
+from gui.Main import Main
+main=Main()
 ```
 Then, create another python cell, type:
 ```python
-gui.start()
+main.start()
 ```
 Execute these two cells.

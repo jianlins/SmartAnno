@@ -17,12 +17,14 @@ from utils.KeywordsEmbeddingExtenderSetup import KeywordsEmbeddingExtenderSetup
 from utils.KeywordsFiltering import KeywordsFiltering
 from utils.KeywordsUMLSExtender import KeywordsUMLSExtender
 from utils.KeywordsUMLSExtenderSetup import KeywordsUMLSExtenderSetup
+from utils.ReviewMLInit import ReviewMLInit
+from utils.ReviewMLLoop import ReviewMLLoop
 from utils.ReviewRBInit import ReviewRBInit
 from utils.ReviewRBLoop import ReviewRBLoop
 from utils.TaskChooser import TaskChooser
 
 
-class GUI:
+class Main:
     """Define and execute a workflow"""
 
     def __init__(self):
@@ -77,9 +79,11 @@ class GUI:
              ReviewRBInit(name="rb_review_init"),
              ReviewRBLoop(name='rb_review'),
              PreviousNextHTML(
-                 description='<h3>Start ML model training</h3><p>Now the total number of the reviewed samples reaches the '
-                             'threshold of your setting. Machine learning models will start to run in the '
-                             'backend to learning the reviewed data and preannotating the unreviewed data. </p>')
+                 description='<h2>Congratuations!</h2><h4>You have finished the initial review '
+                             'on the rule-base preannotations. </h4>',
+                 name='rb_review_done'),
+             ReviewMLInit(name='ml_review_init'),
+             ReviewMLLoop(name='ml_review')
              ])
         self.workflow.start(False)
         pass
