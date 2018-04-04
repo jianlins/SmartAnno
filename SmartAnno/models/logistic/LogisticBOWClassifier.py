@@ -80,13 +80,13 @@ class LogisticBOWClassifier(BaseClassifier):
             test_minority_instances))
         if train_minority_instances <= self.cv:
             logConsole(
-                'TRAIN data does not have enoguh examples for all classes.  Skipping training for class : {}'.format(
+                'TRAIN data does not have enoguh examples for all classes.  Skipping training for task : {}'.format(
                     classname))
             return
 
         if test_minority_instances <= self.cv:
             logConsole(
-                'TEST data does not have enoguh examples for all classes.  Skipping training for class : {}'.format(
+                'TEST data does not have enoguh examples for all classes.  Skipping training for task : {}'.format(
                     classname))
             return
 

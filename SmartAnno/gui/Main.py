@@ -8,6 +8,7 @@ from gui.FileIO import ReadFiles
 from gui.PreviousNextWidgets import PreviousNextHTML
 from gui.Workflow import Workflow
 from models.BaseClassifier import NotTrained
+from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
 from utils.DocsToDB import DocsToDB
@@ -83,7 +84,7 @@ class Main:
                              'on the rule-base preannotations. </h4>',
                  name='rb_review_done'),
              ReviewMLInit(name='ml_review_init'),
-             ReviewMLLoop(name='ml_review')
+             ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier)
              ])
         self.workflow.start(False)
         pass
