@@ -56,7 +56,7 @@ class RBDocumentClassifier(BaseClassifier):
     ready = True
 
     def __init__(self, targets=None, modifiers=None, feature_inference_rule=None, document_inference_rule=None,
-                 pyrush_rule=None,
+                 rush_rule=None,
                  expected_values=[], save_markups=True):
         self.document_inferencer = DocumentInferencer(document_inference_rule)
         self.feature_inferencer = FeatureInferencer(feature_inference_rule)
@@ -67,10 +67,10 @@ class RBDocumentClassifier(BaseClassifier):
         self.expected_values = [value.lower() for value in expected_values]
         self.saved_markups_map = dict()
         self.pyrush = None
-        if pyrush_rule is not None and os.path.isfile(pyrush_rule):
-            self.pyrush = RuSH(pyrush_rule)
+        if rush_rule is not None and os.path.isfile(rush_rule):
+            self.pyrush = RuSH(rush_rule)
         else:
-            print("File not found", os.path.abspath(pyrush_rule))
+            print("File not found", os.path.abspath(rush_rule))
         self.last_doc_name = ''
 
         if modifiers is not None and targets is not None:

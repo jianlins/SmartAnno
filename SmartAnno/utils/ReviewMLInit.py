@@ -54,8 +54,9 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
 
         rows = [widgets.HTML(value='<h3>Configure your backend machine learning model</h3>'
                                    '<p>If you are not sure what the parameters are, just leave them as they are.</p>'
-                                   '<p>There are <b>'+str(self.leftover)+'</b> samples left unreviewed. The ML model will retrain at a pace '
-                                   'of once per <b>'+str(self.learning_pace)+'</b> samples.')]
+                                   '<p>There are <b>' + str(
+            self.leftover) + '</b> samples left unreviewed. The ML model will retrain at a pace '
+                             'of once per <b>' + str(self.learning_pace) + '</b> samples.')]
         for name, value in self.parameters.items():
             if type(value) == int:
                 self.parameter_inputs[name] = widgets.BoundedIntText(description=name, value=value)
@@ -80,7 +81,7 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         self.data = self.workflow.steps[self.pos_id - 2].data
         self.docs = self.workflow.steps[self.pos_id - 2].docs
         self.annos = self.workflow.steps[self.pos_id - 2].annos
-        self.reviewed = self.workflow.steps[self.pos_id - 2].reviewed
+        self.reviewed = self.workflow.steps[self.pos_id - 2].reviewed_docs
         self.reviewed_pos = len(self.reviewed)
         self.leftover = len(self.docs) - len(self.reviewed)
         pass
@@ -91,6 +92,7 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         #     self.continueReview()
         # else:
         #     self.addExtra()
+        self.updateData()
         if self.next_step is not None:
             logConsole((self, 'ML configuration complete'))
             if isinstance(self.next_step, Step):
@@ -129,9 +131,10 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         #     self.addExtra()
         # else:
         #     self.continueReview()
-        for name, value in self.parameters.items():
-            self.parameters[name] = self.parameter_inputs[name].value
+        for name, value in self.parameter_inputs.items():
+            self.parameters[name] = value.value
             # directly change the value of class variables
-            setattr(self.ml_classifier_cls, name, value)
+            logConsole(("update settings: ",self.ml_classifier_cls, name, value.value))
+            setattr(self.ml_classifier_cls, name, value.value)
 
         pass

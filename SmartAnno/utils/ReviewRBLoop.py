@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 
 from IPython.core.display import display, clear_output
 from ipywidgets import widgets, Layout
@@ -17,12 +18,12 @@ class ReviewRBLoop(LoopRepeatSteps):
     description = "<h4>%s</h4><p>Choose the correct type of this sample: </p><p>%s</p>"
     rb_classifier = None
 
-    def __init__(self, name=str(Step.global_id + 1)):
+    def __init__(self, name=str(Step.global_id + 1), **kwargs):
+        super().__init__([], name=name)
         self.docs = []
         self.data = dict()
-        self.if_contains = dict()
         self.annos = dict()
-        self.reviewed = dict()
+        self.reviewed_docs = dict()
         self.threshold = ConfigReader.getValue('review/rb_model_threshold')
         self.nlp = None
         self.js = '''<script>
@@ -49,8 +50,10 @@ function setFocusToTextBox(){
         self.show_meta_name = ConfigReader().getValue("review/show_meta_name")
         self.hightligh_span_tag = ' <span class="highlighter" style="background-color:  %s ">' % ConfigReader().getValue(
             "review/highlight_color")
-
-        super().__init__([], name=name)
+        if 'rush_rule' in kwargs:
+            self.rush_rule = kwargs['rush_rule']
+        else:
+            self.rush_rule = 'conf/rush_rules.tsv'
 
         pass
 
@@ -58,7 +61,9 @@ function setFocusToTextBox(){
         """start displaying sample and annotation type options"""
         self.loop_workflow.steps = []
         self.init_real_time()
-        self.loop_workflow.start()
+        # self.loop_workflow.start()
+        if len(self.loop_workflow.steps) >= len(self.reviewed_docs):
+            self.loop_workflow.steps[len(self.reviewed_docs)-1].start()
         pass
 
     def backStart(self):
@@ -72,16 +77,11 @@ function setFocusToTextBox(){
 
     def readData(self):
         self.data = self.workflow.steps[self.pos_id - 1].data
-        # if go back to reset the reviewed data
-        if self.workflow.steps[self.pos_id - 1].move_next_option == 'R':
-            self.data['annos'].clear()
-            self.reviewed.clear()
         self.docs = self.data['docs']
-        self.if_contains = self.data['if_contains']
         self.annos = self.data['annos']
-        self.data['reviewed'] = self.reviewed
+        self.reviewed_docs = {doc_id: anno.REVIEWED_TYPE for doc_id, anno in self.annos.items() if
+                              anno.REVIEWED_TYPE is not None}
         logConsole(('self.docs', len(self.docs)))
-        logConsole(('self.if_contains', len(self.if_contains)))
         logConsole(('self.annos', len(self.annos)))
 
     def genContent(self, doc):
@@ -138,7 +138,8 @@ function setFocusToTextBox(){
         return highlight_text
 
     def init_real_time(self):
-        ReviewRBLoop.rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(self.workflow.final_filters)
+        ReviewRBLoop.rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(self.workflow.final_filters,
+                                                                                       rush_rule=self.rush_rule)
         self.loop_workflow.filters = self.workflow.filters
         self.readData()
         self.nlp = ReviewRBInit.nlp
@@ -146,18 +147,19 @@ function setFocusToTextBox(){
 
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):
-            doc = self.docs[0]
-            content = self.genContent(doc)
-            reviewed = False
-            if doc.DOC_ID in self.annos and self.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
-                prediction = self.annos[doc.DOC_ID].REVIEWED_TYPE
-                reviewed = True
-            else:
-                prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
-            repeat_step = ReviewRB(description=content, options=self.workflow.types, value=prediction,
-                                   js=self.js, master=self, reviewed=reviewed,
-                                   button_style=('success' if reviewed else 'info'))
-            self.appendRepeatStep(repeat_step)
+            for i in range(0, len(self.reviewed_docs)):
+                doc = self.docs[i]
+                content = self.genContent(doc)
+                reviewed = False
+                if doc.DOC_ID in self.annos and self.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
+                    prediction = self.annos[doc.DOC_ID].REVIEWED_TYPE
+                    reviewed = True
+                else:
+                    prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
+                repeat_step = ReviewRB(description=content, options=self.workflow.types, value=prediction,
+                                       js=self.js, master=self, reviewed=reviewed,
+                                       button_style=('success' if reviewed else 'info'))
+                self.appendRepeatStep(repeat_step)
 
         pass
 
@@ -199,7 +201,7 @@ class ReviewRB(RepeatHTMLToggleStep):
         self.data = self.toggle.value
         self.toggle.button_style = 'success'
         if self.reviewed:
-            self.master.reviewed[self.master.docs[self.pos_id].DOC_ID] = self.toggle.value
+            self.master.reviewed_docs[self.master.docs[self.pos_id].DOC_ID] = self.toggle.value
             with self.master.workflow.dao.create_session() as session:
                 logConsole(('update data:', self.pos_id, len(self.master.docs)))
                 anno = session.query(Annotation).filter(

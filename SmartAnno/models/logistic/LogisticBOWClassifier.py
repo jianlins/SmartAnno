@@ -25,7 +25,6 @@ class LogisticBOWClassifier(BaseClassifier):
     train_size = 0.8
     random_state = 777
 
-
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         # generic parameters
         if params is None:
@@ -60,8 +59,9 @@ class LogisticBOWClassifier(BaseClassifier):
         for classname, count in stats.items():
             if count < self.cv:
                 logConsole(
-                    'TEST data does not have enoguh examples for all classes.  Skipping training for class : {}'.format(
-                        self.task_name))
+                    'The whole annotated Data does not have enoguh examples for all classes.  Skipping training for '
+                    'class : {}'.format(
+                        self.classname))
                 return
 
         # before we run a search, let's do an 80-20 split for (CV/Validation )
@@ -80,14 +80,16 @@ class LogisticBOWClassifier(BaseClassifier):
             test_minority_instances))
         if train_minority_instances <= self.cv:
             logConsole(
-                'TRAIN data does not have enoguh examples for all classes.  Skipping training for task : {}'.format(
-                    classname))
+                'TRAIN data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'training for task : {}'.format(
+                    self.cv, train_minority_instances, classname))
             return
 
         if test_minority_instances <= self.cv:
             logConsole(
-                'TEST data does not have enoguh examples for all classes.  Skipping training for task : {}'.format(
-                    classname))
+                 'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'training for task : {}'.format(
+                    self.cv, train_minority_instances, classname))
             return
 
         # now we can train a model

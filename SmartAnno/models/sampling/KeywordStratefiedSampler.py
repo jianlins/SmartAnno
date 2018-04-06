@@ -16,12 +16,18 @@ class KeywordStratefiedSampler(BaseSampler):
         self.adjusted_sample_size = self.sample_size
         self.adjusted_filter_percent = self.filter_percent
         self.dao = kwargs['dao']
+        self.dataset_id = 'origin_doc' if 'dataset_id' not in kwargs else kwargs['dataset_id']
         pass
 
     def sampling(self, sample_size=0):
         if sample_size == 0:
             return super().sampling()
         self.sample_size = sample_size
+        if len(self.exclusions) > 0:
+            self.stratefied_sets['contain'] = [doc_id for doc_id in self.stratefied_sets['contain'] if
+                                               doc_id not in self.exclusions]
+            self.stratefied_sets['notcontain'] = [doc_id for doc_id in self.stratefied_sets['notcontain'] if
+                                                  doc_id not in self.exclusions]
         random.shuffle(self.stratefied_sets['contain'])
         random.shuffle(self.stratefied_sets['notcontain'])
         contain_size = int(self.sample_size * self.filter_percent)
@@ -48,25 +54,17 @@ class KeywordStratefiedSampler(BaseSampler):
         contain_docids = self.stratefied_sets['contain'][:contain_size]
         notcontain_docids = self.stratefied_sets['notcontain'][:notcontain_size]
         docs = []
-        grouping = dict()
+        # grouping = dict()
 
         with self.dao.create_session() as session:
-            if len(self.exclusions) > 0:
-                doc_iter = session.query(Document).filter(Document.DATASET_ID == 'origin_doc').filter(
-                    Document.DOC_ID.notin_(self.exclusions)).filter(
-                    or_(Document.DOC_ID.in_(contain_docids), Document.DOC_ID.in_(notcontain_docids)))
-            else:
-                doc_iter = session.query(Document).filter(Document.DATASET_ID == 'origin_doc').filter(
-                    or_(Document.DOC_ID.in_(contain_docids), Document.DOC_ID.in_(notcontain_docids)))
+            doc_iter = session.query(Document).filter(Document.DATASET_ID == self.dataset_id).filter(
+                or_(Document.DOC_ID.in_(contain_docids), Document.DOC_ID.in_(notcontain_docids)))
             for doc in doc_iter:
-                if doc.DOC_ID in contain_docids:
-                    docs.append(
-                        Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
-                                 doc.REF_DATE, doc.META_DATA))
-                    grouping[doc.DOC_ID] = 'contain'
-                else:
-                    docs.append(
-                        Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
-                                 doc.REF_DATE, doc.META_DATA))
-                    grouping[doc.DOC_ID] = 'notcontain'
-        return docs, grouping
+                docs.append(
+                    Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
+                             doc.REF_DATE, doc.META_DATA))
+                # if doc.DOC_ID in contain_docids:
+                #     grouping[doc.DOC_ID] = 'contain'
+                # else:
+                #     grouping[doc.DOC_ID] = 'notcontain'
+        return docs

@@ -1,5 +1,4 @@
 from threading import Thread
-from time import sleep
 
 from sqlalchemy import and_
 
@@ -32,22 +31,21 @@ class ReviewMLLoop(ReviewRBLoop):
         self.loop_workflow.steps = []
         self.init_real_time()
         # sleep(5)
-        if len(self.loop_workflow.steps) >= len(self.reviewed):
-            self.loop_workflow.steps[len(self.reviewed)].start()
+        if len(self.loop_workflow.steps) >= len(self.reviewed_docs):
+            self.loop_workflow.steps[len(self.reviewed_docs)].start()
         pass
 
     def readData(self):
         self.data = self.workflow.steps[self.pos_id - 3].data
         self.docs = self.data['docs']
-        self.if_contains = self.data['if_contains']
         self.annos = self.data['annos']
-        self.reviewed = {doc_id: anno.REVIEWED_TYPE for doc_id, anno in self.annos.items() if
-                         anno.REVIEWED_TYPE is not None}
+        self.reviewed_docs = {doc_id: anno.REVIEWED_TYPE for doc_id, anno in self.annos.items() if
+                              anno.REVIEWED_TYPE is not None}
         pass
 
     def initTraining(self):
-        x = [doc.TEXT for doc in self.docs[:len(self.reviewed)]]
-        y = list(self.reviewed.values())
+        x = [doc.TEXT for doc in self.docs[:len(self.reviewed_docs)]]
+        y = list(self.reviewed_docs.values())
         logConsole(('start ML training: ', type(self.ml_classifier), 'x=', len(x), 'y=', len(y)))
         self.ml_classifier.train(x, y)
         logConsole('training finished, start to predict...')
@@ -57,7 +55,7 @@ class ReviewMLLoop(ReviewRBLoop):
         counter = 0
         with self.workflow.dao.create_session() as session:
             iter = session.query(Annotation, Document).join(Document, Document.DOC_ID == Annotation.DOC_ID).filter(
-                Annotation.REVIEWED_TYPE == None)
+                and_(Annotation.TASK_ID == self.workflow.task_id, Annotation.REVIEWED_TYPE is None))
             for anno, doc in iter:
                 if counter >= self.learning_pace * 1.5:
                     # don't need to process all the rest document for efficiency concerns
@@ -87,7 +85,7 @@ class ReviewMLLoop(ReviewRBLoop):
         logConsole([doc.DOC_ID for doc in self.docs])
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):
-            for i in range(0, len(self.reviewed) + 1):
+            for i in range(0, len(self.reviewed_docs) + 1):
                 doc = self.docs[i]
                 content = self.genContent(doc)
                 reviewed = False
