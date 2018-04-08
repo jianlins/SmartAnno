@@ -10,7 +10,7 @@ from models.GloveModel import GloveModel
 
 class IntroStep(BranchingStep):
     def __init__(self, description='', name=None):
-        self.glove_path = ConfigReader.getValue('glove/path')
+        self.glove_path = ConfigReader.getValue('glove/model_path')
         self.glove_vocab = ConfigReader.getValue('glove/vocab')
         self.glove_vector = ConfigReader.getValue('glove/vector')
         if self.glove_vocab is None:
@@ -51,7 +51,7 @@ class IntroStep(BranchingStep):
         self.workflow.glove_path = self.glove_path
         ConfigReader.setValue("glove/vocab", int(self.glove_vocab))
         ConfigReader.setValue("glove/vector", int(self.glove_vector))
-        ConfigReader.setValue("glove/path", self.glove_path)
+        ConfigReader.setValue("glove/model_path", self.glove_path)
         ConfigReader.saveConfig()
         pass
 

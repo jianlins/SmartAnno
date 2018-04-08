@@ -35,11 +35,11 @@ class Main:
         self.data = None
         self.status = NotTrained
         self.workflow = None
-        self.setUpStage()
+        self.__setUpStage()
 
         pass
 
-    def setUpStage(self):
+    def __setUpStage(self):
         style = '''<style>.output_wrapper, .output {
                     height:auto !important;
                     max-height:1000px;  /* your desired max-height here */

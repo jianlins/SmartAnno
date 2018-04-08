@@ -1,14 +1,23 @@
-from collections import Set
-
-from IPython.core.display import clear_output, display
+from IPython.core.display import display
 from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
 from gui.BranchingWidgets import LoopRepeatSteps, RepeatStep
 from gui.MyWidgets import ToggleButtonsMultiSelectionInBox
-from gui.Workflow import Step
+from gui.Workflow import Step, logConsole
 from umls.UMLSFinder import UMLSFinder
 from utils.TreeSet import TreeSet
+
+
+def filterExtended(extending, type_name, filters, extended):
+    original_list = filters[type_name]
+    filtered_list = set()
+    for word in extending:
+        if word in original_list or word in extended:
+            continue
+        filtered_list.add(word)
+    extended.update(extended)
+    return filtered_list
 
 
 class KeywordsUMLSExtender(LoopRepeatSteps):
@@ -41,7 +50,6 @@ class KeywordsUMLSExtender(LoopRepeatSteps):
         ConfigReader.saveConfig()
         pass
 
-
     def start(self):
         self.init_real_time()
         self.loop_workflow.start()
@@ -62,9 +70,8 @@ class KeywordsUMLSExtender(LoopRepeatSteps):
                                                self.filter_by_contains)
         word_dict = dict()
         self.loop_workflow.steps.clear()
-        self.loop_workflow.extended = set()
         self.loop_workflow.filters = self.workflow.filters
-
+        self.loop_workflow.extended = set()
         for type_name, words in self.workflow.to_ext_words.items():
             for word in words:
                 word_dict[word] = type_name
@@ -77,29 +84,25 @@ class KeywordsUMLSExtender(LoopRepeatSteps):
         if len(self.loop_workflow.to_ext_words) > 0:
             word, type_name = self.loop_workflow.to_ext_words.pop(0)
             extended = KeywordsUMLSExtender.umls.search(word)
-            extended = self.filterExtended(extended, type_name)
-            self.loop_workflow.extended.update(extended)
+            # self.loop_workflow.extended saved all the extended words that will be displayed, no matter will be
+            # selected or not, so that the same extended word won't be shown twice asking for selection
+            extended = filterExtended(extended, type_name, self.workflow.filters, self.loop_workflow.extended)
             if len(extended) > 0:
                 self.appendRepeatStep(
                     RepeatMultipleSelection(description=KeywordsUMLSExtender.description % word,
-                                            options=list(extended)))
+                                            options=list(extended), master=self, type_name=type_name))
             else:
                 self.initiateRepeatStep()
-
-    def filterExtended(self, extended, type_name):
-        original_list = self.workflow.filters[type_name]
-        filtered_list = set()
-        for word in extended:
-            if word in original_list or word in self.loop_workflow.extended:
-                continue
-            filtered_list.add(word)
-        return filtered_list
+        else:
+            self.complete()
 
 
 class RepeatMultipleSelection(RepeatStep):
     def __init__(self, description='', options=[], tooltips=[],
                  branch_names=['Previous', 'Next', 'Complete'], branch_steps=[None, None, None],
-                 name=None):
+                 name=None, master=None, type_name='neutral'):
+        self.master = master
+        self.type_name = type_name
         self.display_description = widgets.HTML(value=description)
         self.selections = ToggleButtonsMultiSelectionInBox(
             options=options, num_per_row=3
@@ -115,38 +118,37 @@ class RepeatMultipleSelection(RepeatStep):
             pass
 
     def initNextStepWhileReviewing(self):
-        word, type_name = self.workflow.to_ext_words.pop(0)
-        extended = KeywordsUMLSExtender.umls.search(word)
-        extended = self.filterExtended(extended, type_name)
-        if len(extended) > 0:
-            next_step = RepeatMultipleSelection(description=KeywordsUMLSExtender.description % word,
-                                                options=list(extended))
-            next_step.setCompleteStep(self.branch_buttons[2].linked_step)
-            self.workflow.append(next_step)
+        if len(self.loop_workflow.to_ext_words) > 0:
+            word, type_name = self.workflow.to_ext_words.pop(0)
+            extended = KeywordsUMLSExtender.umls.search(word)
+            extended = filterExtended(extended, type_name, self.master.workflow.filters, self.workflow.extended)
+            if len(extended) > 0:
+                next_step = RepeatMultipleSelection(description=KeywordsUMLSExtender.description % word,
+                                                    options=list(extended), master=self.master, type_name=type_name)
+                next_step.setCompleteStep(self.branch_buttons[2].linked_step)
+                self.workflow.append(next_step)
+            else:
+                self.initNextStepWhileReviewing()
         pass
 
     def updateBox(self):
         rows = [self.display_description] + self.addSeparator(top='5px') + \
                [self.selections] + self.addSeparator(top='10px') + self.addConditionsWidget()
-        vbox = widgets.VBox(rows, layout=widgets.Layout(width='100%',magins='10px'))
+        vbox = widgets.VBox(rows, layout=widgets.Layout(width='100%', magins='10px'))
         return vbox
 
     def navigate(self, b):
         # print(b)
         self.data = self.selections.value
+        if self.master is not None and self.data is not None:
+            logConsole(self.data)
+            self.master.workflow.filters[self.type_name].addAll(self.data)
         super().navigate(b)
         pass
 
     def complete(self):
         self.data = self.selections.value
+        if self.master is not None and self.data is not None:
+            self.master.workflow.filters[self.type_name].addAll(self.data)
         super().complete()
         pass
-
-    def filterExtended(self, extended, type_name):
-        original_list = self.workflow.filters[type_name]
-        filtered_list = set()
-        for word in extended:
-            if word in original_list or word in self.workflow.extended:
-                continue
-            filtered_list.add(word)
-        return filtered_list

@@ -5,6 +5,8 @@ from PyRuSH.RuSH import RuSH
 from pyConTextNLP import pyConTextGraph
 from pyConTextNLP.utils import get_document_markups
 
+from conf.ConfigReader import ConfigReader
+from gui.Workflow import logConsole
 from models.BaseClassifier import BaseClassifier
 from models.rulebased.itemData import get_item_data
 from models.rulebased.nlp_pneumonia_utils import markup_sentence
@@ -67,10 +69,12 @@ class RBDocumentClassifier(BaseClassifier):
         self.expected_values = [value.lower() for value in expected_values]
         self.saved_markups_map = dict()
         self.pyrush = None
+        if rush_rule is None or not os.path.isfile(rush_rule):
+            rush_rule = ConfigReader.getValue('rush_rules_path')
         if rush_rule is not None and os.path.isfile(rush_rule):
             self.pyrush = RuSH(rush_rule)
         else:
-            print("File not found", os.path.abspath(rush_rule))
+            logConsole("File not found", os.path.abspath(rush_rule))
         self.last_doc_name = ''
 
         if modifiers is not None and targets is not None:
@@ -112,7 +116,7 @@ class RBDocumentClassifier(BaseClassifier):
         prediction_metrics = []
         gold_labels = [x.positive_label for x in gold_docs.values()]
         pred_labels = []
-        print('Start to evaluate against reference standards...')
+        logConsole('Start to evaluate against reference standards...')
         for doc_name, gold_doc in gold_docs.items():
             gold_label = gold_doc.positive_label
             pred_label = self.predict(gold_doc.text, doc_name)
@@ -144,8 +148,8 @@ class RBDocumentClassifier(BaseClassifier):
     def classify(self, doc, doc_name='t_m_p.txt'):
         self.last_doc_name = doc_name
         if self.modifiers is None or self.targets is None:
-            print('DocumentClassifier\'s "modifiers" and/or "targets" has not been set yet.\n' +
-                  'Use function: setModifiersTargets(modifiers, targets) or setModifiersTargetsFromFiles(modifiers_file,' + 'targets_file) to set them up.')
+            logConsole('DocumentClassifier\'s "modifiers" and/or "targets" has not been set yet.\n' +
+                       'Use function: setModifiersTargets(modifiers, targets) or setModifiersTargetsFromFiles(modifiers_file,' + 'targets_file) to set them up.')
         try:
             context_doc = self.markup_context_document(doc, self.modifiers, self.targets)
             if self.save_markups and doc_name is not None and len(context_doc.getDocumentGraph().nodes()) > 0:

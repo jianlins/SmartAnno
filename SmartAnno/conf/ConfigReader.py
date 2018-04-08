@@ -32,6 +32,10 @@ class ConfigReader(object):
         for key in key.split('/'):
             if key in value:
                 value = value[key]
+                if key.endswith('path'):
+                    # automatically adjust the path if this class is not initiated from project root path
+                    value = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(ConfigReader.config_file))),
+                                         value)
             else:
                 return None
         return value
@@ -53,9 +57,9 @@ class ConfigReader(object):
                         break
                     chain = chain[key]
                 else:
-                    if i < len(keys) -1:
+                    if i < len(keys) - 1:
                         chain[key] = {}
-                        chain=chain[key]
+                        chain = chain[key]
                     else:
                         chain[key] = value
                         break

@@ -54,7 +54,7 @@ class LogisticBOWClassifier(BaseClassifier):
 
     def train(self, x, y):
         logConsole('training...')
-        LogisticBOWClassifier.status = InTraining
+
         stats = Counter(y)
         for classname, count in stats.items():
             if count < self.cv:
@@ -96,6 +96,8 @@ class LogisticBOWClassifier(BaseClassifier):
 
         logConsole('Fitting model now for iterations = {}'.format(self.iterations))
 
+
+        LogisticBOWClassifier.status = InTraining
         self.model.fit(X_text_train, y_train)
 
         # print performances

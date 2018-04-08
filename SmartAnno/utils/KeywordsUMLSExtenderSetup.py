@@ -1,11 +1,9 @@
-from time import sleep
-
-from IPython.core.display import display, HTML, clear_output
+from IPython.core.display import display
 from ipywidgets import widgets, Label, Layout
 
 from conf.ConfigReader import ConfigReader
 from gui.MyWidgets import ToggleButtonsMultiSelection
-from gui.PreviousNextWidgets import PreviousNext, TimerProgressBar
+from gui.PreviousNextWidgets import PreviousNext
 from utils.TreeSet import TreeSet
 
 

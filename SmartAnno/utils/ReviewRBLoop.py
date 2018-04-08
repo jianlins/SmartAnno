@@ -53,7 +53,7 @@ function setFocusToTextBox(){
         if 'rush_rule' in kwargs:
             self.rush_rule = kwargs['rush_rule']
         else:
-            self.rush_rule = 'conf/rush_rules.tsv'
+            self.rush_rule = ConfigReader.getValue('rush_rules_path')
 
         pass
 
@@ -62,8 +62,11 @@ function setFocusToTextBox(){
         self.loop_workflow.steps = []
         self.init_real_time()
         # self.loop_workflow.start()
-        if len(self.loop_workflow.steps) >= len(self.reviewed_docs):
-            self.loop_workflow.steps[len(self.reviewed_docs)-1].start()
+        if len(self.loop_workflow.steps) > len(self.reviewed_docs):
+            self.loop_workflow.steps[len(self.reviewed_docs)].start()
+        else:
+            # all the documents have been reviewed
+            self.complete()
         pass
 
     def backStart(self):

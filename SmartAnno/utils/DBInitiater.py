@@ -7,11 +7,8 @@ from sqlalchemy_dao import Dao
 from sqlalchemy_dao import Model
 
 from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNext, PreviousNextText
+from gui.PreviousNextWidgets import PreviousNext
 from gui.Workflow import Step
-
-from db.ORMs import Task, Typedef
-from db.ORMs import Filter, Annotation, Document
 
 
 class DBInitiater(PreviousNext):
@@ -20,7 +17,7 @@ class DBInitiater(PreviousNext):
     def __init__(self, name=None):
         super().__init__(name)
         self.dao = None
-        self.dbfile = ''
+        self.db_config = ''
         self.dbpath = ''
         self.need_import = False
         pass
@@ -28,13 +25,14 @@ class DBInitiater(PreviousNext):
     def start(self):
         if not hasattr(self.workflow, 'dao') or self.workflow.dao is None:
             print(self.workflow.config_file)
-            self.dbfile = ConfigReader(self.workflow.config_file).getValue('db')
-            self.dbpath = self.dbfile[self.dbfile.find(':///') + 4:]
+            self.dbpath = ConfigReader(self.workflow.config_file).getValue('db_path')
+            self.db_config = ConfigReader(self.workflow.config_file).getValue('db_header') + self.dbpath
+
             if os.path.isfile(self.dbpath):
-                self.initDao(self.dbfile)
+                self.initDao(self.db_config)
                 self.displayOptions()
             else:
-                self.initDao(self.dbfile)
+                self.initDao(self.db_config)
                 self.createSQLTables()
                 self.need_import = True
                 self.next_step.start()
@@ -55,9 +53,9 @@ class DBInitiater(PreviousNext):
         return vbox
 
     def initDao(self, dbfile):
-        self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
+        self.dao = Dao(self.db_config, sqlalchemy_dao.POOL_DISABLED)
         self.workflow.dao = self.dao
-        self.workflow.dbpath = self.dbfile[self.dbfile.find(':///') + 4:]
+        self.workflow.dbpath = self.db_config[self.db_config.find(':///') + 4:]
         pass
 
     def displayOptions(self):
@@ -92,10 +90,10 @@ class DBInitiater(PreviousNext):
         clear_output(True)
         if self.need_import:
             os.remove(self.dbpath)
-            self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
+            self.dao = Dao(self.db_config, sqlalchemy_dao.POOL_DISABLED)
             self.createSQLTables()
         else:
-            self.dao = Dao(self.dbfile, sqlalchemy_dao.POOL_DISABLED)
+            self.dao = Dao(self.db_config, sqlalchemy_dao.POOL_DISABLED)
         self.workflow.dao = self.dao
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
