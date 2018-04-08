@@ -1,13 +1,15 @@
 {
+  "setup_instruction":"if there is no 'smartanno_conf.json' under 'conf' directory, need to copy this file and rename it to 'smartanno_conf.json'. ",
   "api_key": "",
- "api_key_comment": "api key for UMLS access",
-  "db_path": "sqlite+pysqlite:///data/demo.sqlite",
+  "api_key_comment": "api key for UMLS access",
+  "db_header": "sqlite+pysqlite:///",
+  "db_path": "data/demo.sqlite",
   "learning_steps": 10,
   "learning_steps_comment": "reclassify the rest of samples after review every # of samples",
   "status": {
     "default": 0,
     "workflow1": 1,
-    "workflow_0": 1,
+    "workflow_0": 16,
     "tasknamer_2": "task1",
     "types_6": [
       "Typea",

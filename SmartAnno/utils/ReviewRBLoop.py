@@ -150,7 +150,7 @@ function setFocusToTextBox(){
 
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):
-            for i in range(0, len(self.reviewed_docs)):
+            for i in range(0, len(self.reviewed_docs) + 1):
                 doc = self.docs[i]
                 content = self.genContent(doc)
                 reviewed = False
@@ -159,10 +159,12 @@ function setFocusToTextBox(){
                     reviewed = True
                 else:
                     prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
+                logConsole((i, doc.DOC_ID, reviewed))
                 repeat_step = ReviewRB(description=content, options=self.workflow.types, value=prediction,
                                        js=self.js, master=self, reviewed=reviewed,
                                        button_style=('success' if reviewed else 'info'))
                 self.appendRepeatStep(repeat_step)
+
 
         pass
 

@@ -14,6 +14,12 @@ class ConfigReader(object):
             ConfigReader.config_file = config_file
         pass
 
+    def __initDirs(self):
+        directory=os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(ConfigReader.config_file))),
+                     'data')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
     def load(self, config_file):
         if not os.path.isfile(config_file):
             current_dir = os.getcwd()
