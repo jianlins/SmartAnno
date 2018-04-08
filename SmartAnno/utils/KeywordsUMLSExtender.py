@@ -118,7 +118,7 @@ class RepeatMultipleSelection(RepeatStep):
             pass
 
     def initNextStepWhileReviewing(self):
-        if len(self.loop_workflow.to_ext_words) > 0:
+        if len(self.workflow.to_ext_words) > 0:
             word, type_name = self.workflow.to_ext_words.pop(0)
             extended = KeywordsUMLSExtender.umls.search(word)
             extended = filterExtended(extended, type_name, self.master.workflow.filters, self.workflow.extended)

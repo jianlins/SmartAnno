@@ -84,7 +84,9 @@ class Main:
                              'on the rule-base preannotations. </h4>',
                  name='rb_review_done'),
              ReviewMLInit(name='ml_review_init'),
-             ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier)
+             ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier),
+             PreviousNextHTML(name='finish',
+                              description='<h3>Well done!</h3><h4>Now you have finished reviewing all the samples. ')
              ])
         self.workflow.start(False)
         pass
