@@ -39,8 +39,9 @@ class ConfigReader(object):
             if key in value:
                 value = value[key]
                 if key.endswith('path'):
+                    if not os.path.isabs(value):
                     # automatically adjust the path if this class is not initiated from project root path
-                    value = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(ConfigReader.config_file))),
+                        value = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(ConfigReader.config_file))),
                                          value)
             else:
                 return None

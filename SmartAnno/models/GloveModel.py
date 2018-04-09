@@ -18,6 +18,8 @@ class GloveModel:
         if GloveModel.glove_model is None and GloveModel.status == NotInitiated:
             if path.isfile(word2vec_file):
                 GloveModel.status = Initiating
+                logConsole('Load glove model in the backend...')
+                print('Load glove model in the backend...')
                 if word2vec_file.endswith('.bin'):
                     glove_model = KeyedVectors.load_word2vec_format(word2vec_file, binary=True)
                     GloveModel.status = Initiated
@@ -28,6 +30,8 @@ class GloveModel:
                     GloveModel.status = Initiated
             elif path.isfile(word2vec_file[:-3] + 'txt'):
                 GloveModel.status = Initiating
+                logConsole('Load glove model in the backend...')
+                print('Load glove model in the backend...')
                 txt_model = word2vec_file[:-3] + 'txt'
                 self.addDimensions(txt_model, line_to_prepend=str(vocab) + ' ' + str(vect))
                 glove_model = KeyedVectors.load_word2vec_format(txt_model, binary=False)
@@ -35,8 +39,10 @@ class GloveModel:
                 glove_model.save_word2vec_format(word2vec_file, binary=True)
                 GloveModel.status = Initiated
             else:
-                logConsole(("Either ", path.abspath(word2vec_file), ' or ', path.abspath(word2vec_file[:-3] + 'txt')),
-                           ' exists.')
+                logConsole(("Either ", path.abspath(word2vec_file), ' or ', path.abspath(word2vec_file[:-3] + 'txt'),
+                           ' exists.'))
+                print(("Either ", path.abspath(word2vec_file), ' or ', path.abspath(word2vec_file[:-3] + 'txt'),
+                            ' exists.'))
             GloveModel.glove_model = glove_model
         pass
 
