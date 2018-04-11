@@ -19,9 +19,9 @@ not_met_suffix = '_not_met'
 class LogisticBOWClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
-    cv = 1
+    cv = 2
     workers = -1
-    iterations = 1
+    iterations = 2
     train_size = 0.8
     random_state = 777
 
@@ -68,7 +68,6 @@ class LogisticBOWClassifier(BaseClassifier):
         # even if we do not have a lot of data to work with
 
         X_text_train, X_text_test, y_train, y_test = train_test_split(x, y,
-                                                                      stratify=y,
                                                                       train_size=self.train_size,
                                                                       random_state=self.random_state)
         train_classes, train_y_indices = np.unique(y_train, return_inverse=True)

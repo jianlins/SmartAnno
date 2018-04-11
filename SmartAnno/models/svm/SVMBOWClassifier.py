@@ -19,9 +19,9 @@ not_met_suffix = '_not_met'
 class SVMBOWClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
-    cv = 1
+    cv = 2
     workers = -1
-    iterations = 1
+    iterations = 3
     train_size = 0.8
     random_state = 777
 
