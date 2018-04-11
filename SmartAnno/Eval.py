@@ -55,4 +55,4 @@ def eval(task_name='language', classifiers=[LogisticBOWClassifier]):
 		cl_instance.train(x, y)
 
 
-eval(classifiers=[LogisticBOWClassifier,SVMBOWClassifier])
+eval(task_name='language', classifiers=[LogisticBOWClassifier, SVMBOWClassifier])

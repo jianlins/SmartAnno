@@ -8,7 +8,7 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
 setup(
     name='SmartAnno',
     packages=['SmartAnno'],  # this must be the same as the name above
-    version='1.0.0',
+    version='1.0.0-alpha',
     description='A smart snippet annotation tool with deep learning backbone.',
     author='Jianlin',
     author_email='jianlinshi.cn@gmail.com',
