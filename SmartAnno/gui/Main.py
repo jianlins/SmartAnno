@@ -9,6 +9,7 @@ from gui.PreviousNextWidgets import PreviousNextHTML
 from gui.Workflow import Workflow
 from models.BaseClassifier import NotTrained
 from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
+from models.svm.SVMBOWClassifier import SVMBOWClassifier
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
 from utils.DocsToDB import DocsToDB
@@ -84,7 +85,7 @@ class Main:
                              'on the rule-base preannotations. </h4>',
                  name='rb_review_done'),
              ReviewMLInit(name='ml_review_init'),
-             ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier),
+             ReviewMLLoop(name='ml_review', ml_classifier_cls=SVMBOWClassifier),
              PreviousNextHTML(name='finish',
                               description='<h3>Well done!</h3><h4>Now you have finished reviewing all the samples. ')
              ])

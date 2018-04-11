@@ -2,7 +2,7 @@ import fileinput
 from os import path
 from gensim.models import KeyedVectors
 
-from gui.Workflow import logConsole
+from gui.Workflow import logMsg
 
 NotInitiated = 0
 Initiating = 1
@@ -18,28 +18,28 @@ class GloveModel:
         if GloveModel.glove_model is None and GloveModel.status == NotInitiated:
             if path.isfile(word2vec_file):
                 GloveModel.status = Initiating
-                logConsole('Load glove model in the backend...')
+                logMsg('Load glove model in the backend...')
                 print('Load glove model in the backend...')
                 if word2vec_file.endswith('.bin'):
                     glove_model = KeyedVectors.load_word2vec_format(word2vec_file, binary=True)
                     GloveModel.status = Initiated
                 else:
                     glove_model = KeyedVectors.load_word2vec_format(word2vec_file, binary=False)
-                    logConsole('convert txt model to binary model...')
+                    logMsg('convert txt model to binary model...')
                     glove_model.save_word2vec_format(word2vec_file[:-3] + '.bin', binary=True)
                     GloveModel.status = Initiated
             elif path.isfile(word2vec_file[:-3] + 'txt'):
                 GloveModel.status = Initiating
-                logConsole('Load glove model in the backend...')
+                logMsg('Load glove model in the backend...')
                 print('Load glove model in the backend...')
                 txt_model = word2vec_file[:-3] + 'txt'
                 self.addDimensions(txt_model, line_to_prepend=str(vocab) + ' ' + str(vect))
                 glove_model = KeyedVectors.load_word2vec_format(txt_model, binary=False)
-                logConsole('convert txt model to binary model...')
+                logMsg('convert txt model to binary model...')
                 glove_model.save_word2vec_format(word2vec_file, binary=True)
                 GloveModel.status = Initiated
             else:
-                logConsole(("Either ", path.abspath(word2vec_file), ' or ', path.abspath(word2vec_file[:-3] + 'txt'),
+                logMsg(("Either ", path.abspath(word2vec_file), ' or ', path.abspath(word2vec_file[:-3] + 'txt'),
                            ' exists.'))
                 print(("Either ", path.abspath(word2vec_file), ' or ', path.abspath(word2vec_file[:-3] + 'txt'),
                             ' exists.'))

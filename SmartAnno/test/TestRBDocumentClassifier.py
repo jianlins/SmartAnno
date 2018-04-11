@@ -1,6 +1,8 @@
+from conf.ConfigReader import ConfigReader
 from models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
-final_filters={'TypeA': ['patient'], 'TypeB': ['family'], 'neutral': []}
-rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(final_filters)
+ConfigReader()
+filters={'TypeA': ['patient'], 'TypeB': ['family'], 'neutral': []}
+rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(filters)
 print(rb_classifier.classify('The  Patient is ok'))
 
 

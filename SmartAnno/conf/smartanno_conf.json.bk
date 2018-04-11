@@ -9,7 +9,7 @@
   "status": {
     "default": 0,
     "workflow1": 1,
-    "workflow_0": 16,
+    "workflow_0": 1,
     "tasknamer_2": "task1",
     "types_6": [
       "Typea",

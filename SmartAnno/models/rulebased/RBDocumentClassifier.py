@@ -6,7 +6,7 @@ from pyConTextNLP import pyConTextGraph
 from pyConTextNLP.utils import get_document_markups
 
 from conf.ConfigReader import ConfigReader
-from gui.Workflow import logConsole
+from gui.Workflow import logMsg
 from models.BaseClassifier import BaseClassifier
 from models.rulebased.itemData import get_item_data
 from models.rulebased.nlp_pneumonia_utils import markup_sentence
@@ -17,10 +17,10 @@ class RBDocumentClassifierFactory(object):
     """use user set keywords filters to infer possible rules for classification--very rough"""
 
     @classmethod
-    def genDocumentClassifier(cls, final_filters=dict(), context_rule='conf/general_modifiers.yml',
+    def genDocumentClassifier(cls, filters=dict(), context_rule='conf/general_modifiers.yml',
                               rush_rule='conf/rush_rules.tsv'):
-        target_rules = cls.genTargetRules(final_filters)
-        fi_rules, di_rules = cls.genInfRules(final_filters)
+        target_rules = cls.genTargetRules(filters)
+        fi_rules, di_rules = cls.genInfRules(filters)
         return RBDocumentClassifier(target_rules, context_rule, fi_rules, di_rules, rush_rule, save_markups=False)
 
     @classmethod
@@ -34,11 +34,11 @@ class RBDocumentClassifierFactory(object):
         return '\n'.join(rules)
 
     @classmethod
-    def genInfRules(cls, final_filters=dict()):
+    def genInfRules(cls, filters=dict()):
         fi_rules = ['ConclusionType,SourceType,ModifierValues']
         di_rules = ['DocConclusion,EvidenceTypes']
 
-        for type_name in final_filters.keys():
+        for type_name in filters.keys():
             if type_name == 'neutral':
                 continue
             fi_rules.append('NEG_%s,%s,DEFINITE_NEGATED_EXISTENCE' % (type_name, type_name))
@@ -74,7 +74,7 @@ class RBDocumentClassifier(BaseClassifier):
         if rush_rule is not None and os.path.isfile(rush_rule):
             self.pyrush = RuSH(rush_rule)
         else:
-            logConsole("File not found", os.path.abspath(rush_rule))
+            logMsg(("File not found", os.path.abspath(rush_rule)))
         self.last_doc_name = ''
 
         if modifiers is not None and targets is not None:
@@ -116,7 +116,7 @@ class RBDocumentClassifier(BaseClassifier):
         prediction_metrics = []
         gold_labels = [x.positive_label for x in gold_docs.values()]
         pred_labels = []
-        logConsole('Start to evaluate against reference standards...')
+        logMsg('Start to evaluate against reference standards...')
         for doc_name, gold_doc in gold_docs.items():
             gold_label = gold_doc.positive_label
             pred_label = self.predict(gold_doc.text, doc_name)
@@ -148,7 +148,7 @@ class RBDocumentClassifier(BaseClassifier):
     def classify(self, doc, doc_name='t_m_p.txt'):
         self.last_doc_name = doc_name
         if self.modifiers is None or self.targets is None:
-            logConsole('DocumentClassifier\'s "modifiers" and/or "targets" has not been set yet.\n' +
+            logMsg('DocumentClassifier\'s "modifiers" and/or "targets" has not been set yet.\n' +
                        'Use function: setModifiersTargets(modifiers, targets) or setModifiersTargetsFromFiles(modifiers_file,' + 'targets_file) to set them up.')
         try:
             context_doc = self.markup_context_document(doc, self.modifiers, self.targets)

@@ -3,7 +3,7 @@ import ipywidgets as widgets
 import traitlets
 from IPython.core.display import display, clear_output
 
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 
 
 class TimerProgressBar(object):
@@ -53,7 +53,7 @@ class PreviousNext(Step):
             pass
 
         def goNext(b):
-            logConsole('next clicked')
+            logMsg('next clicked')
             self.complete()
             pass
 
@@ -127,7 +127,7 @@ class PreviousNextWithOtherBranches(PreviousNext):
             pass
 
         def goNext(b):
-            logConsole('next clicked')
+            logMsg('next clicked')
             self.complete()
             pass
 
@@ -211,7 +211,7 @@ class PreviousNextTextArea(PreviousNext):
         pass
 
     def complete(self):
-        self.data = [item.strip() for item in self.text_area.value.split("\n")]
+        self.data = [item.strip() for item in self.text_area.value.split("\n") if len(item.strip()) > 0]
         super().complete()
         pass
 

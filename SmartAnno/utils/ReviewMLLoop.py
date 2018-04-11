@@ -4,7 +4,7 @@ from sqlalchemy import and_
 
 from conf.ConfigReader import ConfigReader
 from db.ORMs import Annotation, Document
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 from models.BaseClassifier import NotTrained, ReadyTrained
 from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from utils.ReviewRBInit import ReviewRBInit
@@ -46,9 +46,9 @@ class ReviewMLLoop(ReviewRBLoop):
     def initTraining(self):
         x = [doc.TEXT for doc in self.docs[:len(self.reviewed_docs)]]
         y = list(self.reviewed_docs.values())
-        logConsole(('start ML training: ', type(self.ml_classifier), 'x=', len(x), 'y=', len(y)))
+        logMsg(('start ML training: ', type(self.ml_classifier), 'x=', len(x), 'y=', len(y)))
         self.ml_classifier.train(x, y)
-        logConsole('training finished, start to predict...')
+        logMsg('training finished, start to predict...')
         self.initPrediction()
 
     def initPrediction(self):
@@ -60,7 +60,7 @@ class ReviewMLLoop(ReviewRBLoop):
                 if counter >= self.learning_pace * 1.5:
                     # don't need to process all the rest document for efficiency concerns
                     break
-                logConsole(('predict doc: ', doc.DOC_ID, anno.TYPE))
+                logMsg(('predict doc: ', doc.DOC_ID, anno.TYPE))
                 anno.TYPE = self.ml_classifier.classify(doc.TEXT)
                 counter += 1
         counter = 0
@@ -82,7 +82,7 @@ class ReviewMLLoop(ReviewRBLoop):
         self.nlp = ReviewRBInit.nlp
         self.matcher = ReviewRBInit.matcher
 
-        logConsole([doc.DOC_ID for doc in self.docs])
+        logMsg([doc.DOC_ID for doc in self.docs])
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):
             for i in range(0, len(self.reviewed_docs) + 1):
@@ -108,9 +108,9 @@ class ReviewMLLoop(ReviewRBLoop):
                 # reset counter
                 self.step_counter = 0
                 self.backgroundTraining()
-                logConsole("Start retraining the ML model: " + str(self.ml_classifier))
+                logMsg("Start retraining the ML model: " + str(self.ml_classifier))
             else:
-                logConsole(
+                logMsg(
                     "ML model: " + str(self.ml_classifier) + " is not ready yet, postpone the re-training process.")
         res = None
         source = ''
@@ -133,7 +133,7 @@ class ReviewMLLoop(ReviewRBLoop):
                 # try rule-based model as default
                 res = ReviewRBLoop.rb_classifier.classify(doc.TEXT)
                 source = 'rule-base classification'
-        logConsole("Get classification from: " + source)
+        logMsg("Get classification from: " + source)
         return res
 
 
@@ -149,22 +149,22 @@ class ReviewML(ReviewRB):
         if self.next_step is None:
             if self.pos_id < len(self.master.docs) - 1:
                 doc = self.master.docs[self.pos_id + 1]
-                logConsole(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
+                logMsg(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
                 content = self.master.genContent(doc)
                 reviewed = False
                 if doc.DOC_ID in self.master.annos and self.master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
                     prediction = self.master.annos[doc.DOC_ID].REVIEWED_TYPE
-                    logConsole(('reviewed: ', reviewed))
+                    logMsg(('reviewed: ', reviewed))
                     reviewed = True
                 else:
                     prediction = self.master.getPrediction(doc)
-                    logConsole(('predicted: ', prediction))
+                    logMsg(('predicted: ', prediction))
                 repeat_step = ReviewML(description=content, options=self.master.workflow.types, value=prediction,
                                        js=self.js, master=self.master, reviewed=reviewed,
                                        button_style='success' if reviewed else 'info')
                 self.master.appendRepeatStep(repeat_step)
             else:
-                logConsole(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
+                logMsg(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
                             'master\'s next step', self.master.next_step))
                 self.next_step = self.master.next_step
                 self.branch_buttons[1].linked_step = self.master.next_step

@@ -12,7 +12,7 @@ from sqlalchemy import or_, delete
 from conf.ConfigReader import ConfigReader
 from db.ORMs import Document, Annotation
 from gui.PreviousNextWidgets import PreviousNextHTML, PreviousNextWithOtherBranches
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 from models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
 
 
@@ -94,8 +94,6 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
         pass
 
     def init_real_time(self):
-        self.workflow.final_filters = {**self.workflow.filters, **self.workflow.umls_extended,
-                                       **self.workflow.we_extended}
         self.data['annos'].clear()
         self.data['docs'].clear()
         self.checkPreviousReviews()
@@ -106,7 +104,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
     def initSpacyNER(self):
         ReviewRBInit.nlp = spacy.blank('en')
         type_phrases = dict()
-        for type_name, phrases in self.workflow.final_filters.items():
+        for type_name, phrases in self.workflow.filters.items():
             type_phrases[type_name] = ([ReviewRBInit.nlp(phrase) for phrase in phrases])
             ReviewRBInit.matcher = PhraseMatcher(ReviewRBInit.nlp.vocab)
         for type_name, phrases in type_phrases.items():
@@ -169,7 +167,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
         else:
             self.addExtra()
         if self.next_step is not None:
-            logConsole((self, 'workflow complete'))
+            logMsg((self, 'workflow complete'))
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
                     self.workflow.updateStatus(self.next_step.pos_id)
@@ -203,12 +201,12 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
         pass
 
     def addExtra(self):
-        logConsole("add extra samples")
+        logMsg("add extra samples")
         self.getSampledDocs(set(self.data['annos'].keys()))
         pass
 
     def continueReview(self):
-        logConsole("continue review")
+        logMsg("continue review")
         self.workflow.filter_percent = 0.01 * self.percent_slider.value
         # with self.workflow.dao.create_session() as session:
         #     # doc_iter = session.query(Annotation,Document).select_from(Document).join(Document.DOC_ID).filter(
@@ -225,7 +223,7 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
 
     def restSampling(self):
         """discard previous sampling and reviewed data, start a new sampling"""
-        logConsole('reset sampling')
+        logMsg('reset sampling')
         self.data['docs'].clear()
         self.data['annos'].clear()
         with self.workflow.dao.create_session() as session:

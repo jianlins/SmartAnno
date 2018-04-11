@@ -8,7 +8,7 @@ from sqlalchemy import and_
 from conf.ConfigReader import ConfigReader
 from db.ORMs import Annotation
 from gui.BranchingWidgets import LoopRepeatSteps, RepeatHTMLToggleStep
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 from models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
 from utils.ReviewRBInit import ReviewRBInit
 
@@ -46,7 +46,7 @@ function setFocusToTextBox(){
         self.matcher = None
         self.metaColumns = ConfigReader().getValue("review/meta_columns")
         self.div_height = ConfigReader().getValue("review/div_height")
-        logConsole(('self.div_height:', self.div_height))
+        logMsg(('self.div_height:', self.div_height))
         self.show_meta_name = ConfigReader().getValue("review/show_meta_name")
         self.hightligh_span_tag = ' <span class="highlighter" style="background-color:  %s ">' % ConfigReader().getValue(
             "review/highlight_color")
@@ -84,8 +84,8 @@ function setFocusToTextBox(){
         self.annos = self.data['annos']
         self.reviewed_docs = {doc_id: anno.REVIEWED_TYPE for doc_id, anno in self.annos.items() if
                               anno.REVIEWED_TYPE is not None}
-        logConsole(('self.docs', len(self.docs)))
-        logConsole(('self.annos', len(self.annos)))
+        logMsg(('self.docs', len(self.docs)))
+        logMsg(('self.annos', len(self.annos)))
 
     def genContent(self, doc):
         """display a sample (text content + metadata)"""
@@ -120,7 +120,7 @@ function setFocusToTextBox(){
         # div = '<button type="button" onclick="setFocusToTextBox()">Focus on next highlight</button>'
         div += '<div id="d1" style="overflow-y: scroll; height:' + self.div_height \
                + ';border:1px solid;border-color:#e5e8e8; ">'
-        logConsole(('self.div_height:', self.div_height))
+        logMsg(('self.div_height:', self.div_height))
         spacy_doc = self.nlp(doc.TEXT)
         matches = self.matcher(spacy_doc)
         # consolePrint(matches)
@@ -141,12 +141,15 @@ function setFocusToTextBox(){
         return highlight_text
 
     def init_real_time(self):
-        ReviewRBLoop.rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(self.workflow.final_filters,
+        ReviewRBLoop.rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(self.workflow.filters,
                                                                                        rush_rule=self.rush_rule)
         self.loop_workflow.filters = self.workflow.filters
         self.readData()
         self.nlp = ReviewRBInit.nlp
         self.matcher = ReviewRBInit.matcher
+        if len(self.reviewed_docs) > self.threshold:
+            self.complete()
+            return
 
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):
@@ -159,12 +162,11 @@ function setFocusToTextBox(){
                     reviewed = True
                 else:
                     prediction = ReviewRBLoop.rb_classifier.classify(doc.TEXT, doc.DOC_NAME)
-                logConsole((i, doc.DOC_ID, reviewed))
+                logMsg((i, doc.DOC_ID, reviewed))
                 repeat_step = ReviewRB(description=content, options=self.workflow.types, value=prediction,
                                        js=self.js, master=self, reviewed=reviewed,
                                        button_style=('success' if reviewed else 'info'))
                 self.appendRepeatStep(repeat_step)
-
 
         pass
 
@@ -190,7 +192,7 @@ class ReviewRB(RepeatHTMLToggleStep):
 
     def start(self):
         """In running time, start to display a sample in the notebook output cell"""
-        logConsole(('start step id/total steps', self.pos_id, len(self.workflow.steps)))
+        logMsg(('start step id/total steps', self.pos_id, len(self.workflow.steps)))
         if len(self.master.js) > 0:
             display(widgets.HTML(self.master.js))
         self.toggle.button_style = 'success'
@@ -208,7 +210,7 @@ class ReviewRB(RepeatHTMLToggleStep):
         if self.reviewed:
             self.master.reviewed_docs[self.master.docs[self.pos_id].DOC_ID] = self.toggle.value
             with self.master.workflow.dao.create_session() as session:
-                logConsole(('update data:', self.pos_id, len(self.master.docs)))
+                logMsg(('update data:', self.pos_id, len(self.master.docs)))
                 anno = session.query(Annotation).filter(
                     and_(Annotation.DOC_ID == self.master.docs[self.pos_id].DOC_ID,
                          Annotation.TASK_ID == self.master.workflow.task_id)).first()
@@ -242,7 +244,7 @@ class ReviewRB(RepeatHTMLToggleStep):
             # if reach the limit of rule-base preannotation max documents or the end of samples, jump to complete
             if self.pos_id < len(self.master.docs) - 1 and self.pos_id < self.master.threshold - 1:
                 doc = self.master.docs[self.pos_id + 1]
-                logConsole(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
+                logMsg(('Initiate next doc', len(self.master.docs), 'current pos_id:', self.pos_id))
                 content = self.master.genContent(doc)
                 reviewed = False
                 if doc.DOC_ID in self.master.annos and self.master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
@@ -255,8 +257,8 @@ class ReviewRB(RepeatHTMLToggleStep):
                                        button_style='success' if reviewed else 'info')
                 self.master.appendRepeatStep(repeat_step)
             else:
-                logConsole(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
-                            'master\'s next step', self.master.next_step))
+                logMsg(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
+                        'master\'s next step', self.master.next_step))
                 self.next_step = self.master.next_step
                 self.branch_buttons[1].linked_step = self.master.next_step
         elif self.pos_id >= self.master.threshold - 1:
@@ -266,9 +268,9 @@ class ReviewRB(RepeatHTMLToggleStep):
     def navigate(self, b):
         clear_output(True)
         self.updateData(b)
-        logConsole(('navigate to b: ', b, hasattr(b, "linked_step")))
-        logConsole(('navigate to branchbutton 1', hasattr(self.branch_buttons[1], 'linked_step'),
-                    self.branch_buttons[1].linked_step))
+        logMsg(('navigate to b: ', b, hasattr(b, "linked_step")))
+        logMsg(('navigate to branchbutton 1', hasattr(self.branch_buttons[1], 'linked_step'),
+                self.branch_buttons[1].linked_step))
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             if b.description == 'Complete':
                 self.master.complete()
@@ -278,7 +280,7 @@ class ReviewRB(RepeatHTMLToggleStep):
             if hasattr(self.branch_buttons[1], 'linked_step') and self.branch_buttons[1].linked_step is not None:
                 self.branch_buttons[1].linked_step.start()
             elif not hasattr(b, 'navigate_direction') or b.navigate_direction == 1:
-                logConsole('Button ' + str(b) + '\'s linked_step is not set. Assume complete the Repeat loop.')
+                logMsg('Button ' + str(b) + '\'s linked_step is not set. Assume complete the Repeat loop.')
                 self.master.complete()
             else:
                 self.goBack()

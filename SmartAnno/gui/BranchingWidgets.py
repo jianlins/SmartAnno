@@ -6,7 +6,7 @@ from ipywidgets import Layout
 
 from conf.ConfigReader import ConfigReader
 from gui.MyWidgets import ClickResponsiveToggleButtons
-from gui.Workflow import Step, Workflow, logConsole
+from gui.Workflow import Step, Workflow, logMsg
 
 """
 This file contains branching widgets
@@ -104,7 +104,7 @@ class RepeatStep(BranchingStep):
     def navigate(self, b):
         clear_output(True)
         self.updateData(b)
-        logConsole((b, hasattr(b, "linked_step")))
+        logMsg((b, hasattr(b, "linked_step")))
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             b.linked_step.start()
         else:

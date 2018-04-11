@@ -1,18 +1,12 @@
 import abc
-import logging
-import logging.config
+
 
 from IPython.core.display import clear_output
+
 from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
-
-import os
-def logConsole(msg):
-    if logging.getLogger().isEnabledFor(logging.DEBUG):
-        os.write(1, str(logging.getLogger().level).encode('UTF-8'))
-        os.write(1, str.encode(msg.__repr__() + '\n'))
-
+from utils.NoteBookLogger import logMsg
 
 
 class Step(object):
@@ -77,7 +71,7 @@ class Step(object):
     def complete(self):
         clear_output(True)
         if self.next_step is not None:
-            logConsole((self, 'workflow complete'))
+            logMsg((self, 'workflow complete'))
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
                     self.workflow.updateStatus(self.next_step.pos_id)
@@ -145,7 +139,7 @@ class Workflow(object):
 
         self.name_dict[new_step.name] = id
         if previous_step is not None:
-            logConsole((self, 'attache new step ' + new_step.name + ' ' + str(id)))
+            logMsg((self, 'attache new step ' + new_step.name + ' ' + str(id)))
             new_step.setPreviousStep(previous_step)
             previous_step.setNextStep(new_step)
             pass

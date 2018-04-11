@@ -1,5 +1,5 @@
 from gui.BranchingWidgets import LoopRepeatSteps
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 from models.GloveModel import GloveModel
 from utils import KeywordsUMLSExtender
 from utils.KeywordsUMLSExtender import RepeatMultipleSelection
@@ -54,7 +54,7 @@ class KeywordsEmbeddingExtender(LoopRepeatSteps):
                                                                 self.workflow.filters,
                                                                 self.loop_workflow.extended)
             except KeyError:
-                logConsole(("word '%s' not in vocabulary" % word.lower()))
+                logMsg(("word '%s' not in vocabulary" % word.lower()))
 
             if len(extending) > 0:
                 self.appendRepeatStep(
@@ -77,7 +77,7 @@ class RepeatWEMultipleSelection(RepeatMultipleSelection):
                 extending = KeywordsUMLSExtender.filterExtended([pair[0] for pair in extending], type_name, self.master.workflow.filters,
                                                                 self.workflow.extended)
             except KeyError:
-                logConsole(("word '%s' not in vocabulary" % word.lower()))
+                logMsg(("word '%s' not in vocabulary" % word.lower()))
 
             if len(extending) > 0:
                 next_step = RepeatWEMultipleSelection(description=KeywordsEmbeddingExtender.description % word,

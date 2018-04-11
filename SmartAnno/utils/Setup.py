@@ -5,51 +5,34 @@ from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
 from gui.BranchingWidgets import BranchingStep
+from gui.PreviousNextWidgets import PreviousNext
 from models.GloveModel import GloveModel
 
 
-class IntroStep(BranchingStep):
-    def __init__(self, description='', name=None):
+class Setup(PreviousNext):
+    def __init__(self, name=None):
+        ConfigReader()
         self.glove_path = ConfigReader.getValue('glove/model_path')
         self.glove_vocab = ConfigReader.getValue('glove/vocab')
         self.glove_vector = ConfigReader.getValue('glove/vector')
         # widgets to take the user inputs
         self.glove_path_input = None
         self.glove_vocab_input = None
-        self.glove_vector_input = None
         self.api_key_input = None
+        self.glove_vector_input = None
 
         if self.glove_vocab is None:
             self.glove_vocab = 1900000
 
         if self.glove_vector is None:
             self.glove_vector = 300
-        self.html = widgets.HTML(value=description)
         super().__init__(name)
         pass
 
     def start(self):
-        self.branch_buttons = [widgets.Button(description=d, layout=widgets.Layout(width='150px', left='100px')) for d
-                               in
-                               ['StartOver', 'ContinueReviewing']]
-        self.branch_buttons[0].restore = False
-        self.branch_buttons[1].restore = True
         clear_output()
         self.box = self.createBox()
         display(self.box)
-        pass
-
-    def navigate(self, button):
-        if self.glove_path_input is not None:
-            self.saveGloveConfig()
-        if self.api_key_input is not None:
-            self.saveAPIKey()
-        self.backgroundWork()
-        if button.restore:
-            previous_status = self.workflow.restoreStatus()
-            self.workflow.steps[1].start()
-        else:
-            self.workflow.steps[1].start()
         pass
 
     def saveGloveConfig(self):
@@ -63,17 +46,9 @@ class IntroStep(BranchingStep):
         ConfigReader.saveConfig()
         pass
 
-    def saveAPIKey(self):
-        ConfigReader.setValue("api_key", self.api_key_input.value)
-        ConfigReader.saveConfig()
-        self.workflow.api_key = self.api_key_input.value
-        pass
-
     def createBox(self):
-        rows = self.addSeparator()
-        rows += [self.html]
+        rows = []
         self.requestWELocation(rows)
-        self.requestUMLSAPIKey(rows)
         rows += self.addSeparator() + self.addConditions()
         # print('\n'.join([str(row) for row in rows]))
         vbox = widgets.VBox(rows, layout=widgets.Layout(display='flex', flex_grown='column'))
@@ -94,16 +69,13 @@ class IntroStep(BranchingStep):
         pass
 
     def requestWELocation(self, rows):
-        if self.glove_path is None or len(self.glove_path.strip()) == 0:
+        if self.glove_path is None or self.glove_path.strip() == '':
             rows += self.addSeparator()
             rows.append(
                 widgets.HTML(value='<h4>Set up your Glove model</h4><p>In order to use word embedding, you need '
-                                   'to tell where the glove model locates:</p><p>If you have not downloaded yet,'
-                                   'you can download it from <a href="https://nlp.stanford.edu/projects/glove/" '
-                                   ' target="_blank">Glove Site</a><p>If you do not set it up, the word embedding'
-                                   ' synonym extender will be <b>skipped</b>.</p>'))
+                                   'to tell where the glove model locates:</p>'))
             self.glove_path_input = widgets.Text(
-                value='',
+                value='models/saved/glove/glove.42B.300d.bin',
                 placeholder='copy and paste your glove model file location here',
                 description='',
                 disabled=False,
@@ -128,11 +100,8 @@ class IntroStep(BranchingStep):
         api_key = ConfigReader.getValue("api_key")
         if api_key is None or len(api_key) == 0:
             rows.append(
-                widgets.HTML(
-                    value='<h4>Set your API Key</h4><p>In order to use the UMLS synonym checking module, you need to set'
-                          ' up your API key: (<a href="https://www.nlm.nih.gov/research/umls/user_education/quick_tours/'
-                          'UTS-API/UTS_REST_API_Authentication.html" target="_blank">How to get your API Key_at 01:12</a>)</p>'
-                          '<p>If you do not set the api key, the UMLS synonym extender will be <b>skipped</b>.</p>'))
+                widgets.HTML(value='<h4>Set up your Glove model</h4><p>In order to use word embedding, you need '
+                                   'to tell where the glove model locates:</p>'))
             self.api_key_input = widgets.Text(value='',
                                               placeholder='',
                                               description='', disabled=False)

@@ -5,7 +5,7 @@ from ipywidgets import widgets
 
 from conf.ConfigReader import ConfigReader
 from gui.PreviousNextWidgets import PreviousNextWithOtherBranches
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 
 
@@ -94,7 +94,7 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         #     self.addExtra()
         self.updateData()
         if self.next_step is not None:
-            logConsole((self, 'ML configuration complete'))
+            logMsg((self, 'ML configuration complete'))
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
                     self.workflow.updateStatus(self.next_step.pos_id)
@@ -134,7 +134,7 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         for name, value in self.parameter_inputs.items():
             self.parameters[name] = value.value
             # directly change the value of class variables
-            logConsole(("update settings: ",self.ml_classifier_cls, name, value.value))
+            logMsg(("update settings: ", self.ml_classifier_cls, name, value.value))
             setattr(self.ml_classifier_cls, name, value.value)
 
         pass

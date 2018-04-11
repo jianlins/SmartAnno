@@ -4,7 +4,7 @@ from ipywidgets import widgets
 from conf.ConfigReader import ConfigReader
 from gui.BranchingWidgets import LoopRepeatSteps, RepeatStep
 from gui.MyWidgets import ToggleButtonsMultiSelectionInBox
-from gui.Workflow import Step, logConsole
+from gui.Workflow import Step, logMsg
 from umls.UMLSFinder import UMLSFinder
 from utils.TreeSet import TreeSet
 
@@ -141,7 +141,7 @@ class RepeatMultipleSelection(RepeatStep):
         # print(b)
         self.data = self.selections.value
         if self.master is not None and self.data is not None:
-            logConsole(self.data)
+            logMsg(self.data)
             self.master.workflow.filters[self.type_name].addAll(self.data)
         super().navigate(b)
         pass

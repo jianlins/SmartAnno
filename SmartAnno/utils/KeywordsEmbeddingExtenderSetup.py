@@ -1,5 +1,7 @@
 from IPython.core.display import display
 from ipywidgets import widgets, Label
+
+from conf.ConfigReader import ConfigReader
 from gui.MyWidgets import ToggleButtonsMultiSelection
 from gui.PreviousNextWidgets import PreviousNext
 from utils.TreeSet import TreeSet
@@ -28,6 +30,10 @@ class KeywordsEmbeddingExtenderSetup(PreviousNext):
         pass
 
     def start(self):
+        if ConfigReader.getValue("glove/model_path") is None or len(ConfigReader.getValue("glove/model_path")) == 0:
+            self.workflow.steps[self.pos_id + 2].start()
+            return
+
         if not hasattr(self.workflow, 'we_extended'):
             self.workflow.we_extended = dict()
         rows = self.showWords(self.workflow.filters)

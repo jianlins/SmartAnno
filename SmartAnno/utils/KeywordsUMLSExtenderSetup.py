@@ -18,6 +18,9 @@ class KeywordsUMLSExtenderSetup(PreviousNext):
         super().__init__(name)
 
     def start(self):
+        if self.workflow.api_key is None or len(self.workflow.api_key) < 5:
+            self.workflow.steps[self.pos_id + 2].start()
+            return
         if not hasattr(self.workflow, 'umls_extended'):
             self.workflow.umls_extended = dict()
         rows = self.showWords(self.workflow.filters)

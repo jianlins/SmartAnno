@@ -2,7 +2,7 @@ import abc
 from sklearn.externals import joblib
 import os
 
-from gui.Workflow import logConsole
+from gui.Workflow import logMsg
 
 NotTrained = 0
 InTraining = 1
@@ -47,7 +47,7 @@ class BaseClassifier:
 
     @abc.abstractmethod
     def train(self, x, y):
-        logConsole('error, abstract method called')
+        logMsg('error, abstract method called')
         # [] to return Documents, dict() to return grouping information
         pass
 

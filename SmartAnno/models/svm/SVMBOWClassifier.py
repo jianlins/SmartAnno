@@ -5,7 +5,7 @@ import numpy as np
 from sklearn import metrics
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.linear_model import LogisticRegression
+from sklearn import svm
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -16,7 +16,7 @@ from models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotT
 not_met_suffix = '_not_met'
 
 
-class LogisticBOWClassifier(BaseClassifier):
+class SVMBOWClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 1
@@ -38,7 +38,7 @@ class LogisticBOWClassifier(BaseClassifier):
         if pipeline is None:
             self.pipeline = Pipeline([('vect', CountVectorizer()),
                                       ('tfidf', TfidfTransformer()),
-                                      ('clf', LogisticRegression()),
+                                      ('clf', svm.LinearSVC()),
                                       ])
         else:
             self.pipeline = pipeline
@@ -83,21 +83,30 @@ class LogisticBOWClassifier(BaseClassifier):
                 'TRAIN data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
                 'training for task : {}'.format(
                     self.cv, train_minority_instances, classname))
+            print(
+                'TRAIN data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'training for task : {}'.format(
+                    self.cv, train_minority_instances, classname))
             return
 
         if test_minority_instances <= self.cv:
             logMsg(
-                 'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
                 'training for task : {}'.format(
                     self.cv, train_minority_instances, classname))
+            print(
+                'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'training for task : {}'.format(
+                    self.cv, train_minority_instances, classname))
+            from time import sleep
+            sleep(3)
             return
 
         # now we can train a model
 
         logMsg('Fitting model now for iterations = {}'.format(self.iterations))
 
-
-        LogisticBOWClassifier.status = InTraining
+        SVMBOWClassifier.status = InTraining
         self.model.fit(X_text_train, y_train)
 
         # print performances
@@ -111,7 +120,7 @@ class LogisticBOWClassifier(BaseClassifier):
             logMsg('REPORT for TEST set and task : {}'.format(self.task_name))
             logMsg(metrics.classification_report(y_test, self.model.predict(X_text_test),
                                                  target_names=self.task_name))
-        LogisticBOWClassifier.status = ReadyTrained
+            SVMBOWClassifier.status = ReadyTrained
 
     pass
 
