@@ -114,12 +114,12 @@ class SVMBOWClassifier(BaseClassifier):
             logMsg('Best params for the model : {}'.format(self.model.best_params_))
 
             logMsg('REPORT for TRAINING set and task : {}'.format(self.task_name))
-            logMsg(metrics.classification_report(y_train, self.model.predict(X_text_train),
-                                                 target_names=self.task_name))
+            print(metrics.classification_report(y_train, self.model.predict(X_text_train),
+                                                 target_names=train_classes))
 
             logMsg('REPORT for TEST set and task : {}'.format(self.task_name))
-            logMsg(metrics.classification_report(y_test, self.model.predict(X_text_test),
-                                                 target_names=self.task_name))
+            print(metrics.classification_report(y_test, self.model.predict(X_text_test),
+                                                 target_names=train_classes))
             SVMBOWClassifier.status = ReadyTrained
 
     pass

@@ -23,7 +23,7 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         self.data = None
         self.docs = None
         self.annos = None
-        self.reviewed = None
+        self.reviewed_docs = None
         self.reviewed_pos = None
         self.leftover = None
         self.ready = False
@@ -78,12 +78,16 @@ class ReviewMLInit(PreviousNextWithOtherBranches):
         pass
 
     def readData(self):
-        self.data = self.workflow.steps[self.pos_id - 2].data
-        self.docs = self.workflow.steps[self.pos_id - 2].docs
-        self.annos = self.workflow.steps[self.pos_id - 2].annos
-        self.reviewed = self.workflow.steps[self.pos_id - 2].reviewed_docs
-        self.reviewed_pos = len(self.reviewed)
-        self.leftover = len(self.docs) - len(self.reviewed)
+        self.data = self.workflow.samples
+        self.docs = self.data['docs']
+        self.annos = self.data['annos']
+        if hasattr(self.workflow.steps[self.pos_id - 2], 'reviewed_docs'):
+            self.reviewed_docs = self.workflow.steps[self.pos_id - 2].reviewed_docs
+        else:
+            self.reviewed_docs={doc_id: anno.REVIEWED_TYPE for doc_id, anno in self.annos.items() if
+                                anno.REVIEWED_TYPE is not None}
+        self.reviewed_pos = len(self.reviewed_docs)
+        self.leftover = len(self.docs) - len(self.reviewed_docs)
         pass
 
     def complete(self):

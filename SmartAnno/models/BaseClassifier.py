@@ -20,7 +20,7 @@ class BaseClassifier:
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         self.task_name = task_name
         if model_file is None:
-            model_file = 'models/saved/' + str(type(self)) + '_' + task_name
+            model_file = 'models/saved/' + type(self).__name__ + '_' + task_name
         self.model_file = model_file
         self.model = None
         if os.path.isfile(self.model_file):

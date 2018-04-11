@@ -18,9 +18,8 @@ class ReviewMLLoop(ReviewRBLoop):
     def __init__(self, name=str(Step.global_id + 1), ml_classifier_cls=LogisticBOWClassifier):
         # load class to use static variables to sync training status
         self.ml_classifier_cls = ml_classifier_cls
-        self.ml_classifier_cls()
         # this is the actual classifier model, need to be initiated in ReviewMLInit step
-        self.ml_classifier = self.ml_classifier_cls()
+        self.ml_classifier =None
         self.step_counter = 0
         self.learning_pace = None
         super().__init__(name)
@@ -36,7 +35,7 @@ class ReviewMLLoop(ReviewRBLoop):
         pass
 
     def readData(self):
-        self.data = self.workflow.steps[self.pos_id - 3].data
+        self.data = self.workflow.samples
         self.docs = self.data['docs']
         self.annos = self.data['annos']
         self.reviewed_docs = {doc_id: anno.REVIEWED_TYPE for doc_id, anno in self.annos.items() if
@@ -73,6 +72,7 @@ class ReviewMLLoop(ReviewRBLoop):
         pass
 
     def init_real_time(self):
+        self.ml_classifier = self.ml_classifier_cls(task_name=self.workflow.task_name)
         self.learning_pace = ConfigReader.getValue("review/ml_learning_pace")
         self.loop_workflow.filters = self.workflow.filters
         self.readData()
