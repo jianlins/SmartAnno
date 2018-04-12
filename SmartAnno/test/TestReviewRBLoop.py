@@ -15,7 +15,7 @@ class TestReviewRB(unittest.TestCase):
 
     def testRBLoop(self):
         logging.getLogger().setLevel(logging.DEBUG)
-        ConfigReader('conf/smartanno_conf.json')
+        ConfigReader('conf/smartanno_conf2.json')
         wf = Workflow()
         rb = ReviewRBInit(name="rb_review_init")
         wf.append(rb)

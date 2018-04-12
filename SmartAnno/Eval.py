@@ -19,7 +19,7 @@ from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 import logging
 
 
-def eval(task_name='language', classifiers=[LogisticBOWClassifier]):
+def evaluate(task_name='language', classifiers=[LogisticBOWClassifier]):
 	ConfigReader()
 
 	dbi = DBInitiater(name='db_initiater')
@@ -55,4 +55,4 @@ def eval(task_name='language', classifiers=[LogisticBOWClassifier]):
 		cl_instance.train(x, y)
 
 
-eval(task_name='language', classifiers=[LogisticBOWClassifier, SVMBOWClassifier])
+evaluate(task_name='language', classifiers=[LogisticBOWClassifier, SVMBOWClassifier])
