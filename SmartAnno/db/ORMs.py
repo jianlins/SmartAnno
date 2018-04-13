@@ -54,6 +54,7 @@ class Document(Model):
 
 class Annotation(Model):
     ID = Column(Integer, primary_key=True)
+    BUNCH_ID = Column(String, ForeignKey("document.BUNCH_ID"))
     DOC_ID = Column(Integer, ForeignKey("document.DOC_ID"))
     TASK_ID = Column(String, ForeignKey("task.id"))
     RUN_ID = Column(String, index=True)
@@ -69,17 +70,17 @@ class Annotation(Model):
     CREATE_DTM = Column(DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return "<Annotation(ID='%s', DOC_ID='%s'," \
+        return "<Annotation(ID='%s', BUNCH_ID='%s',DOC_ID='%s'," \
                " RUN_ID='%s',TYPE='%s',REVIEWED_TYPE='%s',BEGIN='%s', END='%s'," \
                "SNIPPET_BEGIN='%s', TEXT='%s',SNIPPET='%s'," \
                "FEATURES='%s',COMMENTS='%s',CREATE_DTM='%s')>" % (
-                   self.ID, self.DOC_ID, self.RUN_ID,
+                   self.ID, self.BUNCH_ID, self.DOC_ID, self.RUN_ID,
                    self.TYPE, self.REVIEWED_TYPE, self.BEGIN, self.END, self.SNIPPET_BEGIN,
                    self.TEXT, self.SNIPPET, self.FEATURES, self.COMMENTS,
                    self.CREATE_DTM)
 
     def clone(self):
-        return Annotation(ID=self.ID, DOC_ID=self.DOC_ID, TASK_ID=self.TASK_ID,
+        return Annotation(ID=self.ID, BUNCH_ID=self.BUNCH_ID, DOC_ID=self.DOC_ID, TASK_ID=self.TASK_ID,
                           RUN_ID=self.RUN_ID,
                           TYPE=self.TYPE, REVIEWED_TYPE=self.REVIEWED_TYPE,
                           BEGIN=self.BEGIN, END=self.END,
@@ -99,3 +100,18 @@ class Filter(Model):
     def __repr__(self):
         return "<Filter(id='%s', task_id='%s'," \
                " keyword='%s',type_name='%s')>" % (self.id, self.task_id, self.keyword, self.type_name)
+
+
+def saveDFtoDB(dao, df, table_name):
+    '''pandas dataframe to_sql often throw index error, use this to work around'''
+    listToWrite = df.to_dict(orient='records')
+    import sqlalchemy
+    metadata = sqlalchemy.schema.MetaData(bind=dao._engine, reflect=True)
+    table = sqlalchemy.Table(table_name, metadata, autoload=True)
+    # Open the session
+    session = dao.create_session()
+    # Inser the dataframe into the database in one bulk
+    conn = dao._engine.connect()
+    conn.execute(table.insert(), listToWrite)
+    session.commit()
+    session.close()

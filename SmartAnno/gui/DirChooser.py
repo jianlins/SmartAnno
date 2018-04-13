@@ -22,7 +22,7 @@ class DirChooser(Step):
         if self.data is not None and isinstance(self.data, tuple) and len(self.data) > 0:
             self.data[1].clear()
         self.path = os.getcwd()
-        self.filter = 'txt'
+        self.filter = 'xml'
         self._update_files()
         pass
 

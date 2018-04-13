@@ -20,6 +20,7 @@ class DBInitiater(PreviousNext):
         self.db_config = ''
         self.dbpath = ''
         self.need_import = False
+        self.overwrite = False
         pass
 
     def start(self):
@@ -46,8 +47,9 @@ class DBInitiater(PreviousNext):
         pass
 
     def updateBox(self):
-        rows = [self.html, self.toggle] + self.addSeparator(top='10px') + [
-            self.addPreviousNext(self.show_previous, self.show_next)]
+        rows = [self.html, self.toggle] + self.addSeparator(top='10px') + \
+               [self.html2, self.toggle2] + self.addSeparator(top='10px') + [
+                   self.addPreviousNext(self.show_previous, self.show_next)]
         vbox = widgets.VBox(rows)
         vbox.layout.flex_grown = 'column'
         return vbox
@@ -74,6 +76,18 @@ class DBInitiater(PreviousNext):
             #     icons=['check'] * 3
         )
         self.toggle.observe(self.on_click, 'value')
+        self.html2 = widgets.HTML(
+            '<h4>Do you want to import new data?</h4>')
+        self.toggle2 = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='',
+            disabled=False,
+            value='No',
+            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['Add new data to db', 'Use existing data in db'],
+            layout=widgets.Layout(width='70%')
+        )
+
         # pad the descriptions list if it is shorter than options list
         self.resetParameters()
         self.box = self.updateBox()
@@ -83,17 +97,22 @@ class DBInitiater(PreviousNext):
     def on_click(self, change):
         self.data = change['new']
         if self.data == 'Yes':
-            self.need_import = True
+            self.toggle2.value = 'Yes'
         pass
 
     def complete(self):
         clear_output(True)
-        if self.need_import:
+        if self.toggle.value == 'Yes':
             os.remove(self.dbpath)
             self.dao = Dao(self.db_config, sqlalchemy_dao.POOL_DISABLED)
             self.createSQLTables()
+            self.overwrite = True
+            self.need_import = True
         else:
             self.dao = Dao(self.db_config, sqlalchemy_dao.POOL_DISABLED)
+            if self.toggle2.value == 'Yes':
+                self.need_import = True
+            self.overwrite = False
         self.workflow.dao = self.dao
         if self.next_step is not None:
             if isinstance(self.next_step, Step):

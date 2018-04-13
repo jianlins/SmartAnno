@@ -1,6 +1,5 @@
 import abc
 
-
 from IPython.core.display import clear_output
 
 from ipywidgets import widgets
@@ -18,7 +17,7 @@ class Step(object):
         self.previous_step = None
         Step.global_id += 1
         if name is not None and name != '':
-            self.name = name + "_" + str(Step.global_id)
+            self.name = name
         else:
             self.name = str(type(self).__name__) + "_" + str(Step.global_id)
         self.data = None
@@ -149,7 +148,7 @@ class Workflow(object):
 
     def getStepByName(self, step_name):
         if step_name in self.name_dict and self.name_dict[step_name] < len(self.steps):
-            return self.steps[self.name_dict[step_name]]
+            return self.getStepById(self.name_dict[step_name])
         else:
             return None
 

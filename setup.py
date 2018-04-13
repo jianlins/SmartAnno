@@ -30,7 +30,7 @@ setup(
     ],
     install_requires=[
         'PyRuSH', 'sqlalchemy-dao', 'keras', 'spacy', 'ipywidgets', 'jupyter', 'scikit-learn', 'numpy', 'sqlalchemy',
-        'colorama'
+        'colorama','textblob'
     ],
     extras_require={
         "tf": ["tensorflow"],
