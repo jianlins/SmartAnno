@@ -21,7 +21,7 @@ ConfigReader('../conf/smartanno_conf.json')
 
 wf = Workflow(config_file=ConfigReader.config_file)
 wf.api_key = ConfigReader.getValue("api_key")
-wf.dao = Dao('sqlite+pysqlite:///../data/test.sqlite', sqlalchemy_dao.POOL_DISABLED)
+wf.dao = Dao('sqlite+pysqlite:///../data/demo.sqlite', sqlalchemy_dao.POOL_DISABLED)
 wf.task_name = 'language'
 wf.append(AnnotationTypeDef(
     '<h3>Annotation types:</h3><p>List all the types you want to identify below. Each type per line.<br/>If you'
@@ -46,6 +46,7 @@ wf.steps[1].complete()
 print(wf.steps[2].toggle.options)
 wf.steps[2].toggle.value = 'n2c2_sents'
 wf.steps[2].complete()
+wf.steps[3].complete()
 # rb.navigate(rb.branch_buttons[2])
 # wf.steps[5].complete()
 # wf.steps[6].complete()

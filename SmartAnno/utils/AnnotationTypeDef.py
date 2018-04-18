@@ -11,6 +11,7 @@ from gui.Workflow import Step
 
 class AnnotationTypeDef(PreviousNextTextArea):
     """display a input text field, with optional button: 'submit', 'cancel', and 'finish'"""
+    neutral_type = 'Irrelevant'
 
     def __init__(self, description='Type your words/phrases below', value='', placeholder='each phrase/word per line',
                  width='500px', height='300px', name=str(Step.global_id + 1)):
@@ -46,5 +47,7 @@ class AnnotationTypeDef(PreviousNextTextArea):
             session.add_all([Typedef(type_name=type_name, task_id=self.workflow.task_id) for type_name in self.data])
         self.workflow.types = [item.strip() for item in self.text_area.value.split("\n") if
                                len(item.strip()) > 0]
+        if AnnotationTypeDef.neutral_type not in self.workflow.types:
+            self.workflow.types.append(AnnotationTypeDef.neutral_type)
         super().complete()
         pass

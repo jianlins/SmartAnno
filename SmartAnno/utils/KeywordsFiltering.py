@@ -11,7 +11,6 @@ from utils.TreeSet import TreeSet
 
 class KeywordsFiltering(PreviousNext):
     """display text fields, one for each type and one extra for neutral filters (doesn't belong to any type but related to the classification task)"""
-    neutral_list = 'Irrelevant'
 
     def __init__(self,
                  description='<h4>Keywords Filter</h4><p>Type your keywords filter below. These key words are <b>optional</b>. They will'
@@ -47,13 +46,10 @@ class KeywordsFiltering(PreviousNext):
     def readDB(self):
         self.filters.clear()
         self.types.clear()
-        self.types = self.workflow.getStepByName('types').data
+        self.types = self.workflow.types
         for type_name in self.types:
             if len(type_name.strip()) > 0:
                 self.filters[type_name] = TreeSet()
-        if self.neutral_list not in self.filters:
-            self.filters[self.neutral_list] = TreeSet()
-            self.types.append(self.neutral_list)
 
         with self.workflow.dao.create_session() as session:
             records = session.query(Filter).filter(Filter.task_id == self.workflow.task_id) \

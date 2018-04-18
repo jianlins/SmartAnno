@@ -49,4 +49,4 @@ wf.steps[1].complete()
 wf.steps[2].toggle.value = 'n2c2_sents'
 wf.steps[2].complete()
 wf.steps[3].sample_size_input.value = 100
-wf.steps[3].complete()
+
