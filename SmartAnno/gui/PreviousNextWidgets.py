@@ -30,7 +30,6 @@ class PreviousNext(Step):
         self.box = self.createBox()
 
     def start(self):
-        clear_output()
         display(self.box)
         pass
 
@@ -67,8 +66,8 @@ class PreviousNext(Step):
             self.next_button.style.button_color = 'SANDYBROWN'
             self.next_button.on_click(goNext)
         if not show_previous:
-            self.previous_button.disabled=True
-        if  not show_next:
+            self.previous_button.disabled = True
+        if not show_next:
             self.next_button.disabled = True
         return widgets.HBox([self.previous_button, self.next_button], layout=widgets.Layout(left='10%', width='80%'))
 
@@ -140,8 +139,8 @@ class PreviousNextWithOtherBranches(PreviousNext):
             self.next_button.style.button_color = 'SANDYBROWN'
             self.next_button.on_click(goNext)
         if not show_previous:
-            self.previous_button.disabled=True
-        if  not show_next:
+            self.previous_button.disabled = True
+        if not show_next:
             self.next_button.disabled = True
         return widgets.HBox(self.branch_buttons + [self.previous_button, self.next_button],
                             layout=widgets.Layout(left='10%', width='80%'))
@@ -152,9 +151,11 @@ class PreviousNextWithOptions(PreviousNext):
 
     def __init__(self, options=[], value=None, description='', tooltips=[], button_style='',
                  name=None, show_previous=True, show_next=True):
+        self.html = widgets.HTML(
+            value=description)
         self.toggle = widgets.ToggleButtons(
             options=options,
-            description=description,
+            description='',
             disabled=False,
             value=value,
             button_style=button_style,  # 'success', 'info', 'warning', 'danger' or ''
@@ -173,7 +174,7 @@ class PreviousNextWithOptions(PreviousNext):
         pass
 
     def createBox(self):
-        rows = [self.toggle] + self.addSeparator(top='10px') + [
+        rows = [self.html, self.toggle] + self.addSeparator(top='10px') + [
             self.addPreviousNext(self.show_previous, self.show_next)]
         vbox = widgets.VBox(rows)
         vbox.layout.flex_grown = 'column'

@@ -44,8 +44,8 @@ class Document(Model):
         self.META_DATA = META_DATA
 
     def __repr__(self):
-        return "<Document(DOC_ID='%s', BUNCH_ID='%s', DOC_NAME='%s',TEXT='%s',DATE='%s', REF_DATE='%s',META_DATA='%s')>" % (
-            self.DOC_ID, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE, self.REF_DATE, self.META_DATA)
+        return "<Document(DOC_ID='%s',DATASET_ID='%s', BUNCH_ID='%s', DOC_NAME='%s',TEXT='%s',DATE='%s', REF_DATE='%s',META_DATA='%s')>" % (
+            self.DOC_ID, self.DATASET_ID,self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE, self.REF_DATE, self.META_DATA)
 
     def clone(self):
         return Document(self.DOC_ID, self.DATASET_ID, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE,

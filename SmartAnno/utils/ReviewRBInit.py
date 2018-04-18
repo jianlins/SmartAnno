@@ -1,4 +1,3 @@
-import random
 from collections import OrderedDict
 from threading import Thread
 from time import sleep
@@ -7,16 +6,20 @@ import spacy
 from IPython.core.display import display, clear_output
 from ipywidgets import widgets
 from spacy.matcher import PhraseMatcher
-from sqlalchemy import or_, delete
 
 from conf.ConfigReader import ConfigReader
 from db.ORMs import Document, Annotation
-from gui.PreviousNextWidgets import PreviousNextHTML, PreviousNextWithOtherBranches
+from gui.PreviousNextWidgets import PreviousNextWithOtherBranches, PreviousNext
 from gui.Workflow import Step, logMsg
 from models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
 
+sample_options = ['Remove them', 'Keep them']
+tooltips = ['Remove all previously sampled data and start a fresh sampling',
+            'Keep previously sampled data and add extra sampling'
+            ]
 
-class ReviewRBInit(PreviousNextWithOtherBranches):
+
+class ReviewRBInit(PreviousNext):
     """Start review samples with rule-based method in the backend.
     This is more efficient and practical when reviewed data are relatively small at the beginning."""
 
@@ -28,49 +31,19 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
 
     def __init__(self, description='', name=str(Step.global_id + 1)):
         super().__init__(name=name)
-        self.sample_size_input = None
-        self.percent_slider = None
-        # save DOC_IDs that contain or not contain keywords filters (used in sampling strategy)
-        self.samples = {"contain": [], "notcontain": []}
-        self.box = None
-        self.data = {'docs': [], 'annos': OrderedDict()}
-        self.ready = False
-        # reset, continue, addmore,
-        self.move_next_option = ''
-
-        self.un_reviewed = 0
-        self.sampler = None
-        self.max_threshold = ConfigReader.getValue("review/rb_model_threshold")
-        pass
-
-    def start(self):
-        print('Please wait for reading data from db.', end='', flush=True)
-        self.backgroundPrinting()
-        self.init_real_time()
-        clear_output(True)
-        self.updateBox()
-        display(self.box)
-        pass
-
-    def updateBox(self):
-        total_contain = len(self.samples['contain'])
-        total_not_contain = len(self.samples['notcontain'])
-        desc = widgets.HTML(value='<h3>Start sampling for reviewing</h3>'
-                                  '<p>The whole corpus has %s samples that contain at least one of the keywords, '
-                                  'and %s don\'t contain.</p>' % (total_contain, total_not_contain))
-        recommended_samples = int(total_contain / 2 + total_not_contain / 4)
-        min_samples = 0
-        if recommended_samples > 400:
-            recommended_samples = 400
-        self.sample_size_input = widgets.BoundedIntText(value=recommended_samples, min=min_samples,
-                                                        max=total_contain + total_not_contain, step=1,
-                                                        description='Total samples you want to sample:',
+        self.toggle = widgets.ToggleButtons(options=sample_options, value=sample_options[-1],
+                                            description='What to do with previously sampled data? ',
+                                            style=dict(description_width='initial'))
+        self.toggle.observe(self.onPreviousSampleHandleChange)
+        self.sample_size_input = widgets.BoundedIntText(value=0, min=0,
+                                                        max=0, step=1,
+                                                        description='Total documents you want to sample:',
                                                         style=dict(description_width='initial'))
-        desc2 = widgets.HTML(value='<h4>Percentage to Filter: </h4><p>Choose how many percent of the samples '
-                                   'you want to contain the filter keywords. The rest percentage will be sampled '
-                                   'randomly from the samples that do not have any filter keywords.</p>')
+        self.sample_size_input.observe(self.onSampleConfigChange)
+
+        self.sampled_summary = widgets.HTML(value='')
         self.percent_slider = widgets.IntSlider(
-            value=60,
+            value=70,
             min=0,
             max=100,
             step=5,
@@ -81,16 +54,86 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             readout=True,
             readout_format='d'
         )
-        rows = [desc, self.sample_size_input]
+        self.percent_slider.observe(self.onSampleConfigChange)
+        # save DOC_IDs that contain or not contain keywords filters (used in sampling strategy)
+        self.samples = {"contain": [], "notcontain": []}
+        self.box = None
+        self.data = {'docs': [], 'annos': OrderedDict()}
+        self.ready = False
+        # reset, continue, addmore,
+        self.move_next_option = ''
+        self.total = None
+        self.total_contains = None
+        self.un_reviewed = 0
+        self.sampler = None
+        self.samples = dict()
+        self.current_stats = dict()
+        self.max_threshold = ConfigReader.getValue("review/rb_model_threshold")
+        self.sample_sizes = dict()
+
+    def start(self):
+        # print('Please wait for reading data from db.', end='', flush=True)
+        # self.backgroundPrinting()
+        self.init_real_time()
+        clear_output(True)
+        self.updateBox()
+        display(self.box)
+        pass
+
+    def updateBox(self):
+        min_samples = 0
+        recommended_samples = self.computeRecommendedSampleSize()
+        title = widgets.HTML(value='<h3>Start sampling for reviewing</h3>')
+        self.sample_size_input.max = self.total - len(self.data['annos'])
+        self.sample_size_input.value = recommended_samples
+        subtitle0 = widgets.HTML(
+            value='<h4>Previously Sampled Data:</h4><p>We found <b>{}</b> previously sampled documents of this task in the database.</p>'
+                .format(len(self.data['annos'])))
+        subtitle1 = widgets.HTML(value='<h4>Sample size:</h4>')
+
+        side_note = widgets.HTML(
+            value='<p>If you choose <span style="background-color:  #E8E8E8">"{}"</span>, then sample size '
+                  'you set below will be the amount of extra documents to be added.'.format(sample_options[1]))
+        subtitle2 = widgets.HTML(
+            value='<h4>Percentage to Filter: </h4><p>Choose how many percent of the documents '
+                  'you want to contain the filter keywords. The rest percentage will be sampled '
+                  'randomly from the documents that do not have any filter keywords.</p>')
+
+        rows = [title]
         if len(self.data['annos']) > 0:
-            side_note = widgets.HTML(
-                value='<p>If you choose <span style="background-color:  #E8E8E8">AddExtraSampling</span>, then this '
-                      'number will be the amount of extra samples that you want to add.')
-            rows.append(side_note)
-        rows += self.addSeparator(top='10px') + [desc2,
-                                                 self.percent_slider] + self.addSeparator(
-            top='10px') + [self.addPreviousNext(self.show_previous, self.show_next)]
+            rows += [subtitle0, self.toggle, side_note] + self.addSeparator(top='10px')
+            # if previous samples exist, set new sample size to 0
+            self.sample_size_input.value = 0
+        else:
+            self.toggle.value = sample_options[0]
+        rows.append(subtitle1)
+        rows.append(self.sample_size_input)
+
+        self.updateSampledSummary(self.current_stats, self.sample_size_input.value,
+                                  self.percent_slider.value, self.toggle.value)
+        rows += self.addSeparator(top='10px') + [subtitle2, self.percent_slider] \
+                + self.addSeparator(top='10px') + [self.sampled_summary] + self.addSeparator(top='10px') \
+                + [self.addPreviousNext(self.show_previous, self.show_next)]
         self.box = widgets.VBox(rows)
+
+        pass
+
+    def computeRecommendedSampleSize(self):
+        if self.total is None:
+            self.total = sum(self.current_stats['all_counts'].values())
+        total_not_contain = self.current_stats['all_counts']['not_contain']
+        self.total_contains = self.total - total_not_contain
+        recommended_samples = int(self.total_contains / 2 + total_not_contain / 4)
+        if recommended_samples > 200:
+            recommended_samples = 200
+        return recommended_samples
+
+    def updateSampledSummary(self, current_stats, sample_size, filter_percent, sample_option=sample_options[-1]):
+        self.sample_sizes = self.sampler.getStratefiedSizes(current_stats, sample_size,
+                                                            sample_option == sample_options[1],
+                                                            filter_percent)
+        table_html = self.renderStatsInTable(current_stats, self.sample_sizes, filter_percent)
+        self.sampled_summary.value = table_html
         pass
 
     def init_real_time(self):
@@ -124,30 +167,63 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
                 if anno.REVIEWED_TYPE is None or anno.REVIEWED_TYPE == "":
                     un_reviewed += 1
 
-        if len(self.data['annos']) > 0:
-            self.addCondition("ResetSampling", self.next_step, 'Remove previous reviewed data and restart sampling')
-            self.addCondition("AddExtraSampling", self.next_step, 'Keep previous reviewed data and add extra samples')
-            self.show_next = False
-        else:
-            self.show_next = True
+        # if len(self.data['annos']) > 0:
+        #     # self.addCondition("ResetSampling", self.next_step, 'Remove previous reviewed data and restart sampling')
+        #     # self.addCondition("AddExtraSampling", self.next_step, 'Keep previous reviewed data and add extra samples')
+        #     self.show_next = False
+        # else:
+        #     self.show_next = True
         self.un_reviewed = un_reviewed
-        if un_reviewed > 0:
-            self.addCondition("ContinueReview", self.next_step,
-                              'Don\'t sampling, just continue to finish reviewing previous sampled data')
+        # if un_reviewed > 0:
+        #     self.addCondition("ContinueReview", self.next_step,
+        #                       'Don\'t sampling, just continue to finish reviewing previous sampled data')
         pass
 
     def queryDocIds(self):
-        self.samples = {"contain": [], "notcontain": []}
-        with self.workflow.dao.create_session() as session:
-            doc_iter = session.query(Document).filter(Document.DATASET_ID == 'origin_doc')
-            for doc in doc_iter:
-                if len(ReviewRBInit.matcher(ReviewRBInit.nlp(doc.TEXT))) > 0:
-                    self.samples['contain'].append(doc.DOC_ID)
-                else:
-                    self.samples['notcontain'].append(doc.DOC_ID)
-                pass
+        self.samples = dict()
+        for type_name in self.workflow.filters.keys():
+            self.samples[type_name] = []
+
+        self.sampler = KeywordStratefiedSampler(dao=self.workflow.dao,
+                                                previous_sampled_ids=set(self.data['annos'].keys()),
+                                                dataset_id=self.workflow.dataset_id)
+        grouped_ids, new_ids, self.current_stats = self.sampler.getSummary(self.workflow.filters)
         self.ready = True
         pass
+
+    def renderStatsInTable(self, stats, sample_counts, percentage):
+        html = []
+        html.append('<h4>Summary:</h4><table  class=\'table table-striped table-bordered table-hover \'>')
+        html.append('<thead>')
+        html.append('<tr>')
+        html.append('<th>Possible document types based on keywords</th>')
+        html.append('<th>Total # of documents</th>')
+        html.append('<th># of documents haven&apos;t been sampled</th>')
+        html.append('<th># of documents will be sampled</th>')
+        html.append('</tr>')
+        html.append('</thead>')
+        html.append('<tbody>')
+        for type_name, all_count in stats['all_counts'].items():
+            html.append('<tr>')
+            html.append(
+                '<td>{type_name}</td><td>{all_count}</td><td>{new_count}</td><td><b>{'
+                'sample_count}</b></td> '.format(type_name=type_name, all_count=all_count,
+                                                 new_count=stats['new_counts'][type_name],
+                                                 sample_count=str(sample_counts[type_name])))
+            html.append('</tr>')
+        html.append('<tr>')
+        html.append(
+            '<td><b>Total</b></td><td>{all_count}</td><td>{new_count}</td><td><b>{'
+            'sample_count}</b></td> '.format(all_count=self.total,
+                                             new_count=sum(stats['new_counts'].values()),
+                                             sample_count=sum(sample_counts.values())))
+        html.append('</tr>')
+        html.append('</tbody>')
+        html.append('</table>')
+        html.append(
+            '<sup>Note: This summary is simply based on keywords search (does not take prevously reviewed true types into consideration). '
+            '<br/>Each document is counted once. If one document has keywords in multiple types, this document will be counted only in the top type.</sup>')
+        return ''.join(html)
 
     def backgroundPrinting(self):
         thread_gm = Thread(target=self.printWaiting)
@@ -162,10 +238,10 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
 
     def complete(self):
         clear_output(True)
-        if len(self.data['annos']) > 0:
-            self.continueReview()
-        else:
-            self.addExtra()
+        if self.toggle.value == sample_options[0]:
+            self.restSampling()
+        if sum(self.sample_sizes.values()) > 0:
+            self.getSampledDocs()
         if self.next_step is not None:
             logMsg((self, 'workflow complete'))
             if isinstance(self.next_step, Step):
@@ -180,47 +256,6 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             print("next step hasn't been set.")
         pass
 
-    def navigate(self, b):
-        clear_output(True)
-        self.move_next_option = b.description[0].upper()
-        if hasattr(b, 'linked_step'):
-            self.updateData()
-            b.linked_step.start()
-        else:
-            self.complete()
-        pass
-
-    def updateData(self, *args):
-        """data related operations when click a button to move on to next step"""
-        if self.move_next_option == "R":
-            self.restSampling()
-        elif self.move_next_option == "A":
-            self.addExtra()
-        else:
-            self.continueReview()
-        pass
-
-    def addExtra(self):
-        logMsg("add extra samples")
-        self.getSampledDocs(set(self.data['annos'].keys()))
-        pass
-
-    def continueReview(self):
-        logMsg("continue review")
-        self.workflow.filter_percent = 0.01 * self.percent_slider.value
-        # with self.workflow.dao.create_session() as session:
-        #     # doc_iter = session.query(Annotation,Document).select_from(Document).join(Document.DOC_ID).filter(
-        #     #     Annotation.TASK_ID == self.workflow.task_id)
-        #     doc_iter = session.query(Document).filter(Document.DOC_ID == Annotation.DOC_ID).filter(
-        #         Annotation.TASK_ID == self.workflow.task_id)
-        #     for doc in doc_iter:
-        #         docs.append(doc.clone())
-        # self.data['docs'] = self.data['docs'] + docs
-        # self.data = {'docs': docs, 'annos': self.previousSampled}
-        self.workflow.sample_size = len(self.data['docs'])
-        self.workflow.samples = self.data
-        pass
-
     def restSampling(self):
         """discard previous sampling and reviewed data, start a new sampling"""
         logMsg('reset sampling')
@@ -231,29 +266,45 @@ class ReviewRBInit(PreviousNextWithOtherBranches):
             for anno in anno_iter:
                 session.delete(anno)
             session.commit()
-
-        self.getSampledDocs()
         pass
 
-    def getSampledDocs(self, exclusion_ids=set()):
+    def getSampledDocs(self):
         self.workflow.sample_size = self.sample_size_input.value
         self.workflow.filter_percent = 0.01 * self.percent_slider.value
-        self.sampler = KeywordStratefiedSampler(filter_percent=self.workflow.filter_percent, dao=self.workflow.dao,
-                                                stratefied_sets=self.samples, exclusions=exclusion_ids)
+
         # docs a list of Document object, if_contains a map with DOC_IDs as keys, 'contain' or 'notcontain' as the
         # values
-        newly_sampled_docs = self.sampler.sampling(self.workflow.sample_size)
+        sampled_ids = self.sampler.samplingIds(self.sample_sizes,
+                                               exclude_previous_sampled_id=(self.toggle.value == sample_options[-1]))
+
+        newly_sampled_docs = self.sampler.getDocsFromSampledIds(sampled_ids, self.sample_sizes['not_contain'])
         self.data['docs'].extend(newly_sampled_docs)
-        if len(self.data['docs']) > 0:
-            self.workflow.sample_size = self.sampler.adjusted_sample_size
-            self.workflow.filter_percent = self.sampler.adjusted_filter_percent
-            self.workflow.samples = self.data
+        self.workflow.samples = self.data
+        if len(newly_sampled_docs) > 0:
             with self.workflow.dao.create_session() as session:
                 for doc in newly_sampled_docs:
                     anno = Annotation(TASK_ID=self.workflow.task_id,
                                       DOC_ID=doc.DOC_ID)
                     self.data['annos'][doc.DOC_ID] = anno.clone()
+
                     session.add(anno)
-        if self.un_reviewed > 0:
-            self.continueReview()
+        pass
+
+    def onPreviousSampleHandleChange(self, change):
+        if self.toggle.value == sample_options[-1]:
+            # print('sample_options[-1]', self.toggle.value)
+            self.sample_size_input.value = 0
+            self.sample_size_input.max = self.total - len(self.data['annos'])
+        else:
+            # print('sample_options[0]', self.toggle.value)
+            if self.sample_size_input.value == 0:
+                recommended_samples = self.computeRecommendedSampleSize()
+                self.sample_size_input.value = recommended_samples
+            self.sample_size_input.max = self.total
+        pass
+
+    def onSampleConfigChange(self, change):
+        # print(change)
+        self.updateSampledSummary(self.current_stats, self.sample_size_input.value,
+                                  self.percent_slider.value, self.toggle.value)
         pass

@@ -2,7 +2,7 @@ from IPython.core.display import display
 from ipywidgets import widgets, Label
 
 from conf.ConfigReader import ConfigReader
-from gui.MyWidgets import ToggleButtonsMultiSelection
+from gui.MyWidgets import ToggleButtonsMultiSelection, ToggleButtonsMultiSelectionInBox
 from gui.PreviousNextWidgets import PreviousNext
 from utils.TreeSet import TreeSet
 
@@ -46,7 +46,7 @@ class KeywordsEmbeddingExtenderSetup(PreviousNext):
         for type_name in filters.keys():
             rows.append(Label(value=type_name + ':'))
             # only show single word
-            selections = ToggleButtonsMultiSelection(
+            selections = ToggleButtonsMultiSelectionInBox(
                 options=[word for word in filters[type_name].to_list() if ' ' not in word])
             self.to_we_ext_filters[type_name] = selections
             rows.append(selections)

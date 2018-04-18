@@ -54,6 +54,10 @@ class IntroStep(BranchingStep):
             self.workflow.steps[1].start()
         pass
 
+    def complete(self):
+        self.navigate(self.branch_buttons[0])
+        pass
+
     def saveGloveConfig(self):
         self.glove_path = self.glove_path_input.value
         self.glove_vocab = self.glove_vocab_input.value

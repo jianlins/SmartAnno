@@ -16,7 +16,7 @@ from models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotT
 not_met_suffix = '_not_met'
 
 
-class SVMBOWClassifier(BaseClassifier):
+class SVMClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 2
@@ -46,11 +46,10 @@ class SVMBOWClassifier(BaseClassifier):
         pass
 
     def defineModel(self):
-        # model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-        #                            n_iter=self.iterations,
-        #                            cv=self.cv,
-        #                            n_jobs=self.workers)
-        model=self.pipeline
+        model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
+                                   n_iter=self.iterations,
+                                   cv=self.cv,
+                                   n_jobs=self.workers)
         return model
 
     def train(self, x, y):
@@ -62,7 +61,7 @@ class SVMBOWClassifier(BaseClassifier):
                 logMsg(
                     'The whole annotated Data does not have enoguh examples for all classes.  Skipping training for '
                     'class : {}'.format(
-                        classname))
+                        self.classname))
                 return
 
         # before we run a search, let's do an 80-20 split for (CV/Validation )

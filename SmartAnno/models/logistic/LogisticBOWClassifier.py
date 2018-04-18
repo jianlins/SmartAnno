@@ -61,7 +61,7 @@ class LogisticBOWClassifier(BaseClassifier):
                 logMsg(
                     'The whole annotated Data does not have enoguh examples for all classes.  Skipping training for '
                     'class : {}'.format(
-                        self.classname))
+                        classname))
                 return
 
         # before we run a search, let's do an 80-20 split for (CV/Validation )

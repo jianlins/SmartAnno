@@ -15,18 +15,6 @@
       "Typea",
       "Typeb"
     ],
-    "tasknamer_5": "task1",
-    "types_9": [
-      "Typea",
-      "Typeb",
-      "neutral"
-    ],
-    "tasknamer_6": "task1",
-    "types_10": [
-      "Typea",
-      "Typeb",
-      "neutral"
-    ],
     "tasknamer_25": "task1",
     "types_29": [
       "Typea",
@@ -74,5 +62,8 @@
   },
   "logisticbow_model": {
     "learning_pace": 10
+  },
+  "whoosh": {
+    "root_path": "data/whoosh_idx"
   }
 }

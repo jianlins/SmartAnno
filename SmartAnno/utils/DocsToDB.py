@@ -5,11 +5,15 @@ from PyRuSH.RuSH import RuSH
 from ipywidgets import widgets
 from sqlalchemy_dao import Model
 from textblob import TextBlob
+from whoosh.fields import Schema, TEXT
+from whoosh.index import create_in, open_dir
+from whoosh.writing import AsyncWriter
 
 from conf.ConfigReader import ConfigReader
-from db.ORMs import Task, saveDFtoDB
+from db.ORMs import Task, saveDFtoDB, Document
 from gui.PreviousNextWidgets import PreviousNext, PreviousNextText
 from gui.Workflow import Step
+from utils.NoteBookLogger import logMsg
 
 
 class DocsToDB(PreviousNext):
@@ -20,6 +24,23 @@ class DocsToDB(PreviousNext):
         self.dao = None
         self.dbpath = ''
         self.remove_old = False
+        self.dataset_name = 'orig'
+        self.whoosh_root = ConfigReader.getValue("whoosh/root_path")
+        self.html1 = widgets.HTML(
+            '<h4>Give a name for this dataset: </h4>')
+        self.dataset_name_input = None
+        self.html2 = None
+        self.toggle = widgets.ToggleButtons(
+            options=['TextBlob_Splitter', 'PyRuSh', 'Not_To_Split'],
+            description='',
+            disabled=False,
+            value='Not_To_Split',
+            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['Use TextBlob sentence splitter', 'Use PyRuSH to split sentences', 'don\'t split'],
+            layout=widgets.Layout(width='70%')
+            #     icons=['check'] * 3
+        )
+        self.data_step = None
         pass
 
     def start(self):
@@ -39,23 +60,12 @@ class DocsToDB(PreviousNext):
         pass
 
     def updateBox(self):
-        self.html1 = widgets.HTML(
-            '<h4>Give a name for this dataset: </h4>')
-        self.dataset_name_input = widgets.Text(value=self.previous_step.dataset_name)
-        self.dataset_name_input.observe(self.updateDateSetName, type='change')
+        self.data_step = self.workflow.getStepByName('readfiles')
+        self.dataset_name_input = widgets.Text(value=self.data_step.dataset_name)
         self.html2 = widgets.HTML(
             '<h4>Do you want to split documents into sentences for annotating?</h4><p>The sentences will be imported '
             'into dataset: <b>"{}_sents"</b></p>'.format(self.dataset_name_input.value))
-        self.toggle = widgets.ToggleButtons(
-            options=['TextBlob_Splitter', 'PyRuSh', 'Not_To_Split'],
-            description='',
-            disabled=False,
-            value='Not_To_Split',
-            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['Use TextBlob sentence splitter', 'Use PyRuSH to split sentences', 'don\'t split'],
-            layout=widgets.Layout(width='70%')
-            #     icons=['check'] * 3
-        )
+        self.dataset_name_input.observe(self.updateDateSetName, type='change')
         rows = [self.html1, self.dataset_name_input, self.html2, self.toggle] + self.addSeparator(top='10px') + [
             self.addPreviousNext(self.show_previous, self.show_next)]
         vbox = widgets.VBox(rows)
@@ -63,23 +73,25 @@ class DocsToDB(PreviousNext):
         self.box = vbox
 
     def updateDateSetName(self, fil):
+        # when change the dataset name, automatically change the sentence split dataset name
         if len(fil['new']) > 0 and fil['new'] != fil['old']:
             if type(fil['new']) is dict:
                 new_name = fil['new']['value']
             else:
                 new_name = fil['new']
             self.html2.value = '<h4>Do you want to split documents into sentences for annotating?</h4><p>' \
-                               'The sentences will be imported into dataset: <b>"{}_sents"</b></p>'.format(
-                new_name)
+                               'The sentences will be imported into dataset: <b>"{}_sents"</b></p>'.format(new_name)
         pass
 
     def complete(self):
         clear_output(True)
-        db_initiater = self.workflow.getStepByName('db_initiater')
-        if db_initiater.overwrite:
+        db_initiator = self.workflow.getStepByName('db_initiator')
+        overwrite = db_initiator.overwrite
+        self.dataset_name = self.dataset_name_input.value.strip()
+        if overwrite:
             os.remove(self.dbpath)
             self.createSQLTables()
-        self.importData()
+        self.importData(overwrite)
         if self.next_step is not None:
             if isinstance(self.next_step, Step):
                 if self.workflow is not None:
@@ -97,24 +109,24 @@ class DocsToDB(PreviousNext):
         Model.metadata.create_all(bind=self.dao._engine)
         pass
 
-    def importData(self):
-        if hasattr(self.previous_step, 'data') and self.previous_step.data is not None:
-            self.parseData(self.previous_step.data)
-            # self.previous_step.data.to_sql('document', self.dao._engine.raw_connection(),
+    def importData(self, overwrite=False):
+        if hasattr(self.data_step, 'data') and self.data_step.data is not None:
+            self.parseData(self.data_step)
+            # self.data_step.data.to_sql('document', self.dao._engine.raw_connection(),
             #                                if_exists='append')
-            df = self.previous_step.data
-            df['DATASET_ID'] = self.dataset_name_input.value
+            df = self.data_step.data
+            df['DATASET_ID'] = self.dataset_name
+            self.saveToWhoosh(df, self.dataset_name, overwrite)
             saveDFtoDB(self.workflow.dao, df, 'document')
 
+        # choose which sentence splitter you want to use.
         if self.toggle.value == 'TextBlob_Splitter':
-            df['DATASET_ID'] = self.dataset_name_input.value + '_sents'
-            self.saveSentences(self.workflow.dao, df, 'document', self.textblobSplitter)
+            self.saveSentences(self.workflow.dao, df, 'document', self.textblobSplitter, overwrite)
         elif self.toggle.value == 'PyRuSh':
-            df['DATASET_ID'] = self.dataset_name_input.value + '_sents'
-            self.saveSentences(self.workflow.dao, df, 'document', self.pyRuSHSplitter)
+            self.saveSentences(self.workflow.dao, df, 'document', self.pyRuSHSplitter, overwrite)
 
-        if hasattr(self.previous_step, 'references') and self.previous_step.references is not None:
-            saveDFtoDB(self.workflow.dao, self.previous_step.references, 'annotation')
+        if hasattr(self.data_step, 'references') and self.data_step.references is not None:
+            saveDFtoDB(self.workflow.dao, self.data_step.references, 'annotation')
 
         if isinstance(self.workflow.steps[1], PreviousNextText) and self.workflow.steps[
             1].data is not None and isinstance(self.workflow.steps[1].data, str):
@@ -128,10 +140,10 @@ class DocsToDB(PreviousNext):
 
         pass
 
-    def saveSentences(self, dao, df, table_name, split_func):
+    def saveSentences(self, dao, df, table_name, split_func, overwrite=False):
         import pandas as pd
-        sents_df = pd.DataFrame(columns=['BUNCH_ID', 'DOC_NAME', 'TEXT', 'DATE', 'REF_DATE'])
-        progressbar = widgets.IntProgress(min=0, max=len(df), value=0, layout=widgets.Layout(width='50%'),
+        sents_df = pd.DataFrame(columns=['DATASET_ID', 'BUNCH_ID', 'DOC_NAME', 'TEXT', 'DATE', 'REF_DATE'])
+        progressbar = widgets.IntProgress(min=0, max=len(df), value=0, layout=widgets.Layout(width='80%'),
                                           description='Splitting:')
         progressbar.value = 0
         display(progressbar)
@@ -145,7 +157,9 @@ class DocsToDB(PreviousNext):
             progressbar.value += 1
             for sentence in split_func(text):
                 sentence_id += 1
-                sents_df.loc[len(sents_df)] = [bunch_id, doc_name + "_" + str(sentence_id), sentence, date, ref_date]
+                sents_df.loc[len(sents_df)] = [self.dataset_name + "_sents", bunch_id,
+                                               doc_name + "_" + str(sentence_id), sentence, date, ref_date]
+        self.saveToWhoosh(sents_df, self.dataset_name + "_sents")
         saveDFtoDB(dao, sents_df, table_name)
         pass
 
@@ -158,10 +172,30 @@ class DocsToDB(PreviousNext):
         sentences = rush.segToSentenceSpans(text)
         return [text[sentence.begin:sentence.end].strip() for sentence in sentences]
 
-    def parseData(self, df):
+    def parseData(self, data_step):
         """dataset specific, parse meta-data from the existing columns"""
         if not 'DATASET_ID' in self.previous_step.data.columns:
             # df.insert(1, 'bunch_id', [name.split('_')[0] for name in df.index], allow_duplicates=True)
             # df['date'] = df.apply(lambda row: row.text[13:row.text.find('\n')].strip(), axis=1)
-            df['DATASET_ID'] = df.apply(lambda row: self.previous_step.dataset_name, axis=1)
+            data_step.data['DATASET_ID'] = data_step.data.apply(lambda row: data_step.dataset_name, axis=1)
+        pass
+
+    def saveToWhoosh(self, df, dataset_id, overwrite=False):
+        # use whoosh search engine to enable full text search
+        ws_path = os.path.join(self.whoosh_root, dataset_id)
+        if not os.path.exists(ws_path):
+            os.mkdir(ws_path)
+            logMsg(str(os.path.abspath(ws_path)) + ' does not exist, create it to store whoosh index')
+        schema = Schema(DOC_ID=TEXT(stored=True), TEXT=TEXT)
+        if overwrite:
+            ix = create_in(ws_path, schema)
+        else:
+            ix = open_dir(ws_path)
+        writer = AsyncWriter(ix)
+
+        with self.workflow.dao.create_session() as session:
+            doc_iter = session.query(Document).filter(Document.DATASET_ID == dataset_id)
+            for doc in doc_iter:
+                writer.add_document(DOC_ID=doc.DOC_ID, TEXT=doc.TEXT)
+            writer.commit()
         pass

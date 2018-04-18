@@ -18,7 +18,6 @@ class AnnotationTypeDef(PreviousNextTextArea):
         pass
 
     def start(self):
-        clear_output()
         self.readDB()
         display(self.box)
         pass
@@ -46,6 +45,6 @@ class AnnotationTypeDef(PreviousNextTextArea):
             session.query(Typedef).filter(Typedef.task_id == self.workflow.task_id).delete()
             session.add_all([Typedef(type_name=type_name, task_id=self.workflow.task_id) for type_name in self.data])
         self.workflow.types = [item.strip() for item in self.text_area.value.split("\n") if
-                               len(item.strip()) > 0 and item.strip() != 'neutral']
+                               len(item.strip()) > 0]
         super().complete()
         pass

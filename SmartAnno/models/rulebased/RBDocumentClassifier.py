@@ -27,8 +27,6 @@ class RBDocumentClassifierFactory(object):
     def genTargetRules(cls, final_fiters=dict()):
         rules = ['Lex	Type	Regex	Direction	Codes']
         for type_name, words in final_fiters.items():
-            if type_name == 'neutral':
-                continue
             for word in words:
                 rules.append('%s\t%s\t\t\t' % (word, type_name))
         return '\n'.join(rules)
@@ -39,8 +37,6 @@ class RBDocumentClassifierFactory(object):
         di_rules = ['DocConclusion,EvidenceTypes']
 
         for type_name in filters.keys():
-            if type_name == 'neutral':
-                continue
             fi_rules.append('NEG_%s,%s,DEFINITE_NEGATED_EXISTENCE' % (type_name, type_name))
             fi_rules.append('NEG_%s,%s,AMBIVALENT_EXISTENCE' % (type_name, type_name))
             fi_rules.append('NEG_%s,%s,PROBABLE_NEGATED_EXISTENCE' % (type_name, type_name))

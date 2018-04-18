@@ -2,7 +2,7 @@ from IPython.core.display import display
 from ipywidgets import widgets, Label, Layout
 
 from conf.ConfigReader import ConfigReader
-from gui.MyWidgets import ToggleButtonsMultiSelection
+from gui.MyWidgets import ToggleButtonsMultiSelection, ToggleButtonsMultiSelectionInBox
 from gui.PreviousNextWidgets import PreviousNext
 from utils.TreeSet import TreeSet
 
@@ -34,7 +34,7 @@ class KeywordsUMLSExtenderSetup(PreviousNext):
         for type_name in filters.keys():
             rows.append(Label(value=type_name + ':'))
 
-            selections = ToggleButtonsMultiSelection(options=filters[type_name].to_list(),
+            selections = ToggleButtonsMultiSelectionInBox(options=filters[type_name].to_list(),
                                                      value=list(self.to_ext_words[type_name]) if hasattr(self,
                                                                                                          'to_ext_words') and isinstance(
                                                          self.to_ext_words,

@@ -24,7 +24,6 @@ class BranchingStep(Step):
         pass
 
     def start(self):
-        clear_output()
         display(self.box)
         pass
 
@@ -108,9 +107,7 @@ class RepeatStep(BranchingStep):
         if hasattr(b, 'linked_step') and b.linked_step is not None:
             b.linked_step.start()
         else:
-            if hasattr(self.branch_buttons[-1], 'linked_step') and self.branch_buttons[-1].linked_step is not None:
-                self.branch_buttons[-1].linked_step.start()
-            elif not hasattr(b, 'navigate_direction') or b.navigate_direction == 1:
+            if not hasattr(b, 'navigate_direction') or b.navigate_direction == 1:
                 self.complete()
             else:
                 self.goBack()

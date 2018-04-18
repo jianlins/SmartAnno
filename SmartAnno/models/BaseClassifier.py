@@ -43,7 +43,7 @@ class BaseClassifier:
 
     @abc.abstractmethod
     def classify(self, txt):
-        return 'neutral'
+        return 'Irrelevant'
 
     @abc.abstractmethod
     def train(self, x, y):

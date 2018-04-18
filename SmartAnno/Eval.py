@@ -22,7 +22,7 @@ import logging
 def evaluate(task_name='language', classifiers=[LogisticBOWClassifier]):
 	ConfigReader()
 
-	dbi = DBInitiater(name='db_initiater')
+	dbi = DBInitiater(name='db_initiator')
 	anno_type = AnnotationTypeDef('<h3>Annotation types:</h3><p>List all the types you want to identify below. Each type per line.<br/>If you'
 								  'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
 								  'for each sample. </p>', name='types')

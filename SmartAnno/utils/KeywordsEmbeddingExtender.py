@@ -1,3 +1,4 @@
+from db.ORMs import Filter
 from gui.BranchingWidgets import LoopRepeatSteps
 from gui.Workflow import Step, logMsg
 from models.GloveModel import GloveModel
@@ -22,11 +23,21 @@ class KeywordsEmbeddingExtender(LoopRepeatSteps):
         pass
 
     def complete(self):
-        self.data = TreeSet()
-        for step in self.loop_workflow.steps:
-            for word in step.data:
-                self.data.add(word)
-        self.workflow.we_extended = self.data
+        # Differentiate the keywords from where added----Not used for now
+        # self.data = TreeSet()
+        # for step in self.loop_workflow.steps:
+        #     for word in step.data:
+        #         self.data.add(word)
+        # self.workflow.we_extended = self.data
+
+        logMsg('update word embedding extended keywords into database')
+        with self.workflow.dao.create_session() as session:
+            records = session.query(Filter).filter(Filter.task_id == self.workflow.task_id) \
+                .filter(Filter.type == 'orig')
+            for record in records:
+                type_name = record.type_name
+                keywords = '\n'.join(self.workflow.filters[type_name]).strip()
+                record.keyword = keywords
 
         super().complete()
         pass
@@ -74,7 +85,8 @@ class RepeatWEMultipleSelection(RepeatMultipleSelection):
             extending = []
             try:
                 extending = GloveModel.glove_model.similar_by_word(word.lower())
-                extending = KeywordsUMLSExtender.filterExtended([pair[0] for pair in extending], type_name, self.master.workflow.filters,
+                extending = KeywordsUMLSExtender.filterExtended([pair[0] for pair in extending], type_name,
+                                                                self.master.workflow.filters,
                                                                 self.workflow.extended)
             except KeyError:
                 logMsg(("word '%s' not in vocabulary" % word.lower()))

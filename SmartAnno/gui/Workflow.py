@@ -100,7 +100,7 @@ class Workflow(object):
     it can trigger the next step to start."""
     global_id = 0
 
-    def __init__(self, steps=[], name='workflow_' + str(global_id), config_file='conf/smartanno_conf2.json'):
+    def __init__(self, steps=[], name='workflow_' + str(global_id), config_file='conf/smartanno_conf.json'):
         Workflow.global_id += 1
         self.name = name
         self.steps = []

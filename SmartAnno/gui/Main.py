@@ -10,8 +10,10 @@ from gui.Workflow import Workflow
 from models.BaseClassifier import NotTrained
 from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from models.svm.SVMBOWClassifier import SVMBOWClassifier
+from models.svm.SVMClassifier import SVMClassifier
 from utils.AnnotationTypeDef import AnnotationTypeDef
 from utils.DBInitiater import DBInitiater
+from utils.DataSetChooser import DataSetChooser
 from utils.DocsToDB import DocsToDB
 from utils.IntroStep import IntroStep
 from utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
@@ -58,7 +60,7 @@ class Main:
         self.workflow = Workflow(
             [IntroStep('<h2>Welcome to SmartAnno!</h2><h4>First, let&apos;s import txt data from a directory. </h4>',
                        name='intro'),
-             DBInitiater(name='db_initiater'),
+             DBInitiater(name='db_initiator'),
              TaskChooser(name='tasknamer'),
              DirChooser(name='choosedir'), ReadFiles(name='readfiles'),
              DocsToDB(name='save2db'),
@@ -78,6 +80,7 @@ class Main:
                                   max_query=cr.getValue("umls/max_query")),
              KeywordsEmbeddingExtenderSetup(name='w_e_extender_setup'),
              KeywordsEmbeddingExtender(name='w_e_extender', max_query=40),
+             DataSetChooser(name='dataset_chooser', description='<h4>Choose which dateaset you want to use: </h4>'),
              ReviewRBInit(name="rb_review_init"),
              ReviewRBLoop(name='rb_review'),
              PreviousNextHTML(

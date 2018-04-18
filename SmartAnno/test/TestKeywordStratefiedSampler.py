@@ -1,3 +1,5 @@
+from db.ORMs import Annotation, Document
+from models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
 import logging
 
 import sqlalchemy_dao
@@ -30,22 +32,28 @@ wf.append(AnnotationTypeDef(
 wf.append(KeywordsFiltering(
     name='keywords'))
 wf.append(DataSetChooser(name='dataset_chooser'))
-rb = ReviewRBInit(name="rb_review_init")
-wf.append(rb)
-rv = ReviewRBLoop(name='rb_review', rush_rule='../conf/rush_rules.tsv')
-wf.append(rv)
 wf.append(PreviousNextHTML(
     '<h2>Congratuations!</h2><h4>You have finished the initial review on the rule-base preannotations. </h4>',
     name='intro'))
-wf.append(ReviewMLInit(name='ml_review_init'))
-wf.append(ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier))
-
 wf.start()
 wf.steps[0].complete()
 wf.steps[1].complete()
-print(wf.steps[2].toggle.options)
 wf.steps[2].toggle.value = 'n2c2_sents'
 wf.steps[2].complete()
-# rb.navigate(rb.branch_buttons[2])
-# wf.steps[5].complete()
-# wf.steps[6].complete()
+data = {'annos': dict(), 'docs': []}
+with wf.dao.create_session() as session:
+    db_iter = session.query(Annotation, Document).join(Document, Document.DOC_ID == Annotation.DOC_ID).filter(
+        Annotation.TASK_ID == wf.task_id).distinct(Document.DOC_ID)
+    for anno, doc in db_iter:
+        data['annos'][doc.DOC_ID] = anno.clone()
+        data['docs'].append(doc.clone())
+
+sampler = KeywordStratefiedSampler(dao=wf.dao,
+                                   previous_sampled_ids=set(data['annos'].keys()), dataset_id=wf.dataset_id)
+print(data['annos'].keys())
+grouped_ids, new_ids, stats = sampler.getSummary(wf.filters)
+print('\n'.join(str(ele) for ele in stats.items()))
+sampled = sampler.sampling(130000, grouped_ids, new_ids,exclude_previous_sampled_id=True)
+# for docs in sampled:
+#     print(docs.DOC_NAME)
+print(len(sampled))

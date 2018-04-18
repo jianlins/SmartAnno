@@ -11,7 +11,7 @@ from utils.TreeSet import TreeSet
 
 class KeywordsFiltering(PreviousNext):
     """display text fields, one for each type and one extra for neutral filters (doesn't belong to any type but related to the classification task)"""
-    neutral_list = 'neutral'
+    neutral_list = 'Irrelevant'
 
     def __init__(self,
                  description='<h4>Keywords Filter</h4><p>Type your keywords filter below. These key words are <b>optional</b>. They will'
@@ -47,7 +47,7 @@ class KeywordsFiltering(PreviousNext):
     def readDB(self):
         self.filters.clear()
         self.types.clear()
-        self.types = self.workflow.steps[self.pos_id - 1].data
+        self.types = self.workflow.getStepByName('types').data
         for type_name in self.types:
             if len(type_name.strip()) > 0:
                 self.filters[type_name] = TreeSet()
@@ -73,15 +73,16 @@ class KeywordsFiltering(PreviousNext):
             disabled=False,
             layout=widgets.Layout(width=self.width, height=self.height)) for type_name in self.types]
         if self.width.endswith("%"):
-            column_width = str(int(self.width[:-1]) + 5)+'%'
+            column_width = str(int(self.width[:-1]) + 5) + '%'
         elif self.width.endswith("px"):
-            column_width = str(int(self.width[:-2] + 10))+'px'
+            column_width = str(int(self.width[:-2] + 10)) + 'px'
         else:
             column_width = str(int(self.width) + 10)
-        boxed_text_areas = widgets.HBox([widgets.VBox(self.text_areas[0::2], layout=widgets.Layout(width=column_width)), (
-            widgets.VBox(self.text_areas[1::2], layout=widgets.Layout(width=column_width)) if len(
-                self.text_areas) > 0 else None)],
-                                        layout=widgets.Layout(width='100%'))
+        boxed_text_areas = widgets.HBox(
+            [widgets.VBox(self.text_areas[0::2], layout=widgets.Layout(width=column_width)), (
+                widgets.VBox(self.text_areas[1::2], layout=widgets.Layout(width=column_width)) if len(
+                    self.text_areas) > 0 else None)],
+            layout=widgets.Layout(width='100%'))
 
         rows = [self.title] + [boxed_text_areas] + self.addSeparator() + [
             self.addPreviousNext(self.show_previous, self.show_next)]

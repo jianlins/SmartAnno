@@ -14,7 +14,6 @@ class TaskChooser(PreviousNextText):
         pass
 
     def start(self):
-        clear_output()
         self.readDB()
         display(self.box)
         pass
