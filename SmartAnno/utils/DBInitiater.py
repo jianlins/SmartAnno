@@ -63,7 +63,7 @@ class DBInitiater(PreviousNext):
     def displayOptions(self):
         clear_output()
         self.html = widgets.HTML(
-            '<h3>Sqlite database "%s" exists, do you want to overwrite?</h3>'
+            '<h4>Sqlite database "%s" exists, do you want to overwrite?</h4>'
             '<h4>choose <b>yes</b> will <span style="color:red"><b>clear all the data</b></span> in that database file</h4>' % self.dbpath)
         self.toggle = widgets.ToggleButtons(
             options=['Yes', 'No'],

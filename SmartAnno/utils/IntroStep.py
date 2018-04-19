@@ -32,8 +32,6 @@ class IntroStep(BranchingStep):
         self.branch_buttons = [widgets.Button(description=d, layout=widgets.Layout(width='150px', left='100px')) for d
                                in
                                ['StartOver', 'ContinueReviewing']]
-        self.branch_buttons[0].restore = False
-        self.branch_buttons[1].restore = True
         clear_output()
         self.box = self.createBox()
         display(self.box)
@@ -47,10 +45,12 @@ class IntroStep(BranchingStep):
         else:
             self.workflow.api_key = ConfigReader.getValue("api_key")
         self.backgroundWork()
-        if button.restore:
-            previous_status = self.workflow.restoreStatus()
+        if button.description == 'ContinueReviewing':
+            self.workflow.to_continue = True
             self.workflow.steps[1].start()
+            self.workflow.steps[1].complete()
         else:
+            self.workflow.to_continue = False
             self.workflow.steps[1].start()
         pass
 

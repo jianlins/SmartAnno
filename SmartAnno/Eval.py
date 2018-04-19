@@ -63,4 +63,9 @@ def evaluate(task_name='language', classifiers=[LogisticBOWClassifier]):
         cl_instance.train(x, y)
 
 
+train_size = 0.9
+LogisticBOWClassifier.train_size = train_size
+SVMBOWClassifier.train_size = train_size
+SVMClassifier.train_size = train_size
+
 evaluate(task_name='language', classifiers=[LogisticBOWClassifier, SVMBOWClassifier, SVMClassifier])

@@ -54,5 +54,14 @@ class TaskChooser(PreviousNextText):
             return
         self.data = value
         self.workflow.task_name = value
-        super().complete()
+        if self.workflow.to_continue:
+            self.workflow.getStepByName('dataset_chooser').start()
+            self.workflow.getStepByName('dataset_chooser').complete()
+            self.workflow.getStepByName('types').complete()
+            self.workflow.getStepByName('types').complete()
+            self.workflow.getStepByName('keywords').complete()
+            self.workflow.getStepByName('rb_review_init').start()
+            self.workflow.getStepByName('rb_review_init').complete()
+        else:
+            super().complete()
         pass

@@ -58,13 +58,15 @@ class Main:
     def start(self):
         cr = ConfigReader()
         self.workflow = Workflow(
-            [IntroStep('<h2>Welcome to SmartAnno!</h2><h4>First, let&apos;s import txt data from a directory. </h4>',
-                       name='intro'),
+            [IntroStep(
+                '<h2>Welcome to SmartAnno!</h2><h4>Do you want to start from beginning or continue previous reviewing? </h4>',
+                name='intro'),
              DBInitiater(name='db_initiator'),
-             TaskChooser(name='tasknamer'),
              DirChooser(name='choosedir'), ReadFiles(name='readfiles'),
              DocsToDB(name='save2db'),
+             TaskChooser(name='tasknamer'),
              DataSetChooser(name='dataset_chooser', description='<h4>Choose which dateaset you want to use: </h4>'),
+
              AnnotationTypeDef(
                  '<h3>Annotation types:</h3><p>List all the types you want to identify below. Each type per line.<br/>If you'
                  'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '

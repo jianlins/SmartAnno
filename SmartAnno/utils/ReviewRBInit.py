@@ -33,7 +33,7 @@ class ReviewRBInit(PreviousNext):
         super().__init__(name=name)
         self.toggle = widgets.ToggleButtons(options=sample_options, value=sample_options[-1],
                                             description='What to do with previously sampled data? ',
-                                            style=dict(description_width='initial'))
+                                            style=dict(description_width='initial'), button_style='info')
         self.toggle.observe(self.onPreviousSampleHandleChange)
         self.sample_size_input = widgets.BoundedIntText(value=0, min=0,
                                                         max=0, step=1,
