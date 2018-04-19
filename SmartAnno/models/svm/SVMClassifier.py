@@ -28,7 +28,7 @@ class SVMClassifier(BaseClassifier):
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         # generic parameters
         if params is None:
-            self.params = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3)],
+            self.params = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5)],
                            'tfidf__use_idf': (True, False),
                            'clf__C': (0.1, 0.5, 1.0, 5.0, 10.0, 50.0),
                            }
@@ -46,10 +46,11 @@ class SVMClassifier(BaseClassifier):
         pass
 
     def defineModel(self):
-        model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-                                   n_iter=self.iterations,
-                                   cv=self.cv,
-                                   n_jobs=self.workers)
+        # model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
+        #                            n_iter=self.iterations,
+        #                            cv=self.cv,
+        #                            n_jobs=self.workers)
+        model=self.pipeline
         return model
 
     def train(self, x, y):
@@ -106,13 +107,11 @@ class SVMClassifier(BaseClassifier):
 
         logMsg('Fitting model now for iterations = {}'.format(self.iterations))
 
-        SVMBOWClassifier.status = InTraining
+        SVMClassifier.status = InTraining
         self.model.fit(X_text_train, y_train)
 
         # print performances
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logMsg('Best params for the model : {}'.format(self.model.best_params_))
-
             logMsg('REPORT for TRAINING set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_train, self.model.predict(X_text_train),
                                                 target_names=train_classes))
@@ -120,7 +119,7 @@ class SVMClassifier(BaseClassifier):
             logMsg('REPORT for TEST set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_test, self.model.predict(X_text_test),
                                                 target_names=train_classes))
-            SVMBOWClassifier.status = ReadyTrained
+            SVMClassifier.status = ReadyTrained
 
     pass
 

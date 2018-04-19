@@ -122,7 +122,7 @@ class RepeatMultipleSelection(RepeatStep):
         self.type_name = type_name
         self.display_description = widgets.HTML(value=description)
         self.selections = ToggleButtonsMultiSelectionInBox(
-            options=options, num_per_row=3
+            options=options, num_per_row=4
         )
         super().__init__(branch_names, branch_steps, name)
         pass

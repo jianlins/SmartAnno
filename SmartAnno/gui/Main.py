@@ -64,6 +64,7 @@ class Main:
              TaskChooser(name='tasknamer'),
              DirChooser(name='choosedir'), ReadFiles(name='readfiles'),
              DocsToDB(name='save2db'),
+             DataSetChooser(name='dataset_chooser', description='<h4>Choose which dateaset you want to use: </h4>'),
              AnnotationTypeDef(
                  '<h3>Annotation types:</h3><p>List all the types you want to identify below. Each type per line.<br/>If you'
                  'have too many types, try set up them separately, so that you won&apos;t need to choose from a long list '
@@ -80,7 +81,7 @@ class Main:
                                   max_query=cr.getValue("umls/max_query")),
              KeywordsEmbeddingExtenderSetup(name='w_e_extender_setup'),
              KeywordsEmbeddingExtender(name='w_e_extender', max_query=40),
-             DataSetChooser(name='dataset_chooser', description='<h4>Choose which dateaset you want to use: </h4>'),
+
              ReviewRBInit(name="rb_review_init"),
              ReviewRBLoop(name='rb_review'),
              PreviousNextHTML(
@@ -88,7 +89,7 @@ class Main:
                              'on the rule-base preannotations. </h4>',
                  name='rb_review_done'),
              ReviewMLInit(name='ml_review_init'),
-             ReviewMLLoop(name='ml_review', ml_classifier_cls=SVMBOWClassifier),
+             ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier),
              PreviousNextHTML(name='finish',
                               description='<h3>Well done!</h3><h4>Now you have finished reviewing all the samples. ')
              ])

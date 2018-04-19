@@ -82,7 +82,7 @@ class ToggleButtonsMultiSelectionInBox(widgets.Box):
     value = traitlets.Tuple()
     options = traitlets.Union([traitlets.List(), traitlets.Dict()])
 
-    def __init__(self, num_per_row=6, **kwargs):
+    def __init__(self, num_per_row=5, **kwargs):
         super().__init__(**kwargs)
         self._selection_obj = widgets.widget_selection._MultipleSelection()
         traitlets.link((self, 'options'), (self._selection_obj, 'options'))
@@ -113,5 +113,6 @@ class ToggleButtonsMultiSelectionInBox(widgets.Box):
                                    if btn.value)
 
         self.add_class('btn-group')
+
 
 display(ToggleButtonsMultiSelectionInBox())

@@ -5,17 +5,18 @@ from sqlalchemy_dao import Model, Dao
 
 
 class Task(Model):
-    id = Column(Integer, primary_key=True)
-    task_name = Column(String, index=True)
+    ID = Column(Integer, primary_key=True)
+    TASK_NAME = Column(String, index=True)
+    DATASET_ID = Column(String, index=True)
 
     def __repr__(self):
-        return "<Task (id='%s', task_name='%s')>" % (self.id, self.task_name)
+        return "<Task (ID='%s', TASK_NAME='%s, DATASET_ID='%s'')>" % (self.ID, self.TASK_NAME, self.DATASET_ID)
 
 
 class Typedef(Model):
     id = Column(Integer, primary_key=True)
     type_name = Column(String, index=True)
-    task_id = Column(String, ForeignKey("task.id"))
+    task_id = Column(String, ForeignKey("task.ID"))
 
     def __repr__(self):
         return "<TypeDef (id='%s', type_name='%s',type_group_id='%s')>" % (self.id, self.type_name, self.task_id)
@@ -45,7 +46,8 @@ class Document(Model):
 
     def __repr__(self):
         return "<Document(DOC_ID='%s',DATASET_ID='%s', BUNCH_ID='%s', DOC_NAME='%s',TEXT='%s',DATE='%s', REF_DATE='%s',META_DATA='%s')>" % (
-            self.DOC_ID, self.DATASET_ID,self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE, self.REF_DATE, self.META_DATA)
+            self.DOC_ID, self.DATASET_ID, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE, self.REF_DATE,
+            self.META_DATA)
 
     def clone(self):
         return Document(self.DOC_ID, self.DATASET_ID, self.BUNCH_ID, self.DOC_NAME, self.TEXT, self.DATE,
@@ -56,7 +58,7 @@ class Annotation(Model):
     ID = Column(Integer, primary_key=True)
     BUNCH_ID = Column(String, ForeignKey("document.BUNCH_ID"))
     DOC_ID = Column(Integer, ForeignKey("document.DOC_ID"))
-    TASK_ID = Column(String, ForeignKey("task.id"))
+    TASK_ID = Column(String, ForeignKey("task.ID"))
     RUN_ID = Column(String, index=True)
     TYPE = Column(String, ForeignKey("typedef.type_name"))
     REVIEWED_TYPE = Column(String, ForeignKey("typedef.type_name"))
@@ -91,7 +93,7 @@ class Annotation(Model):
 
 class Filter(Model):
     id = Column(Integer, primary_key=True)
-    task_id = Column(String, ForeignKey("task.id"))
+    task_id = Column(String, ForeignKey("task.ID"))
     keyword = Column(String)
     # differentiate user input or umls extended ('umls') or word embedding extended ('woem')
     type = Column(String, default='orig')

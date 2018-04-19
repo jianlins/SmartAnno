@@ -12,9 +12,10 @@ matcher.add('PRODUCT', None, *product_patterns)
 matcher.add('MATERIAL', None, *material_patterns)
 
 
-doc = nlp("yellow fabric and red with red boat")
+doc = nlp("yellow fabric and red with Red boat")
 matches = matcher(doc)
 for match_id, start, end in matches:
     rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'COLOR'
     span = doc[start : end]  # get the matched slice of the doc
+
     print(rule_id, span.text)

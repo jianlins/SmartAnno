@@ -24,8 +24,8 @@ class TaskChooser(PreviousNextText):
         with self.workflow.dao.create_session() as session:
             records = session.query(Task)
             for record in records:
-                task_names.append(record.task_name)
-                task_name_id[record.task_name] = record.id
+                task_names.append(record.TASK_NAME)
+                task_name_id[record.TASK_NAME] = record.ID
         self.task_list = widgets.ToggleButtons(
             options=task_names,
             description='',

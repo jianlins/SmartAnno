@@ -132,10 +132,10 @@ class DocsToDB(PreviousNext):
             1].data is not None and isinstance(self.workflow.steps[1].data, str):
             task_name = self.workflow.task_name
             with self.dao.create_session() as session:
-                res = session.query(Task).filter(Task.task_name == task_name).first()
+                res = session.query(Task).filter(Task.TASK_NAME == task_name).first()
                 if res is None:
                     session.add(Task(task_name=task_name))
-                    res = session.query(Task).filter(Task.task_name == task_name).first()
+                    res = session.query(Task).filter(Task.TASK_NAME == task_name).first()
                 self.workflow.task_id = res.id
 
         pass

@@ -12,6 +12,8 @@ from models.sampling.BaseSampler import BaseSampler
 from whoosh.qparser import QueryParser
 from whoosh.index import open_dir
 
+from utils.NoteBookLogger import logError
+
 
 class KeywordStratefiedSampler(BaseSampler):
     def __init__(self, **kwargs):
@@ -196,20 +198,25 @@ class KeywordStratefiedSampler(BaseSampler):
             if not in_constrain:
                 doc_iter = session.query(Document).filter(Document.DATASET_ID == self.dataset_id).order_by(
                     functions.random())
+                for doc in doc_iter:
+                    if (doc.DOC_ID not in grouped_ids):
+                        grouped_docs[default_type].append(
+                            Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
+                                     doc.REF_DATE, doc.META_DATA))
+                        counter += 1
+                    if 0 < limit_to <= counter:
+                        break
             else:
-                doc_iter = session.query(Document).filter(Document.DATASET_ID == self.dataset_id)
-            for doc in doc_iter:
-                if (in_constrain and doc.DOC_ID in reverse_groups):
-                    grouped_docs[reverse_groups[doc.DOC_ID]].append(
-                        Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
-                                 doc.REF_DATE, doc.META_DATA))
-                elif ((not in_constrain) and doc.DOC_ID not in grouped_ids):
-                    grouped_docs[default_type].append(
-                        Document(doc.DOC_ID, doc.DATASET_ID, doc.BUNCH_ID, doc.DOC_NAME, doc.TEXT, doc.DATE,
-                                 doc.REF_DATE, doc.META_DATA))
-                    counter += 1
-                if 0 < limit_to <= counter:
-                    break
+                for type_name, ids in grouped_ids.items():
+                    for doc_id in ids:
+                        doc = session.query(Document).filter(Document.DATASET_ID == self.dataset_id).filter(
+                            Document.DOC_ID == doc_id).first()
+                        if doc is None:
+                            logError(
+                                'Oops, it seems a DOC_ID ({}) does not exist in the database, you may need to rebuild the whoosh index'.format(
+                                    doc_id))
+                        else:
+                            grouped_docs[type_name].append(doc.clone())
         return grouped_docs
 
     def spreadDocs(self, grouped_docs):

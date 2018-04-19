@@ -9,7 +9,7 @@ from utils.TreeSet import TreeSet
 
 class KeywordsEmbeddingExtenderSetup(PreviousNext):
     def __init__(self,
-                 description='<h4>Extend keywords through Word Embedding</h4><p>Please select which keywords you want to '
+                 description='<h4>Extend keywords through <b>Word Embedding</b></h4><p>Please select which keywords you want to '
                              'check the synonyms from the word embedding (currently only single word works for the word embedding model):',
                  name=None):
 

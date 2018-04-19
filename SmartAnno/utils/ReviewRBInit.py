@@ -148,7 +148,11 @@ class ReviewRBInit(PreviousNext):
         ReviewRBInit.nlp = spacy.blank('en')
         type_phrases = dict()
         for type_name, phrases in self.workflow.filters.items():
-            type_phrases[type_name] = ([ReviewRBInit.nlp(phrase) for phrase in phrases])
+            variations = set(phrase for phrase in phrases)
+            variations.update(phrase.lower() for phrase in phrases)
+            variations.update(phrase.upper() for phrase in phrases)
+            variations.update(phrase[0].upper() + phrase[1:] for phrase in phrases)
+            type_phrases[type_name] = ([ReviewRBInit.nlp(phrase) for phrase in variations])
             ReviewRBInit.matcher = PhraseMatcher(ReviewRBInit.nlp.vocab)
         for type_name, phrases in type_phrases.items():
             ReviewRBInit.matcher.add(type_name, None, *phrases)
@@ -242,6 +246,7 @@ class ReviewRBInit(PreviousNext):
             self.restSampling()
         if sum(self.sample_sizes.values()) > 0:
             self.getSampledDocs()
+        self.workflow.samples = self.data
         if self.next_step is not None:
             logMsg((self, 'workflow complete'))
             if isinstance(self.next_step, Step):
@@ -288,6 +293,7 @@ class ReviewRBInit(PreviousNext):
                     self.data['annos'][doc.DOC_ID] = anno.clone()
 
                     session.add(anno)
+            session.commit()
         pass
 
     def onPreviousSampleHandleChange(self, change):

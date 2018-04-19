@@ -28,7 +28,7 @@ class SVMBOWClassifier(BaseClassifier):
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         # generic parameters
         if params is None:
-            self.params = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3)],
+            self.params = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5)],
                            'tfidf__use_idf': (True, False),
                            'clf__C': (0.1, 0.5, 1.0, 5.0, 10.0, 50.0),
                            }
@@ -46,11 +46,11 @@ class SVMBOWClassifier(BaseClassifier):
         pass
 
     def defineModel(self):
-        # model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-        #                            n_iter=self.iterations,
-        #                            cv=self.cv,
-        #                            n_jobs=self.workers)
-        model=self.pipeline
+        model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
+                                   n_iter=self.iterations,
+                                   cv=self.cv,
+                                   n_jobs=self.workers)
+        # model=self.pipeline
         return model
 
     def train(self, x, y):

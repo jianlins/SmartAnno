@@ -8,8 +8,9 @@ from utils.TreeSet import TreeSet
 
 
 class KeywordsUMLSExtenderSetup(PreviousNext):
-    def __init__(self, description='<h4>Extend keywords through UMLS</h4><p>Please select which keywords you want to '
-                                   'check the synonyms from UMLS:', name=None):
+    def __init__(self,
+                 description='<h4>Extend keywords through <b>UMLS</b></h4><p>Please select which keywords you want to '
+                             'check the synonyms from UMLS:', name=None):
         self.api_key = ConfigReader.getValue('api_key')
         self.title = widgets.HTML(value=description)
         self.to_ext_words = dict()
@@ -35,10 +36,10 @@ class KeywordsUMLSExtenderSetup(PreviousNext):
             rows.append(Label(value=type_name + ':'))
 
             selections = ToggleButtonsMultiSelectionInBox(options=filters[type_name].to_list(),
-                                                     value=list(self.to_ext_words[type_name]) if hasattr(self,
-                                                                                                         'to_ext_words') and isinstance(
-                                                         self.to_ext_words,
-                                                         dict) and type_name in self.to_ext_words else [])
+                                                          value=list(self.to_ext_words[type_name]) if hasattr(self,
+                                                                                                              'to_ext_words') and isinstance(
+                                                              self.to_ext_words,
+                                                              dict) and type_name in self.to_ext_words else [])
             self.to_umls_ext_filters[type_name] = selections
             rows.append(selections)
             rows += (self.addSeparator())
