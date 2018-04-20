@@ -23,6 +23,7 @@ class LogisticBOWClassifier(BaseClassifier):
     n_jobs = 1
     iterations = 2
     test_size = 0.3
+    random_state = 777
 
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         self.pipeline = pipeline
@@ -54,7 +55,7 @@ class LogisticBOWClassifier(BaseClassifier):
 
         X_text_train, X_text_test, y_train, y_test = train_test_split(x, y,
                                                                       test_size=self.test_size,
-                                                                      random_state=self.random_state)
+                                                                      random_state=LogisticBOWClassifier    .random_state)
         train_classes, train_y_indices = np.unique(y_train, return_inverse=True)
         test_classes, test_y_indices = np.unique(y_test, return_inverse=True)
         train_minority_instances = np.min(np.bincount(train_y_indices))

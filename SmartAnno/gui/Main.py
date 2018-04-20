@@ -30,15 +30,15 @@ from SmartAnno.utils.TaskChooser import TaskChooser
 class Main:
     """Define and execute a workflow"""
 
-    def __init__(self):
+    def __init__(self, ml_classifier_cls=LogisticBOWClassifier):
 
         self.data = None
         self.dir_chooser = None
         self.data = None
         self.status = NotTrained
         self.workflow = None
+        self.ml_classifier_cls = ml_classifier_cls
         self.__setUpStage()
-
         pass
 
     def __setUpStage(self):
@@ -90,7 +90,7 @@ class Main:
                                 'on the rule-base preannotations. </h4>',
                     name='rb_review_done'),
                 ReviewMLInit(name='ml_review_init'),
-                ReviewMLLoop(name='ml_review', ml_classifier_cls=LogisticBOWClassifier),
+                ReviewMLLoop(name='ml_review', ml_classifier_cls=self.ml_classifier_cls),
                 PreviousNextHTML(name='finish',
                                  description='<h3>Well done!</h3><h4>Now you have finished reviewing all the samples. ')
             ])
