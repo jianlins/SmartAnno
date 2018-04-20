@@ -15,7 +15,7 @@ setup(
     # exclude=['*.json', '*.sqlite', 'SmartAnno.test', '*.ipynb_checkpoints', '*.ini']
     # ),
     # this must be the same as the name above
-    version='1.0.26.dev',
+    version='1.0.28.dev',
     description='A smart snippet annotation tool with deep learning backbone.',
     author='Jianlin',
     author_email='jianlinshi.cn@gmail.com',

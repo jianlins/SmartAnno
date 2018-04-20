@@ -1,11 +1,12 @@
 import os
+import shutil
 
 from IPython.core.display import clear_output, display
 from PyRuSH.RuSH import RuSH
 from ipywidgets import widgets
 from sqlalchemy_dao import Model
 from textblob import TextBlob
-from whoosh.fields import Schema, TEXT
+from whoosh.fields import Schema, TEXT, NUMERIC
 from whoosh.index import create_in, open_dir
 from whoosh.writing import AsyncWriter
 
@@ -116,8 +117,8 @@ class DocsToDB(PreviousNext):
             #                                if_exists='append')
             df = self.data_step.data
             df['DATASET_ID'] = self.dataset_name
-            self.saveToWhoosh(df, self.dataset_name, overwrite)
             saveDFtoDB(self.workflow.dao, df, 'document')
+            self.saveToWhoosh(df, self.dataset_name, overwrite)
 
         # choose which sentence splitter you want to use.
         if self.toggle.value == 'TextBlob_Splitter':
@@ -159,8 +160,9 @@ class DocsToDB(PreviousNext):
                 sentence_id += 1
                 sents_df.loc[len(sents_df)] = [self.dataset_name + "_sents", bunch_id,
                                                doc_name + "_" + str(sentence_id), sentence, date, ref_date]
-        self.saveToWhoosh(sents_df, self.dataset_name + "_sents", overwrite)
+
         saveDFtoDB(dao, sents_df, table_name)
+        self.saveToWhoosh(sents_df, self.dataset_name + "_sents", overwrite)
         pass
 
     def textblobSplitter(self, text):
@@ -189,7 +191,10 @@ class DocsToDB(PreviousNext):
             os.mkdir(ws_path)
             logMsg(str(os.path.abspath(ws_path)) + ' does not exist, create it to store whoosh index')
             overwrite = True
-        schema = Schema(DOC_ID=TEXT(stored=True), TEXT=TEXT)
+        elif overwrite:
+            shutil.rmtree(ws_path)
+            os.mkdir(ws_path)
+        schema = Schema(DOC_ID=NUMERIC(stored=True), TEXT=TEXT)
         if overwrite:
             ix = create_in(ws_path, schema)
         else:

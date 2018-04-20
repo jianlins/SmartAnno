@@ -106,8 +106,10 @@ class IntroStep(BranchingStep):
                 widgets.HTML(value='<h4>Set up your Glove model</h4><p>In order to use word embedding, you need '
                                    'to tell where the glove model locates:</p><p>If you have not downloaded yet,'
                                    'you can download it from <a href="https://nlp.stanford.edu/projects/glove/" '
-                                   ' target="_blank">Glove Site</a><p>If you do not set it up, the word embedding'
-                                   ' synonym extender will be <b>skipped</b>.</p>'))
+                                   ' target="_blank">Glove Site</a><p>. Once you download it, you need to unzip it'
+                                   ' and copy the unzipped file path here. SmartAnno will automatically convert it '
+                                   'into binary format (will be loaded faster). If you do not set it up, the word '
+                                   'embedding synonym extender will be <b>skipped</b>.</p>'))
             self.glove_path_input = widgets.Text(
                 value='',
                 placeholder='copy and paste your glove model file location here',
@@ -137,8 +139,9 @@ class IntroStep(BranchingStep):
                 widgets.HTML(
                     value='<h4>Set your API Key</h4><p>In order to use the UMLS synonym checking module, you need to set'
                           ' up your API key: (<a href="https://www.nlm.nih.gov/research/umls/user_education/quick_tours/'
-                          'UTS-API/UTS_REST_API_Authentication.html" target="_blank">How to get your API Key_at 01:12</a>)</p>'
-                          '<p>If you do not set the api key, the UMLS synonym extender will be <b>skipped</b>.</p>'))
+                          'UTS-API/UTS_REST_API_Authentication.html" target="_blank">How to get your API Key_at 01:12 from'
+                          ' beginning. </a>)</p><p>If you do not set the api key, the UMLS synonym extender will be '
+                          '<b>skipped</b>.</p>'))
             self.api_key_input = widgets.Text(value='',
                                               placeholder='',
                                               description='', disabled=False)

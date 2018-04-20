@@ -12,6 +12,12 @@ It also integrates word embedding, and UMLS synonym heuristics to improve learni
 pip install smartanno
 ```
 
+if you have older version installed, then you might want to try upgrade it:
+
+```bash
+pip install smartanno -U --no-cache-dir
+```
+
 ## How to use
 
 Within a jupyter notebook, add a python cell, type: 

@@ -25,8 +25,8 @@ wf.getStepByName('readfiles').remove_old = True
 # wf.getStepByName('db_initiator').need_import = True
 wf.start()
 wf.getStepByName('db_initiator').toggle.value = 'Yes'
-wf.dao = Dao('sqlite+pysqlite:///../data/test.sqlite', sqlalchemy_dao.POOL_DISABLED)
-wf.dbpath = '../data/test.sqlite'
+wf.dao = Dao('sqlite+pysqlite:///../data/test2.sqlite', sqlalchemy_dao.POOL_DISABLED)
+wf.dbpath = '../data/test2.sqlite'
 wf.getStepByName('db_initiator').complete()
 wf.getStepByName('choosedir').path = '/home/brokenjade/Documents/N2C2/smalltest/'
 wf.getStepByName('choosedir')._update_files()
