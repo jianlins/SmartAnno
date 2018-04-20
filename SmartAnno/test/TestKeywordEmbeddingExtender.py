@@ -3,20 +3,19 @@ import logging
 import sqlalchemy_dao
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Filter
-from gui.Workflow import Workflow
-from utils.AnnotationTypeDef import AnnotationTypeDef
-from utils.IntroStep import IntroStep
-from utils.KeywordsFiltering import KeywordsFiltering
-from utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
-from utils.KeywordsEmbeddingExtenderSetup import KeywordsEmbeddingExtenderSetup
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Filter
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
+from SmartAnno.utils.KeywordsEmbeddingExtender import KeywordsEmbeddingExtender
+from SmartAnno.utils.KeywordsEmbeddingExtenderSetup import KeywordsEmbeddingExtenderSetup
 
 logging.getLogger().setLevel(logging.DEBUG)
 
 ConfigReader('../conf/smartanno_conf.json')
 
-from models.GloveModel import GloveModel
+from SmartAnno.models.GloveModel import GloveModel
 from threading import Thread
 
 

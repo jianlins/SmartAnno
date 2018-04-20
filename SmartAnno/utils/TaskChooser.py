@@ -1,8 +1,8 @@
 from IPython.core.display import clear_output, display
 from ipywidgets import widgets
 
-from db.ORMs import Task
-from gui.PreviousNextWidgets import PreviousNextText
+from SmartAnno.db.ORMs import Task
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextText
 
 
 class TaskChooser(PreviousNextText):
@@ -59,6 +59,7 @@ class TaskChooser(PreviousNextText):
             self.workflow.getStepByName('dataset_chooser').complete()
             self.workflow.getStepByName('types').complete()
             self.workflow.getStepByName('types').complete()
+            self.workflow.getStepByName('keywords').next_step = None
             self.workflow.getStepByName('keywords').complete()
             self.workflow.getStepByName('rb_review_init').start()
             self.workflow.getStepByName('rb_review_init').complete()

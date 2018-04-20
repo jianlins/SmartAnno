@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
@@ -7,8 +7,15 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
 setup(
     name='SmartAnno',
-    packages=['SmartAnno'],  # this must be the same as the name above
-    version='1.0.0-alpha',
+    packages=['SmartAnno.db', 'SmartAnno.gui', 'SmartAnno.models', 'SmartAnno.umls',
+              'SmartAnno.utils', 'SmartAnno'],
+    # find_packages(
+    #     include=['SmartAnno.conf.*', 'SmartAnno.db.*', 'SmartAnno.gui.*', 'SmartAnno.models.*', 'SmartAnno.umls.*',
+    #              'SmartAnno.utils.*', 'SmartAnno'],
+    # exclude=['*.json', '*.sqlite', 'SmartAnno.test', '*.ipynb_checkpoints', '*.ini']
+    # ),
+    # this must be the same as the name above
+    version='1.0.14.dev',
     description='A smart snippet annotation tool with deep learning backbone.',
     author='Jianlin',
     author_email='jianlinshi.cn@gmail.com',
@@ -36,5 +43,7 @@ setup(
         "tf": ["tensorflow"],
         "tf_gpu": ["tensorflow-gpu"],
     },
-    data_files=[('demo_data', ['conf/*'])],
+    package_data={'SmartAnno/conf': ['rush_rules.tsv']},
+    data_files=[('SmartAnno/conf', ['SmartAnno/conf/rush_rules.tsv', 'SmartAnno/conf/general_modifiers.yml',
+                          'SmartAnno/conf/smartanno_conf.json.bk'])],
 )

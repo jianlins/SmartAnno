@@ -3,17 +3,17 @@ import logging
 import sqlalchemy_dao
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNextHTML
-from gui.Workflow import Workflow
-from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
-from utils.AnnotationTypeDef import AnnotationTypeDef
-from utils.DataSetChooser import DataSetChooser
-from utils.KeywordsFiltering import KeywordsFiltering
-from utils.ReviewMLInit import ReviewMLInit
-from utils.ReviewMLLoop import ReviewMLLoop
-from utils.ReviewRBInit import ReviewRBInit
-from utils.ReviewRBLoop import ReviewRBLoop
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextHTML
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.DataSetChooser import DataSetChooser
+from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
+from SmartAnno.utils.ReviewMLInit import ReviewMLInit
+from SmartAnno.utils.ReviewMLLoop import ReviewMLLoop
+from SmartAnno.utils.ReviewRBInit import ReviewRBInit
+from SmartAnno.utils.ReviewRBLoop import ReviewRBLoop
 
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -46,11 +46,15 @@ wf.steps[0].complete()
 wf.steps[1].complete()
 wf.steps[2].complete()
 
-wf.steps[3].toggle.value = wf.steps[3].toggle.options[0]
-wf.steps[3].sample_size_input.value = 100
-print('\n'.join([str(step) for step in wf.steps]))
+# wf.steps[3].toggle.value = wf.steps[3].toggle.options[0]
+# wf.steps[3].sample_size_input.value = 100
+# print('\n'.join([str(step) for step in wf.steps]))
 wf.steps[3].complete()
 print(len(wf.steps[3].data['docs']))
 # rb.navigate(rb.branch_buttons[2])
 # wf.steps[5].complete()
 # wf.steps[6].complete()
+wf.steps[4].complete()
+wf.steps[5].complete()
+wf.steps[6].complete()
+wf.steps[7].loop_workflow.steps[0].start()

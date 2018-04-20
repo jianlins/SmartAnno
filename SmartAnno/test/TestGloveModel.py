@@ -1,4 +1,4 @@
-from models.GloveModel import GloveModel
+from SmartAnno.models.GloveModel import GloveModel
 from  conf.ConfigReader import ConfigReader
 ConfigReader('../conf/smartanno_conf2.json')
 glove_path = ConfigReader.getValue('glove/model_path')

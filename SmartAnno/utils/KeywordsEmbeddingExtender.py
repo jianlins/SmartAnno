@@ -1,10 +1,10 @@
-from db.ORMs import Filter
-from gui.BranchingWidgets import LoopRepeatSteps
-from gui.Workflow import Step, logMsg
-from models.GloveModel import GloveModel
-from utils import KeywordsUMLSExtender
-from utils.KeywordsUMLSExtender import RepeatMultipleSelection
-from utils.TreeSet import TreeSet
+from SmartAnno.db.ORMs import Filter
+from SmartAnno.gui.BranchingWidgets import LoopRepeatSteps
+from SmartAnno.gui.Workflow import Step, logMsg
+from SmartAnno.models.GloveModel import GloveModel
+from SmartAnno.utils import KeywordsUMLSExtender
+from SmartAnno.utils.KeywordsUMLSExtender import RepeatMultipleSelection
+from SmartAnno.utils.TreeSet import TreeSet
 
 
 class KeywordsEmbeddingExtender(LoopRepeatSteps):

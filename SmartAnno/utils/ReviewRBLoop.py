@@ -1,16 +1,15 @@
 import logging
-from collections import OrderedDict
 
 from IPython.core.display import display, clear_output
-from ipywidgets import widgets, Layout
+from ipywidgets import widgets
 from sqlalchemy import and_
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Annotation
-from gui.BranchingWidgets import LoopRepeatSteps, RepeatHTMLToggleStep
-from gui.Workflow import Step, logMsg
-from models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
-from utils.ReviewRBInit import ReviewRBInit
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Annotation
+from SmartAnno.gui.BranchingWidgets import LoopRepeatSteps, RepeatHTMLToggleStep
+from SmartAnno.gui.Workflow import Step, logMsg
+from SmartAnno.models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
+from SmartAnno.utils.ReviewRBInit import ReviewRBInit
 
 
 class ReviewRBLoop(LoopRepeatSteps):

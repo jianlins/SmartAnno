@@ -5,7 +5,7 @@ import numpy as np
 from sklearn import metrics
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -16,12 +16,12 @@ from SmartAnno.models.BaseClassifier import BaseClassifier, InTraining, ReadyTra
 not_met_suffix = '_not_met'
 
 
-class SVMClassifier(BaseClassifier):
+class LogisticBOWClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 2
     workers = -1
-    iterations = 3
+    iterations = 2
     train_size = 0.8
     random_state = 777
 
@@ -38,7 +38,7 @@ class SVMClassifier(BaseClassifier):
         if pipeline is None:
             self.pipeline = Pipeline([('vect', CountVectorizer()),
                                       ('tfidf', TfidfTransformer()),
-                                      ('clf', LinearSVC()),
+                                      ('clf', LogisticRegression()),
                                       ])
         else:
             self.pipeline = pipeline
@@ -46,11 +46,10 @@ class SVMClassifier(BaseClassifier):
         pass
 
     def defineModel(self):
-        # model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-        #                            n_iter=self.iterations,
-        #                            cv=self.cv,
-        #                            n_jobs=self.workers)
-        model=self.pipeline
+        model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
+                                   n_iter=self.iterations,
+                                   cv=self.cv,
+                                   n_jobs=self.workers)
         return model
 
     def train(self, x, y):
@@ -62,14 +61,13 @@ class SVMClassifier(BaseClassifier):
                 logMsg(
                     'The whole annotated Data does not have enoguh examples for all classes.  Skipping training for '
                     'class : {}'.format(
-                        self.classname))
+                        classname))
                 return
 
         # before we run a search, let's do an 80-20 split for (CV/Validation )
         # even if we do not have a lot of data to work with
 
         X_text_train, X_text_test, y_train, y_test = train_test_split(x, y,
-                                                                      stratify=y,
                                                                       train_size=self.train_size,
                                                                       random_state=self.random_state)
         train_classes, train_y_indices = np.unique(y_train, return_inverse=True)
@@ -84,42 +82,35 @@ class SVMClassifier(BaseClassifier):
                 'TRAIN data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
                 'training for task : {}'.format(
                     self.cv, train_minority_instances, classname))
-            print(
-                'TRAIN data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
-                'training for task : {}'.format(
-                    self.cv, train_minority_instances, classname))
             return
 
         if test_minority_instances <= self.cv:
             logMsg(
-                'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                 'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
                 'training for task : {}'.format(
                     self.cv, train_minority_instances, classname))
-            print(
-                'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
-                'training for task : {}'.format(
-                    self.cv, train_minority_instances, classname))
-            from time import sleep
-            sleep(3)
             return
 
         # now we can train a model
 
         logMsg('Fitting model now for iterations = {}'.format(self.iterations))
 
-        SVMClassifier.status = InTraining
+
+        LogisticBOWClassifier.status = InTraining
         self.model.fit(X_text_train, y_train)
 
         # print performances
         if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logMsg('Best params for the model : {}'.format(self.model.best_params_))
+
             logMsg('REPORT for TRAINING set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_train, self.model.predict(X_text_train),
-                                                target_names=train_classes))
+                                                 target_names=train_classes))
 
             logMsg('REPORT for TEST set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_test, self.model.predict(X_text_test),
-                                                target_names=train_classes))
-            SVMClassifier.status = ReadyTrained
+                                                 target_names=train_classes))
+        LogisticBOWClassifier.status = ReadyTrained
 
     pass
 

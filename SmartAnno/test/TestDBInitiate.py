@@ -4,11 +4,8 @@ import sqlalchemy_dao
 from sqlalchemy import and_
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Document
-from utils.IntroStep import IntroStep
-from utils.DBInitiater import DBInitiater
-from gui.Workflow import Workflow
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Document
 
 cr = ConfigReader('../conf/smartanno_conf.json')
 # intro = IntroStep('<h2>Welcome to SmartAnno!</h2><h4>First, let&apos;s import txt data from a directory. </h4>',

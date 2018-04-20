@@ -1,5 +1,5 @@
 from __future__ import print_function
-from umls.Authentication import *
+from SmartAnno.umls.Authentication import *
 import requests
 import json
 import argparse

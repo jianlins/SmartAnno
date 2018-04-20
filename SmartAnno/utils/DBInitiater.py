@@ -6,9 +6,9 @@ from ipywidgets import widgets
 from sqlalchemy_dao import Dao
 from sqlalchemy_dao import Model
 
-from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNext
-from gui.Workflow import Step
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.gui.Workflow import Step
 
 
 class DBInitiater(PreviousNext):

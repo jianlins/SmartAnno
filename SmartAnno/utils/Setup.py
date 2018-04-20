@@ -3,10 +3,9 @@ from threading import Thread
 from IPython.core.display import clear_output, display
 from ipywidgets import widgets
 
-from conf.ConfigReader import ConfigReader
-from gui.BranchingWidgets import BranchingStep
-from gui.PreviousNextWidgets import PreviousNext
-from models.GloveModel import GloveModel
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.models.GloveModel import GloveModel
 
 
 class Setup(PreviousNext):

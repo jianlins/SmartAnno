@@ -1,21 +1,16 @@
-from db.ORMs import Annotation, Document
-from models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
+from SmartAnno.db.ORMs import Annotation, Document
+from SmartAnno.models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
 import logging
 
 import sqlalchemy_dao
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNextHTML
-from gui.Workflow import Workflow
-from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
-from utils.AnnotationTypeDef import AnnotationTypeDef
-from utils.DataSetChooser import DataSetChooser
-from utils.KeywordsFiltering import KeywordsFiltering
-from utils.ReviewMLInit import ReviewMLInit
-from utils.ReviewMLLoop import ReviewMLLoop
-from utils.ReviewRBInit import ReviewRBInit
-from utils.ReviewRBLoop import ReviewRBLoop
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextHTML
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.DataSetChooser import DataSetChooser
+from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
 
 logging.getLogger().setLevel(logging.DEBUG)
 

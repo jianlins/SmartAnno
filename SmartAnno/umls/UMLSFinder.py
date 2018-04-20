@@ -4,7 +4,7 @@ import json
 import string
 from collections import Set, OrderedDict
 
-from umls.Authentication import *
+from SmartAnno.umls.Authentication import *
 
 
 class UMLSFinder:

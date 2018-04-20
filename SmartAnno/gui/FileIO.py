@@ -4,8 +4,8 @@ import pandas as pd
 from IPython.core.display import display
 from ipywidgets import widgets
 
-from gui.PreviousNextWidgets import PreviousNext
-from gui.Workflow import Step
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.gui.Workflow import Step
 import xml.etree.ElementTree as ET
 from dateutil.parser import parse
 

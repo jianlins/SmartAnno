@@ -1,5 +1,5 @@
-from db.ORMs import Annotation, Document
-from gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.db.ORMs import Annotation, Document
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
 from sqlalchemy import func, join, select
 import pandas as pd
 

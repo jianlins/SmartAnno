@@ -9,12 +9,14 @@
   "status": {
     "default": 0,
     "workflow1": 1,
-    "workflow_0": 1,
+    "workflow_0": 17,
     "tasknamer_2": "task1",
     "types_6": [
       "Typea",
       "Typeb"
     ],
+    "tasknamer_5": "task1",
+    "tasknamer_6": "task1",
     "tasknamer_25": "task1",
     "types_29": [
       "Typea",
@@ -47,10 +49,11 @@
       "DATE",
       "REF_DATE"
     ],
-    "rb_model_threshold": 10,
+    "rb_model_threshold": 30,
     "rb_model_threshold_comment": "max_documents_for_rb_model",
     "show_meta_name": true,
-    "ml_learning_pace": 5
+    "ml_learning_pace": 5,
+    "highlight_color": "PaleGreen"
   },
   "cnn_model": {
     "max_token_per_sentence": 5000,

@@ -7,11 +7,11 @@ from IPython.core.display import display, clear_output
 from ipywidgets import widgets
 from spacy.matcher import PhraseMatcher
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Document, Annotation
-from gui.PreviousNextWidgets import PreviousNextWithOtherBranches, PreviousNext
-from gui.Workflow import Step, logMsg
-from models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Document, Annotation
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.gui.Workflow import Step, logMsg
+from SmartAnno.models.sampling.KeywordStratefiedSampler import KeywordStratefiedSampler
 
 sample_options = ['Remove them', 'Keep them']
 tooltips = ['Remove all previously sampled data and start a fresh sampling',
@@ -72,7 +72,7 @@ class ReviewRBInit(PreviousNext):
         self.sample_sizes = dict()
 
     def start(self):
-        # print('Please wait for reading data from db.', end='', flush=True)
+        # print('Please wait for reading data from SmartAnno.db.', end='', flush=True)
         # self.backgroundPrinting()
         self.init_real_time()
         clear_output(True)

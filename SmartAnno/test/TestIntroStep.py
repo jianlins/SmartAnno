@@ -1,7 +1,7 @@
-from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNextHTML
-from gui.Workflow import Workflow
-from utils.IntroStep import IntroStep
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextHTML
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.IntroStep import IntroStep
 ConfigReader('../conf/smartanno_conf2.json')
 intro=IntroStep('<h2>Welcome to SmartAnno!</h2><h4>First, let&apos;s import txt data from a directory. </h4>',
 							   name='intro')

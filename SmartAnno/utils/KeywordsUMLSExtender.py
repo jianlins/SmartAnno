@@ -1,13 +1,12 @@
 from IPython.core.display import display
 from ipywidgets import widgets
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Filter
-from gui.BranchingWidgets import LoopRepeatSteps, RepeatStep
-from gui.MyWidgets import ToggleButtonsMultiSelectionInBox
-from gui.Workflow import Step, logMsg
-from umls.UMLSFinder import UMLSFinder
-from utils.TreeSet import TreeSet
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Filter
+from SmartAnno.gui.BranchingWidgets import LoopRepeatSteps, RepeatStep
+from SmartAnno.gui.MyWidgets import ToggleButtonsMultiSelectionInBox
+from SmartAnno.gui.Workflow import Step, logMsg
+from SmartAnno.umls.UMLSFinder import UMLSFinder
 
 
 def filterExtended(extending, type_name, filters, extended):

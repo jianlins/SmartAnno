@@ -10,8 +10,8 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from gui.Workflow import logMsg
-from models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotTrained
+from SmartAnno.gui.Workflow import logMsg
+from SmartAnno.models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotTrained
 
 not_met_suffix = '_not_met'
 

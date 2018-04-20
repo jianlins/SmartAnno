@@ -3,10 +3,10 @@ from collections import OrderedDict
 from IPython.core.display import display, clear_output
 from ipywidgets import widgets
 
-from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNextWithOtherBranches
-from gui.Workflow import Step, logMsg
-from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextWithOtherBranches
+from SmartAnno.gui.Workflow import Step, logMsg
+from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
 
 
 class ReviewMLInit(PreviousNextWithOtherBranches):

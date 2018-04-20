@@ -2,7 +2,7 @@ import abc
 from sklearn.externals import joblib
 import os
 
-from gui.Workflow import logMsg
+from SmartAnno.gui.Workflow import logMsg
 
 NotTrained = 0
 InTraining = 1
@@ -19,6 +19,8 @@ class BaseClassifier:
 
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         self.task_name = task_name
+        for name, value in kwargs.items():
+            setattr(self, name, value)
         if model_file is None:
             model_file = 'models/saved/' + type(self).__name__ + '_' + task_name
         self.model_file = model_file
@@ -30,8 +32,6 @@ class BaseClassifier:
             self.model = self.defineModel()
             BaseClassifier.status = NotTrained
         #  automatically set customized parameters to self object
-        for name, value in kwargs.items():
-            setattr(self, name, value)
         BaseClassifier.instance = self
         pass
 

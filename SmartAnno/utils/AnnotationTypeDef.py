@@ -5,9 +5,9 @@ from IPython.core.display import clear_output, display
 from ipywidgets import widgets
 from sqlalchemy import select
 
-from db.ORMs import Task, Typedef
-from gui.PreviousNextWidgets import PreviousNextTextArea
-from gui.Workflow import Step
+from SmartAnno.db.ORMs import Task, Typedef
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextTextArea
+from SmartAnno.gui.Workflow import Step
 
 
 class AnnotationTypeDef(PreviousNextTextArea):

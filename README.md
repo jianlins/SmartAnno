@@ -16,7 +16,7 @@ pip install smartanno
 
 Within a jupyter notebook, add a python cell, type: 
 ```python
-from gui.Main import Main
+from SmartAnno.gui.Main import Main
 main=Main()
 ```
 Then, create another python cell, type:

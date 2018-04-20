@@ -1,10 +1,10 @@
 from IPython.core.display import display
 from ipywidgets import widgets, Label
 
-from conf.ConfigReader import ConfigReader
-from gui.MyWidgets import ToggleButtonsMultiSelection, ToggleButtonsMultiSelectionInBox
-from gui.PreviousNextWidgets import PreviousNext
-from utils.TreeSet import TreeSet
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.MyWidgets import ToggleButtonsMultiSelectionInBox
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.utils.TreeSet import TreeSet
 
 
 class KeywordsEmbeddingExtenderSetup(PreviousNext):
@@ -63,7 +63,7 @@ class KeywordsEmbeddingExtenderSetup(PreviousNext):
 
         if not no_word_selected:
             self.workflow.to_we_ext_words = self.to_we_ext_words
-            from models.GloveModel import GloveModel
+            from SmartAnno.models.GloveModel import GloveModel
             from time import sleep
             if GloveModel.glove_model is None:
                 print('Please wait for glove model to get ready.', end='', flush=True)

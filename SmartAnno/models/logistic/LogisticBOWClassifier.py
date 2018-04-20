@@ -10,8 +10,8 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from gui.Workflow import logMsg
-from models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotTrained
+from SmartAnno.gui.Workflow import logMsg
+from SmartAnno.models.BaseClassifier import BaseClassifier, InTraining, ReadyTrained, NotTrained
 
 not_met_suffix = '_not_met'
 
@@ -20,37 +20,22 @@ class LogisticBOWClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 2
-    workers = -1
+    n_jobs = 1
     iterations = 2
-    train_size = 0.8
-    random_state = 777
+    test_size = 0.3
 
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
-        # generic parameters
-        if params is None:
-            self.params = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5)],
-                           'tfidf__use_idf': (True, False),
-                           'clf__C': (0.1, 0.5, 1.0, 5.0, 10.0, 50.0),
-                           }
-        else:
-            self.params = params
-
-        if pipeline is None:
-            self.pipeline = Pipeline([('vect', CountVectorizer()),
-                                      ('tfidf', TfidfTransformer()),
-                                      ('clf', LogisticRegression()),
-                                      ])
-        else:
-            self.pipeline = pipeline
+        self.pipeline = pipeline
         super().__init__(task_name, pipeline, params, model_file, **kwargs)
+
         pass
 
     def defineModel(self):
-        model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
-                                   n_iter=self.iterations,
-                                   cv=self.cv,
-                                   n_jobs=self.workers)
-        return model
+        if self.pipeline is None:
+            self.pipeline = Pipeline([('vect', CountVectorizer()),
+                                      ('clf', LogisticRegression(C=5.0, n_jobs=LogisticBOWClassifier.n_jobs)),
+                                      ])
+        return self.pipeline
 
     def train(self, x, y):
         logMsg('training...')
@@ -68,7 +53,7 @@ class LogisticBOWClassifier(BaseClassifier):
         # even if we do not have a lot of data to work with
 
         X_text_train, X_text_test, y_train, y_test = train_test_split(x, y,
-                                                                      train_size=self.train_size,
+                                                                      test_size=self.test_size,
                                                                       random_state=self.random_state)
         train_classes, train_y_indices = np.unique(y_train, return_inverse=True)
         test_classes, test_y_indices = np.unique(y_test, return_inverse=True)
@@ -86,7 +71,7 @@ class LogisticBOWClassifier(BaseClassifier):
 
         if test_minority_instances <= self.cv:
             logMsg(
-                 'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
                 'training for task : {}'.format(
                     self.cv, train_minority_instances, classname))
             return
@@ -95,21 +80,18 @@ class LogisticBOWClassifier(BaseClassifier):
 
         logMsg('Fitting model now for iterations = {}'.format(self.iterations))
 
-
         LogisticBOWClassifier.status = InTraining
         self.model.fit(X_text_train, y_train)
 
         # print performances
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logMsg('Best params for the model : {}'.format(self.model.best_params_))
-
             logMsg('REPORT for TRAINING set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_train, self.model.predict(X_text_train),
-                                                 target_names=train_classes))
+                                                target_names=train_classes))
 
             logMsg('REPORT for TEST set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_test, self.model.predict(X_text_test),
-                                                 target_names=train_classes))
+                                                target_names=train_classes))
         LogisticBOWClassifier.status = ReadyTrained
 
     pass

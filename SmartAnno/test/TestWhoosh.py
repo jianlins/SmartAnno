@@ -3,7 +3,7 @@ from sqlalchemy_dao import Dao
 from whoosh.index import create_in, open_dir
 from whoosh.fields import *
 
-from db.ORMs import Document
+from SmartAnno.db.ORMs import Document
 
 
 def index():

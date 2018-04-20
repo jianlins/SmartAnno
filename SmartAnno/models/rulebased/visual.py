@@ -7,7 +7,7 @@ import json
 import math
 from pyConTextNLP.utils import get_document_markups
 
-from models.rulebased.itemData import get_item_data
+from SmartAnno.models.rulebased.itemData import get_item_data
 
 # convert a document markups into dataframes
 def convertMarkups2DF(markups, annotations=None, relations=None, filter_no_markup_txt=True):

@@ -2,7 +2,7 @@ import fileinput
 from os import path
 from gensim.models import KeyedVectors
 
-from gui.Workflow import logMsg
+from SmartAnno.gui.Workflow import logMsg
 
 NotInitiated = 0
 Initiating = 1

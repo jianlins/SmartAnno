@@ -4,8 +4,8 @@ import ipywidgets as widgets
 from ipywidgets import Layout, Box, HTML
 from IPython.display import clear_output, display
 
-from gui.PreviousNextWidgets import TimerProgressBar
-from gui.Workflow import Step
+from SmartAnno.gui.PreviousNextWidgets import TimerProgressBar
+from SmartAnno.gui.Workflow import Step
 
 
 class DirChooser(Step):
@@ -43,7 +43,7 @@ class DirChooser(Step):
         # display(HTML('<p><b>Welcome to SmartAnno!<br/>First let\'s import txt data from a directory. </p>'))
         # TimerProgressBar(self.intro_wait)
         clear_output()
-        if not self.workflow.steps[1].need_import:
+        if not self.workflow.getStepByName('db_initiator').need_import:
             self.workflow.steps[self.pos_id + 3].setPreviousStep(self.workflow.steps[1])
             self.workflow.steps[self.pos_id + 3].start()
             return None

@@ -5,12 +5,12 @@ from PyRuSH.RuSH import RuSH
 from pyConTextNLP import pyConTextGraph
 from pyConTextNLP.utils import get_document_markups
 
-from conf.ConfigReader import ConfigReader
-from gui.Workflow import logMsg
-from models.BaseClassifier import BaseClassifier
-from models.rulebased.itemData import get_item_data
-from models.rulebased.nlp_pneumonia_utils import markup_sentence
-from models.rulebased.visual import convertMarkups2DF
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.Workflow import logMsg
+from SmartAnno.models.BaseClassifier import BaseClassifier
+from SmartAnno.models.rulebased.itemData import get_item_data
+from SmartAnno.models.rulebased.nlp_pneumonia_utils import markup_sentence
+from SmartAnno.models.rulebased.visual import convertMarkups2DF
 
 
 class RBDocumentClassifierFactory(object):

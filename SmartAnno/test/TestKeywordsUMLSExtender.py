@@ -3,14 +3,14 @@ import logging
 import sqlalchemy_dao
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Filter
-from gui.Workflow import Workflow
-from utils.AnnotationTypeDef import AnnotationTypeDef
-from utils.IntroStep import IntroStep
-from utils.KeywordsFiltering import KeywordsFiltering
-from utils.KeywordsUMLSExtender import KeywordsUMLSExtender
-from utils.KeywordsUMLSExtenderSetup import KeywordsUMLSExtenderSetup
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Filter
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.IntroStep import IntroStep
+from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
+from SmartAnno.utils.KeywordsUMLSExtender import KeywordsUMLSExtender
+from SmartAnno.utils.KeywordsUMLSExtenderSetup import KeywordsUMLSExtenderSetup
 
 logging.getLogger().setLevel(logging.DEBUG)
 

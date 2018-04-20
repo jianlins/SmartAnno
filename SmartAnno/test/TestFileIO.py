@@ -1,5 +1,5 @@
-from gui.FileIO import ReadFiles
-from gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.gui.FileIO import ReadFiles
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
 import glob
 
 rf = ReadFiles()

@@ -1,26 +1,17 @@
-from models.svm.SVMBOWClassifier import SVMBOWClassifier
-from models.svm.SVMClassifier import SVMClassifier
-from utils.AnnotationTypeDef import AnnotationTypeDef
-from utils.DBInitiater import DBInitiater
-from utils.DataSetChooser import DataSetChooser
-from utils.KeywordsFiltering import KeywordsFiltering
-from utils.ReviewRBInit import ReviewRBInit
-from utils.ReviewRBLoop import ReviewRBLoop
-from utils.ReviewMLInit import ReviewMLInit
-from utils.ReviewMLLoop import ReviewMLLoop
-from gui.Workflow import Workflow
-from sqlalchemy_dao import Dao
-from db.ORMs import Document
-from utils.IntroStep import IntroStep
-from gui.PreviousNextWidgets import PreviousNextHTML
-import sqlalchemy_dao
-import os
-from conf.ConfigReader import ConfigReader
-from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
+from SmartAnno.models.svm.SVMBOWClassifier import SVMBOWClassifier
+from SmartAnno.models.svm.SVMClassifier import SVMClassifier
+from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.DBInitiater import DBInitiater
+from SmartAnno.utils.DataSetChooser import DataSetChooser
+from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
+from SmartAnno.utils.ReviewRBInit import ReviewRBInit
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
 
 import logging
 
-from utils.TaskChooser import TaskChooser
+from SmartAnno.utils.TaskChooser import TaskChooser
 
 
 def evaluate(task_name='language', classifiers=[LogisticBOWClassifier]):
@@ -68,4 +59,5 @@ LogisticBOWClassifier.train_size = train_size
 SVMBOWClassifier.train_size = train_size
 SVMClassifier.train_size = train_size
 
-evaluate(task_name='language', classifiers=[LogisticBOWClassifier, SVMBOWClassifier, SVMClassifier])
+evaluate(task_name='language',
+         classifiers=[LogisticBOWClassifier, LogisticBOWClassifier, SVMBOWClassifier, SVMClassifier])

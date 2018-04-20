@@ -1,10 +1,10 @@
 from IPython.core.display import display
 from ipywidgets import widgets, Label, Layout
 
-from conf.ConfigReader import ConfigReader
-from gui.MyWidgets import ToggleButtonsMultiSelection, ToggleButtonsMultiSelectionInBox
-from gui.PreviousNextWidgets import PreviousNext
-from utils.TreeSet import TreeSet
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.MyWidgets import ToggleButtonsMultiSelectionInBox
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.utils.TreeSet import TreeSet
 
 
 class KeywordsUMLSExtenderSetup(PreviousNext):

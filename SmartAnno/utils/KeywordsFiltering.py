@@ -3,10 +3,10 @@ from _operator import or_
 from IPython.core.display import clear_output, display
 from ipywidgets import widgets
 
-from db.ORMs import Filter
-from gui.PreviousNextWidgets import PreviousNext
-from gui.Workflow import Step
-from utils.TreeSet import TreeSet
+from SmartAnno.db.ORMs import Filter
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext
+from SmartAnno.gui.Workflow import Step
+from SmartAnno.utils.TreeSet import TreeSet
 
 
 class KeywordsFiltering(PreviousNext):

@@ -2,17 +2,16 @@ import os
 import random
 import re
 from sqlalchemy.sql import functions
-from sqlalchemy import or_, func, and_
+from sqlalchemy import func
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Document
-from gui.Workflow import logMsg
-from models.sampling.BaseSampler import BaseSampler
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Document
+from SmartAnno.models.sampling.BaseSampler import BaseSampler
 
 from whoosh.qparser import QueryParser
 from whoosh.index import open_dir
 
-from utils.NoteBookLogger import logError
+from SmartAnno.utils.NoteBookLogger import logError
 
 
 class KeywordStratefiedSampler(BaseSampler):

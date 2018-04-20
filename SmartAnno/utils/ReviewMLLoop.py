@@ -2,13 +2,14 @@ from threading import Thread
 
 from sqlalchemy import and_
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Annotation, Document
-from gui.Workflow import Step, logMsg
-from models.BaseClassifier import NotTrained, ReadyTrained
-from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
-from utils.ReviewRBInit import ReviewRBInit
-from utils.ReviewRBLoop import ReviewRBLoop, ReviewRB
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Annotation, Document
+from SmartAnno.gui.Workflow import Step, logMsg
+from SmartAnno.models.BaseClassifier import NotTrained, ReadyTrained
+from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.utils.NoteBookLogger import logError
+from SmartAnno.utils.ReviewRBInit import ReviewRBInit
+from SmartAnno.utils.ReviewRBLoop import ReviewRBLoop, ReviewRB
 
 
 class ReviewMLLoop(ReviewRBLoop):
@@ -19,7 +20,7 @@ class ReviewMLLoop(ReviewRBLoop):
         # load class to use static variables to sync training status
         self.ml_classifier_cls = ml_classifier_cls
         # this is the actual classifier model, need to be initiated in ReviewMLInit step
-        self.ml_classifier =None
+        self.ml_classifier = None
         self.step_counter = 0
         self.learning_pace = None
         super().__init__(name)
@@ -30,8 +31,11 @@ class ReviewMLLoop(ReviewRBLoop):
         self.loop_workflow.steps = []
         self.init_real_time()
         # sleep(5)
-        if len(self.loop_workflow.steps) >= len(self.reviewed_docs):
+        if len(self.loop_workflow.steps) > len(self.reviewed_docs):
             self.loop_workflow.steps[len(self.reviewed_docs)].start()
+        else:
+            print('You have finished all the reviews.')
+            self.loop_workflow.steps[0].start()
         pass
 
     def readData(self):
@@ -85,7 +89,9 @@ class ReviewMLLoop(ReviewRBLoop):
         logMsg([doc.DOC_ID for doc in self.docs])
         if self.docs is not None and len(self.docs) > 0 and (
                 self.loop_workflow is None or len(self.loop_workflow.steps) == 0):
-            for i in range(0, len(self.reviewed_docs) + 1):
+            last_doc_pos = len(self.reviewed_docs) + 1 if len(self.reviewed_docs) < len(self.docs) else len(
+                self.reviewed_docs)
+            for i in range(0, last_doc_pos):
                 doc = self.docs[i]
                 content = self.genContent(doc)
                 reviewed = False
@@ -154,18 +160,18 @@ class ReviewML(ReviewRB):
                 reviewed = False
                 if doc.DOC_ID in self.master.annos and self.master.annos[doc.DOC_ID].REVIEWED_TYPE is not None:
                     prediction = self.master.annos[doc.DOC_ID].REVIEWED_TYPE
-                    logMsg(('reviewed: ', reviewed))
+                    logError(('reviewed: ', prediction))
                     reviewed = True
                 else:
                     prediction = self.master.getPrediction(doc)
-                    logMsg(('predicted: ', prediction))
+                    logError(('predicted: ', prediction))
                 repeat_step = ReviewML(description=content, options=self.master.workflow.types, value=prediction,
                                        js=self.js, master=self.master, reviewed=reviewed,
                                        button_style='success' if reviewed else 'info')
                 self.master.appendRepeatStep(repeat_step)
             else:
                 logMsg(('Initiate next step', len(self.master.docs), 'current pos_id:', self.pos_id,
-                            'master\'s next step', self.master.next_step))
+                        'master\'s next step', self.master.next_step))
                 self.next_step = self.master.next_step
                 self.branch_buttons[1].linked_step = self.master.next_step
         pass

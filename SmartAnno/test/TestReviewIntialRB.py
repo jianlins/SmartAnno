@@ -4,11 +4,11 @@ import logging
 import sqlalchemy_dao
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from gui.PreviousNextWidgets import PreviousNextHTML
-from gui.Workflow import Workflow
-from utils.ReviewMLLoop import ReviewRBLoop
-from utils.ReviewRBInit import ReviewRBInit
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextHTML
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.ReviewMLLoop import ReviewRBLoop
+from SmartAnno.utils.ReviewRBInit import ReviewRBInit
 
 
 class TestReviewRB(unittest.TestCase):

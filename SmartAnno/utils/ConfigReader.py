@@ -1,7 +1,7 @@
 import json
 import os
 
-from utils.NoteBookLogger import logError, logMsg
+from SmartAnno.utils.NoteBookLogger import logError, logMsg
 
 
 class ConfigReader(object):
@@ -9,80 +9,6 @@ class ConfigReader(object):
     By default, the file is 'conf/smartanno_conf2.json'."""
     configurations = None
     config_file = ''
-
-    default_config_str = '''
-{
-  "setup_instruction": "if there is no 'smartanno_conf2.json' under 'conf' directory, need to copy this file and rename it to 'smartanno_conf2.json'. ",
-  "api_key": "",
-  "api_key_comment": "api key for UMLS access",
-  "db_header": "sqlite+pysqlite:///",
-  "db_path": "data/demo.sqlite",
-  "learning_steps": 10,
-  "learning_steps_comment": "reclassify the rest of samples after review every # of samples",
-  "status": {
-    "default": 0,
-    "workflow1": 1,
-    "workflow_0": 1,
-    "tasknamer_2": "task1",
-    "types_6": [
-      "Typea",
-      "Typeb"
-    ],
-    "tasknamer_6": "task1",
-    "types_10": [
-      "Typea",
-      "Typeb",
-      "neutral"
-    ],
-    "tasknamer_25": "task1",
-    "types_29": [
-      "Typea",
-      "Typeb"
-    ],
-    "umls_extender_loop": 10,
-    "w_e_extender_loop": 12,
-    "rb_review_loop": 17
-  },
-  "glove": {
-    "vocab": 1900000,
-    "vector": 300,
-    "model_path": "models/saved/glove/glove.42B.300d.bin"
-  },
-  "rush_rules_path": "conf/rush_rules.tsv",
-  "umls": {
-    "sources": [
-      "SNOMEDCT_US"
-    ],
-    "filter_by_length": 0,
-    "filter_by_contains": true,
-    "max_query": 50
-  },
-  "review": {
-    "review_comment": "configurations of sample data reviewing window",
-    "div_height": "200px",
-    "div_height_comment": "height of textarea to display the sample",
-    "meta_columns": [
-      "DOC_ID",
-      "DATE",
-      "REF_DATE"
-    ],
-    "rb_model_threshold": 10,
-    "rb_model_threshold_comment": "max_documents_for_rb_model",
-    "show_meta_name": true,
-    "ml_learning_pace": 5
-  },
-  "cnn_model": {
-    "max_token_per_sentence": 5000,
-    "stopwords_file": "",
-    "learning_pace": 10
-  },
-  "nb_model": {
-    "learning_pace": 10
-  },
-  "logisticbow_model": {
-    "learning_pace": 10
-  }
-}'''
 
     def __init__(self, config_file='conf/smartanno_conf.json'):
         self.root = os.path.abspath(os.path.dirname(os.path.dirname(ConfigReader.config_file)))
@@ -111,12 +37,39 @@ class ConfigReader(object):
         else:
             if not os.path.exists(os.path.join(root, 'conf')):
                 os.makedirs(os.path.join(root, 'conf'))
+            from SmartAnno.conf.DefaultRules import smartanno_config
             with open(config_file, 'w+') as f:
-                f.write(self.default_config_str)
-            ConfigReader.configurations = json.loads(self.default_config_str)
+                f.write(smartanno_config)
+            ConfigReader.configurations = json.loads(smartanno_config)
             logError('File "' + config_file + '" doesn\'t exist, create ' + os.path.abspath(
                 config_file) + ' using default settings.')
         ConfigReader.config_file = config_file
+        self.setUpDirs()
+        self.dumpDefaultRules()
+
+    def setUpDirs(self):
+        if not os.path.exists(os.path.join(self.root, 'data')):
+            os.makedirs(os.path.join(self.root, 'data'))
+        if not os.path.exists(os.path.join(self.root, 'data/whoosh_idx')):
+            os.makedirs(os.path.join(self.root, 'data/whoosh_idx'))
+        if not os.path.exists(os.path.join(self.root, 'models')):
+            os.makedirs(os.path.join(self.root, 'models'))
+        if not os.path.exists(os.path.join(self.root, 'models/saved')):
+            os.makedirs(os.path.join(self.root, 'models/saved'))
+
+    def dumpDefaultRules(self):
+        conf_path = os.path.join(self.root, 'conf')
+        if not os.path.exists(os.path.join(conf_path, 'rush_rules.tsv')):
+            from SmartAnno.conf.DefaultRules import rush_rules
+            self.writeFile(os.path.join(conf_path, 'rush_rules.tsv'), rush_rules)
+        if not os.path.exists(os.path.join(conf_path, 'general_modifiers.yml')):
+            from SmartAnno.conf.DefaultRules import pycontext_rules
+            self.writeFile(os.path.join(conf_path, 'general_modifiers.yml'), pycontext_rules)
+
+    def writeFile(self, filepath, content):
+        with open(filepath, "w") as text_file:
+            text_file.write(content)
+        pass
 
     @classmethod
     def getValue(cls, key):

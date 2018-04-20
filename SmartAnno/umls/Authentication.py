@@ -5,10 +5,9 @@
 
 import requests
 # from pyquery import PyQuery as pq
-import lxml.html as lh
 from lxml.html import fromstring
 
-from conf.ConfigReader import ConfigReader
+from SmartAnno.utils.ConfigReader import ConfigReader
 
 uri = "https://utslogin.nlm.nih.gov"
 # option 1 - username/pw authentication at /cas/v1/tickets

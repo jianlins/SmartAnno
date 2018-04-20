@@ -10,7 +10,7 @@ from textblob import TextBlob
 from radnlp.data import classrslts
 import radnlp.view as rview
 from IPython.display import display, HTML, Image
-from models.rulebased.itemData import itemData, get_item_data
+from SmartAnno.models.rulebased.itemData import itemData, get_item_data
 
 
 # this class encapsulates all data related to a span (text sequence) annotation

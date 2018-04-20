@@ -2,11 +2,9 @@ import abc
 
 import ipywidgets as widgets
 from IPython.core.display import display, clear_output
-from ipywidgets import Layout
 
-from conf.ConfigReader import ConfigReader
-from gui.MyWidgets import ClickResponsiveToggleButtons
-from gui.Workflow import Step, Workflow, logMsg
+from SmartAnno.gui.MyWidgets import ClickResponsiveToggleButtons
+from SmartAnno.gui.Workflow import Step, Workflow, logMsg
 
 """
 This file contains branching widgets
@@ -88,6 +86,7 @@ class RepeatStep(BranchingStep):
     def setNextStep(self, next_step):
         if isinstance(next_step, Step):
             self.branch_buttons[1].linked_step = next_step
+            self.next_step = next_step
         else:
             print(self, 'setNextStep', next_step, 'is not an instance of Step')
         pass
@@ -194,6 +193,7 @@ class LoopRepeatSteps(Step):
     def appendRepeatStep(self, newRepeatStep):
         if len(self.loop_workflow) > 0:
             previous_step = self.loop_workflow.steps[-1]
+            previous_step.setNextStep(newRepeatStep)
         else:
             previous_step = self.previous_step
         #  first step in the loop, set previous step to the previous step outside the loop

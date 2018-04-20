@@ -9,11 +9,11 @@ from whoosh.fields import Schema, TEXT
 from whoosh.index import create_in, open_dir
 from whoosh.writing import AsyncWriter
 
-from conf.ConfigReader import ConfigReader
-from db.ORMs import Task, saveDFtoDB, Document
-from gui.PreviousNextWidgets import PreviousNext, PreviousNextText
-from gui.Workflow import Step
-from utils.NoteBookLogger import logMsg
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.db.ORMs import Task, saveDFtoDB, Document
+from SmartAnno.gui.PreviousNextWidgets import PreviousNext, PreviousNextText
+from SmartAnno.gui.Workflow import Step
+from SmartAnno.utils.NoteBookLogger import logMsg
 
 
 class DocsToDB(PreviousNext):
@@ -159,7 +159,7 @@ class DocsToDB(PreviousNext):
                 sentence_id += 1
                 sents_df.loc[len(sents_df)] = [self.dataset_name + "_sents", bunch_id,
                                                doc_name + "_" + str(sentence_id), sentence, date, ref_date]
-        self.saveToWhoosh(sents_df, self.dataset_name + "_sents")
+        self.saveToWhoosh(sents_df, self.dataset_name + "_sents", overwrite)
         saveDFtoDB(dao, sents_df, table_name)
         pass
 
@@ -182,6 +182,8 @@ class DocsToDB(PreviousNext):
 
     def saveToWhoosh(self, df, dataset_id, overwrite=False):
         # use whoosh search engine to enable full text search
+        if not os.path.exists(self.whoosh_root):
+            os.mkdir(self.whoosh_root)
         ws_path = os.path.join(self.whoosh_root, dataset_id)
         if not os.path.exists(ws_path):
             os.mkdir(ws_path)

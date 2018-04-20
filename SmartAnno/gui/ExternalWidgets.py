@@ -1,7 +1,7 @@
 import traitlets
 import ipywidgets as widgets
 
-from gui.Workflow import Step
+from SmartAnno.gui.Workflow import Step
 
 
 def bind(widget, trait_name):

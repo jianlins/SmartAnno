@@ -1,5 +1,5 @@
-from conf.ConfigReader import ConfigReader
-from models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.models.rulebased.RBDocumentClassifier import RBDocumentClassifierFactory
 ConfigReader()
 filters={'TypeA': ['patient'], 'TypeB': ['family'], 'Irrelevant': []}
 rb_classifier = RBDocumentClassifierFactory.genDocumentClassifier(filters)

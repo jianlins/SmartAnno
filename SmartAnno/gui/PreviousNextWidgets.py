@@ -3,7 +3,7 @@ import ipywidgets as widgets
 import traitlets
 from IPython.core.display import display, clear_output
 
-from gui.Workflow import Step, logMsg
+from SmartAnno.gui.Workflow import Step, logMsg
 
 
 class TimerProgressBar(object):

@@ -1,4 +1,4 @@
-from gui.Main import Main
+from SmartAnno.gui.Main import Main
 
 main = Main()
 import logging
@@ -6,17 +6,17 @@ import logging
 import sqlalchemy_dao
 from sqlalchemy_dao import Dao
 
-from conf.ConfigReader import ConfigReader
-from gui.Workflow import Workflow
-from utils.AnnotationTypeDef import AnnotationTypeDef
-from utils.KeywordsFiltering import KeywordsFiltering
-from gui.PreviousNextWidgets import PreviousNextHTML
-from utils.ReviewRBInit import ReviewRBInit
-from utils.ReviewRBLoop import ReviewRBLoop
-from utils.ReviewMLInit import ReviewMLInit
-from utils.ReviewMLLoop import ReviewMLLoop
-from models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
-from utils.DataSetChooser import DataSetChooser
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.gui.Workflow import Workflow
+from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
+from SmartAnno.gui.PreviousNextWidgets import PreviousNextHTML
+from SmartAnno.utils.ReviewRBInit import ReviewRBInit
+from SmartAnno.utils.ReviewRBLoop import ReviewRBLoop
+from SmartAnno.utils.ReviewMLInit import ReviewMLInit
+from SmartAnno.utils.ReviewMLLoop import ReviewMLLoop
+from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.utils.DataSetChooser import DataSetChooser
 
 logging.getLogger().setLevel(logging.DEBUG)
 

@@ -4,8 +4,8 @@ from IPython.core.display import clear_output
 
 from ipywidgets import widgets
 
-from conf.ConfigReader import ConfigReader
-from utils.NoteBookLogger import logMsg
+from SmartAnno.utils.ConfigReader import ConfigReader
+from SmartAnno.utils.NoteBookLogger import logMsg
 
 
 class Step(object):

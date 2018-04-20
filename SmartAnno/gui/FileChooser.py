@@ -4,7 +4,7 @@ import ipywidgets as widgets
 from ipywidgets import Layout, Box, HTML
 from IPython.display import clear_output, display
 
-from gui.Workflow import Step
+from SmartAnno.gui.Workflow import Step
 
 
 class DirChooser(Step):
