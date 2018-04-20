@@ -6,7 +6,7 @@ from SmartAnno.utils.ConfigReader import ConfigReader
 from SmartAnno.db.ORMs import Annotation, Document
 from SmartAnno.gui.Workflow import Step, logMsg
 from SmartAnno.models.BaseClassifier import NotTrained, ReadyTrained
-from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from SmartAnno.utils.NoteBookLogger import logError
 from SmartAnno.utils.ReviewRBInit import ReviewRBInit
 from SmartAnno.utils.ReviewRBLoop import ReviewRBLoop, ReviewRB

@@ -6,7 +6,7 @@ from ipywidgets import widgets
 from SmartAnno.utils.ConfigReader import ConfigReader
 from SmartAnno.gui.PreviousNextWidgets import PreviousNextWithOtherBranches
 from SmartAnno.gui.Workflow import Step, logMsg
-from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 
 
 class ReviewMLInit(PreviousNextWithOtherBranches):

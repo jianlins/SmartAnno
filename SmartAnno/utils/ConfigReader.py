@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 from SmartAnno.utils.NoteBookLogger import logError, logMsg
 
@@ -37,10 +38,13 @@ class ConfigReader(object):
         else:
             if not os.path.exists(os.path.join(root, 'conf')):
                 os.makedirs(os.path.join(root, 'conf'))
-            from SmartAnno.conf.DefaultRules import smartanno_config
-            with open(config_file, 'w+') as f:
-                f.write(smartanno_config)
-            ConfigReader.configurations = json.loads(smartanno_config)
+            file_name = 'smartanno_conf.json'
+            conf_path = os.path.join(self.root, 'conf')
+            if not os.path.exists(os.path.join(conf_path, file_name)):
+                shutil.copyfile(self.getDefaultResourceFile(file_name + '.bk'),
+                                config_file)
+            with open(config_file, 'r') as f:
+                ConfigReader.configurations = json.load(f)
             logError('File "' + config_file + '" doesn\'t exist, create ' + os.path.abspath(
                 config_file) + ' using default settings.')
         ConfigReader.config_file = config_file
@@ -59,17 +63,19 @@ class ConfigReader(object):
 
     def dumpDefaultRules(self):
         conf_path = os.path.join(self.root, 'conf')
-        if not os.path.exists(os.path.join(conf_path, 'rush_rules.tsv')):
-            from SmartAnno.conf.DefaultRules import rush_rules
-            self.writeFile(os.path.join(conf_path, 'rush_rules.tsv'), rush_rules)
-        if not os.path.exists(os.path.join(conf_path, 'general_modifiers.yml')):
-            from SmartAnno.conf.DefaultRules import pycontext_rules
-            self.writeFile(os.path.join(conf_path, 'general_modifiers.yml'), pycontext_rules)
+        file_name = 'rush_rules.tsv'
+        if not os.path.exists(os.path.join(conf_path, file_name)):
+            shutil.copyfile(self.getDefaultResourceFile(file_name),
+                            os.path.join(conf_path, file_name))
+        file_name = 'general_modifiers.yml'
+        if not os.path.exists(os.path.join(conf_path, file_name)):
+            shutil.copyfile(self.getDefaultResourceFile(file_name),
+                            os.path.join(conf_path, file_name))
 
-    def writeFile(self, filepath, content):
-        with open(filepath, "w") as text_file:
-            text_file.write(content)
-        pass
+    def getDefaultResourceFile(self, filename):
+        from pkg_resources import Requirement, resource_filename
+        filename = resource_filename(Requirement.parse("SmartAnno"), 'SmartAnno/conf/' + filename)
+        return filename
 
     @classmethod
     def getValue(cls, key):

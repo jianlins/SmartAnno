@@ -2,6 +2,5 @@
 
 
 from SmartAnno.utils.ConfigReader import ConfigReader
-cr=ConfigReader(config_file='../conf/smartanno_conf2.json')
-cr.setValue('api-key','dd')
-print(cr.getValue('api-key'))
+cr=ConfigReader(config_file='conf/smartanno_conf.json.bk')
+

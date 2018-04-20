@@ -188,6 +188,7 @@ class DocsToDB(PreviousNext):
         if not os.path.exists(ws_path):
             os.mkdir(ws_path)
             logMsg(str(os.path.abspath(ws_path)) + ' does not exist, create it to store whoosh index')
+            overwrite = True
         schema = Schema(DOC_ID=TEXT(stored=True), TEXT=TEXT)
         if overwrite:
             ix = create_in(ws_path, schema)

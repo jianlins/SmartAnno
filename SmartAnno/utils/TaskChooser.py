@@ -54,6 +54,9 @@ class TaskChooser(PreviousNextText):
             return
         self.data = value
         self.workflow.task_name = value
+        if len(self.text.value.strip()) > 0:
+            with self.workflow.dao.create_session() as session:
+                session.add(Task(TASK_NAME=value))
         if self.workflow.to_continue:
             self.workflow.getStepByName('dataset_chooser').start()
             self.workflow.getStepByName('dataset_chooser').complete()

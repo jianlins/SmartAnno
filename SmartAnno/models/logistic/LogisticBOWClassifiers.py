@@ -16,7 +16,7 @@ from SmartAnno.models.BaseClassifier import BaseClassifier, InTraining, ReadyTra
 not_met_suffix = '_not_met'
 
 
-class LogisticBOWClassifier(BaseClassifier):
+class LogisticBOWClassifiers(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 2
@@ -86,7 +86,7 @@ class LogisticBOWClassifier(BaseClassifier):
 
         if test_minority_instances <= self.cv:
             logMsg(
-                 'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
+                'TEST data does not have enoguh examples (require {} cases) for all classes ({} cases) .  Skipping '
                 'training for task : {}'.format(
                     self.cv, train_minority_instances, classname))
             return
@@ -95,8 +95,7 @@ class LogisticBOWClassifier(BaseClassifier):
 
         logMsg('Fitting model now for iterations = {}'.format(self.iterations))
 
-
-        LogisticBOWClassifier.status = InTraining
+        LogisticBOWClassifiers.status = InTraining
         self.model.fit(X_text_train, y_train)
 
         # print performances
@@ -105,12 +104,12 @@ class LogisticBOWClassifier(BaseClassifier):
 
             logMsg('REPORT for TRAINING set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_train, self.model.predict(X_text_train),
-                                                 target_names=train_classes))
+                                                target_names=train_classes))
 
             logMsg('REPORT for TEST set and task : {}'.format(self.task_name))
             print(metrics.classification_report(y_test, self.model.predict(X_text_test),
-                                                 target_names=train_classes))
-        LogisticBOWClassifier.status = ReadyTrained
+                                                target_names=train_classes))
+        LogisticBOWClassifiers.status = ReadyTrained
 
     pass
 

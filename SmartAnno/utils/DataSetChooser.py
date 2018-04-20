@@ -29,5 +29,8 @@ class DataSetChooser(PreviousNextWithOptions):
 
     def complete(self):
         self.workflow.dataset_id = self.toggle.value
+        with self.workflow.dao.create_session() as session:
+            task = session.query(Task).filter(Task.TASK_NAME == self.workflow.task_name).first()
+            task.DATASET_ID = self.workflow.dataset_id
         super().complete()
         pass

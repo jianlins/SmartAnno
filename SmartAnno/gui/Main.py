@@ -9,7 +9,7 @@ from SmartAnno.gui.FileIO import ReadFiles
 from SmartAnno.gui.PreviousNextWidgets import PreviousNextHTML
 from SmartAnno.gui.Workflow import Workflow
 from SmartAnno.models.BaseClassifier import NotTrained
-from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
 from SmartAnno.utils.DBInitiater import DBInitiater
 from SmartAnno.utils.DataSetChooser import DataSetChooser

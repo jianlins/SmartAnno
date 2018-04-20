@@ -7,7 +7,7 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
 setup(
     name='SmartAnno',
-    packages=['SmartAnno.db', 'SmartAnno.gui', 'SmartAnno.models', 'SmartAnno.umls',
+    packages=['SmartAnno.db', 'SmartAnno.gui', 'SmartAnno.conf', 'SmartAnno.models', 'SmartAnno.umls',
               'SmartAnno.utils', 'SmartAnno'],
     # find_packages(
     #     include=['SmartAnno.conf.*', 'SmartAnno.db.*', 'SmartAnno.gui.*', 'SmartAnno.models.*', 'SmartAnno.umls.*',
@@ -15,7 +15,7 @@ setup(
     # exclude=['*.json', '*.sqlite', 'SmartAnno.test', '*.ipynb_checkpoints', '*.ini']
     # ),
     # this must be the same as the name above
-    version='1.0.14.dev',
+    version='1.0.26.dev',
     description='A smart snippet annotation tool with deep learning backbone.',
     author='Jianlin',
     author_email='jianlinshi.cn@gmail.com',
@@ -39,11 +39,12 @@ setup(
         'PyRuSH', 'sqlalchemy-dao', 'keras', 'spacy', 'ipywidgets', 'jupyter', 'scikit-learn', 'numpy', 'sqlalchemy',
         'colorama', 'textblob', 'Whoosh'
     ],
+    include_package_data=True,
     extras_require={
         "tf": ["tensorflow"],
         "tf_gpu": ["tensorflow-gpu"],
     },
-    package_data={'SmartAnno/conf': ['rush_rules.tsv']},
+    package_data={'SmartAnno/conf': ['rush_rules.tsv', 'general_modifiers.yml', 'smartanno_conf.json.bk']},
     data_files=[('SmartAnno/conf', ['SmartAnno/conf/rush_rules.tsv', 'SmartAnno/conf/general_modifiers.yml',
-                          'SmartAnno/conf/smartanno_conf.json.bk'])],
+                                    'SmartAnno/conf/smartanno_conf.json.bk'])],
 )
