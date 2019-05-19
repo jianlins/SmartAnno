@@ -29,4 +29,16 @@ Then, create another python cell, type:
 ```python
 main.start()
 ```
+```python
+main.workflow.steps
+```
+
 Execute these two cells.
+
+```python
+main.workflow.steps[-2].data
+```
+
+```python
+
+```

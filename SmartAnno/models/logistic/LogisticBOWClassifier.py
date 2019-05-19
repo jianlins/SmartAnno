@@ -2,12 +2,14 @@ import logging
 from collections import Counter
 
 import numpy as np
+from SmartAnno.models.logistic import LogisticBOWClassifier
 from sklearn import metrics
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import train_test_split
+import pandas as pd
+import tensorflow as tf
+import tensorflow_hub as hub
 from sklearn.pipeline import Pipeline
 
 from SmartAnno.gui.Workflow import logMsg
@@ -16,7 +18,7 @@ from SmartAnno.models.BaseClassifier import BaseClassifier, InTraining, ReadyTra
 not_met_suffix = '_not_met'
 
 
-class LogisticBOWClassifier(BaseClassifier):
+class BERTSentimentalClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 2
@@ -38,7 +40,7 @@ class LogisticBOWClassifier(BaseClassifier):
                                       ])
         return self.pipeline
 
-    def train(self, x, y):
+    def train(self, x:list, y:list):
         logMsg('training...')
 
         stats = Counter(y)
@@ -55,7 +57,7 @@ class LogisticBOWClassifier(BaseClassifier):
 
         X_text_train, X_text_test, y_train, y_test = train_test_split(x, y,
                                                                       test_size=self.test_size,
-                                                                      random_state=LogisticBOWClassifier    .random_state)
+                                                                      random_state=LogisticBOWClassifier.random_state)
         train_classes, train_y_indices = np.unique(y_train, return_inverse=True)
         test_classes, test_y_indices = np.unique(y_test, return_inverse=True)
         train_minority_instances = np.min(np.bincount(train_y_indices))

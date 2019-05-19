@@ -7,14 +7,14 @@ from SmartAnno.utils.KeywordsFiltering import KeywordsFiltering
 from SmartAnno.utils.ReviewRBInit import ReviewRBInit
 from SmartAnno.gui.Workflow import Workflow
 from SmartAnno.utils.ConfigReader import ConfigReader
-from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifier
+from SmartAnno.models.logistic.LogisticBOWClassifiers import LogisticBOWClassifiers
 
 import logging
 
 from SmartAnno.utils.TaskChooser import TaskChooser
 
 
-def evaluate(task_name='language', classifiers=[LogisticBOWClassifier]):
+def evaluate(task_name='language', classifiers=[LogisticBOWClassifiers]):
     ConfigReader()
 
     dbi = DBInitiater(name='db_initiator')
@@ -55,9 +55,9 @@ def evaluate(task_name='language', classifiers=[LogisticBOWClassifier]):
 
 
 train_size = 0.9
-LogisticBOWClassifier.train_size = train_size
+LogisticBOWClassifiers.train_size = train_size
 SVMBOWClassifier.train_size = train_size
 SVMClassifier.train_size = train_size
 
 evaluate(task_name='language',
-         classifiers=[LogisticBOWClassifier, LogisticBOWClassifier, SVMBOWClassifier, SVMClassifier])
+         classifiers=[LogisticBOWClassifiers,  SVMBOWClassifier, SVMClassifier])
