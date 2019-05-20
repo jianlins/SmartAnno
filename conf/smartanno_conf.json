@@ -1,0 +1,72 @@
+{
+  "setup_instruction": "if there is no 'smartanno_conf.json' under 'conf' directory, need to copy this file and rename it to 'smartanno_conf.json'. ",
+  "api_key": "",
+  "api_key_comment": "api key for UMLS access",
+  "db_header": "sqlite+pysqlite:///",
+  "db_path": "data/test.sqlite",
+  "learning_steps": 10,
+  "learning_steps_comment": "reclassify the rest of samples after review every # of samples",
+  "status": {
+    "default": 0,
+    "workflow1": 1,
+    "workflow_0": 17,
+    "tasknamer_2": "task1",
+    "types_6": [
+      "Typea",
+      "Typeb"
+    ],
+    "tasknamer_5": "task1",
+    "tasknamer_6": "task1",
+    "tasknamer_25": "task1",
+    "types_29": [
+      "Typea",
+      "Typeb"
+    ],
+    "umls_extender_loop": 10,
+    "w_e_extender_loop": 12,
+    "rb_review_loop": 17
+  },
+  "glove": {
+    "vocab": 1900000,
+    "vector": 300,
+    "model_path": ""
+  },
+  "rush_rules_path": "conf/rush_rules.tsv",
+  "umls": {
+    "sources": [
+      "SNOMEDCT_US"
+    ],
+    "filter_by_length": 0,
+    "filter_by_contains": true,
+    "max_query": 50
+  },
+  "review": {
+    "review_comment": "configurations of sample data reviewing window",
+    "div_height": "200px",
+    "div_height_comment": "height of textarea to display the sample",
+    "meta_columns": [
+      "DOC_ID",
+      "DATE",
+      "REF_DATE"
+    ],
+    "rb_model_threshold": 30,
+    "rb_model_threshold_comment": "max_documents_for_rb_model",
+    "show_meta_name": true,
+    "ml_learning_pace": 5,
+    "highlight_color": "PaleGreen"
+  },
+  "cnn_model": {
+    "max_token_per_sentence": 5000,
+    "stopwords_file": "",
+    "learning_pace": 10
+  },
+  "nb_model": {
+    "learning_pace": 10
+  },
+  "logisticbow_model": {
+    "learning_pace": 10
+  },
+  "whoosh": {
+    "root_path": "data/whoosh_idx"
+  }
+}

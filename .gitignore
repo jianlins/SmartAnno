@@ -2,3 +2,7 @@ SmartAnno/conf/*.json
 SmartAnno/data/*.sqlite
 SmartAnno/models/saved/*
 SmartAnno/logging.ini
+data
+.idea
+build
+dist
