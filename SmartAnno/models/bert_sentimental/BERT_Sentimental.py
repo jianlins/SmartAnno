@@ -7,7 +7,7 @@ import tensorflow_hub as hub
 from bert import optimization
 from bert import run_classifier
 from bert import tokenization
-from sklearn.externals import joblib
+import joblib
 from sklearn.model_selection import train_test_split
 
 # https://colab.research.google.com/github/google-research/bert/blob/master/predicting_movie_reviews_with_bert_on_tf_hub.ipynb#scrollTo=fom_ff20gyy6

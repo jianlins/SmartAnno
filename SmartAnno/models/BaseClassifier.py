@@ -1,5 +1,5 @@
 import abc
-from sklearn.externals import joblib
+import joblib
 import os
 
 from SmartAnno.gui.Workflow import logMsg
