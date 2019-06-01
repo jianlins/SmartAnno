@@ -61,4 +61,4 @@ bert_senti_cls = BERTSentimentalClassifier("bert_senti")
 
 X_train, y_train = get_x_y(train)
 # %%
-bert_senti_cls.train(X_train, y_train)
+bert_senti_cls.train(X_train[:5000], y_train[:5000])

@@ -34,7 +34,7 @@ class BERTSentimentalClassifier(BaseClassifier):
     SAVE_SUMMARY_STEPS = 100
     MAX_SEQ_LENGTH = 128
     random_state = 777
-    OUTPUT_DIR='models/saved/bert_sentimental'
+    OUTPUT_DIR = 'models/saved/bert_sentimental'
 
     def __init__(self, task_name='default_task', pipeline=None, params=None, model_file=None, **kwargs):
         self.pipeline = pipeline
@@ -216,8 +216,8 @@ class BERTSentimentalClassifier(BaseClassifier):
         return model_fn
 
     def gen_feature(self, x: list, y: list, is_training=False):
-        inputExamples = [bert.run_classifier.InputExample(guid=None, text_a=xs, text_b=None, label=ys) for
-                         xs, ys in zip(x, y)]
+        inputExamples = [bert.run_classifier.InputExample(guid=None, text_a=x[i], text_b=None, label=y[i]) for i in
+                         range(0, len(x))]
         input_features = bert.run_classifier.convert_examples_to_features(inputExamples, y, self.MAX_SEQ_LENGTH,
                                                                           self.tokenizer)
         input_fn = bert.run_classifier.input_fn_builder(features=input_features, seq_length=self.MAX_SEQ_LENGTH,

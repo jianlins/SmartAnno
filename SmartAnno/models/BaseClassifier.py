@@ -2,7 +2,7 @@ import abc
 import joblib
 import os
 
-from SmartAnno.gui.Workflow import logMsg
+from SmartAnno.utils.NoteBookLogger import logMsg
 
 NotTrained = 0
 InTraining = 1
