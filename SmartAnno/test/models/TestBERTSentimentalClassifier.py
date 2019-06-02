@@ -1,5 +1,5 @@
 import pytest
-from SmartAnno.models.bert_sentimental.BERT_Sentimental import BERTSentimentalClassifier
+from SmartAnno.models.bert_sentimental.BERTSentClassifier import BERTSentimentalClassifier
 
 from tensorflow import keras
 
