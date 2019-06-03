@@ -29,14 +29,14 @@ class BaseClassifier:
             self.model = self.loadModel()
             BaseClassifier.status = ReadyTrained
         else:
-            self.model = self.defineModel()
+            self.model = self.init_model()
             BaseClassifier.status = NotTrained
         #  automatically set customized parameters to self object
         BaseClassifier.instance = self
         pass
 
     @abc.abstractmethod
-    def defineModel(self):
+    def init_model(self):
         """separate the definition, because at most of the time, you would want to automatically load previously trained
         model instead. """
         return None

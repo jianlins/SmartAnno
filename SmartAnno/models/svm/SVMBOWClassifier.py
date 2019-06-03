@@ -45,7 +45,7 @@ class SVMBOWClassifier(BaseClassifier):
         super().__init__(task_name, pipeline, params, model_file, **kwargs)
         pass
 
-    def defineModel(self):
+    def init_model(self):
         model = RandomizedSearchCV(self.pipeline, param_distributions=self.params,
                                    n_iter=self.iterations,
                                    cv=self.cv,

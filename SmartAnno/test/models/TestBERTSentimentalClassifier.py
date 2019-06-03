@@ -1,12 +1,11 @@
-import pytest
-from SmartAnno.models.bert_sentimental.BERTSentClassifier import BERTSentimentalClassifier
-
-from tensorflow import keras
-
 import os
 import re
+
+import numpy as np
 import pandas as pd
 import tensorflow as tf
+
+from SmartAnno.models.bert_sentimental.BERTSentClassifier import BERTSentClassifier
 
 
 # Load all files from a directory in a DataFrame.
@@ -45,20 +44,33 @@ def download_and_load_datasets(force_download=False):
     return train_df, test_df
 
 
-def get_x_y(data):
-    x = []
-    y = []
-    for index, row in data.iterrows():
-        x.append(row['sentence'])
-        y.append(row['sentiment'])
-    return x, y
+def get_x_y(data: pd.DataFrame) -> (np.ndarray, np.ndarray):
+    return data['sentence'].values, data['polarity'].values
 
 
 train, test = download_and_load_datasets()
 print(len(train), len(test))
 
-bert_senti_cls = BERTSentimentalClassifier("bert_senti")
+bert_senti_cls = BERTSentClassifier("bert_senti")
 
-X_train, y_train = get_x_y(train)
+X_train, y_train = get_x_y(train[:100])
+
+
+y_train = np.array(['neg' if i == 0 else 'pos' for i in y_train])
+bert_senti_cls.train(X_train, y_train)
+
 # %%
-bert_senti_cls.train(X_train[:5000], y_train[:5000])
+
+pred_sentences = [
+    "That movie was absolutely awful",
+    "The acting was a bit lacking",
+    "The film was creative and surprising",
+    "Absolutely fantastic!"
+]
+predictions = bert_senti_cls.predict(pred_sentences)
+
+print(predictions)
+
+# %%
+
+print(bert_senti_cls.classify('This is not a good game.'))

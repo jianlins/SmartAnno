@@ -33,7 +33,7 @@ class BERTSentimentalClassifier(BaseClassifier):
 
         pass
 
-    def defineModel(self):
+    def init_model(self):
         if self.pipeline is None:
             self.pipeline = Pipeline([('vect', CountVectorizer()),
                                       ('clf', LogisticRegression(C=5.0, n_jobs=LogisticBOWClassifier.n_jobs)),
