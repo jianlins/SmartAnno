@@ -40,7 +40,6 @@ def download_and_load_datasets(force_download=False):
                                          "aclImdb", "train"))
     test_df = load_dataset(os.path.join(os.path.dirname(dataset),
                                         "aclImdb", "test"))
-
     return train_df, test_df
 
 
@@ -50,7 +49,7 @@ def get_x_y(data: pd.DataFrame) -> (np.ndarray, np.ndarray):
 
 train, test = download_and_load_datasets()
 print(len(train), len(test))
-
+# %%
 bert_senti_cls = BERTSentClassifier("bert_senti")
 
 X_train, y_train = get_x_y(train[:100])

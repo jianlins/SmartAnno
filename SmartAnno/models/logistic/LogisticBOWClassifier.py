@@ -18,7 +18,7 @@ from SmartAnno.models.BaseClassifier import BaseClassifier, InTraining, ReadyTra
 not_met_suffix = '_not_met'
 
 
-class BERTSentimentalClassifier(BaseClassifier):
+class LogisticBOWClassifier(BaseClassifier):
     # optional paramters with default values here (will be overwritten by ___init__'s **kwargs)
     # These parameters will be shown in GUI ask for users' configuration
     cv = 2

@@ -1,28 +1,33 @@
 import os
-import time
-import ipywidgets as widgets
-from ipywidgets import Layout, Box, HTML
-from IPython.display import clear_output, display
 
-from SmartAnno.gui.PreviousNextWidgets import TimerProgressBar
+import ipywidgets as widgets
+from IPython.display import clear_output, display
+from ipywidgets import Layout, Box
+
 from SmartAnno.gui.Workflow import Step
 
 
 class DirChooser(Step):
     """Display a simple GUI to let users choose from which directory to import the text files"""
 
-    def __init__(self, height=150, intro_wait=3.5, title='Import files from: ', name=str(Step.global_id + 1)):
+    def __init__(self, height=150, intro_wait=3.5, title='Import files from: ', name=str(Step.global_id + 1),
+                 path=None):
         super().__init__(name)
+        self.notice = ''
+        self.box = None
         self.title = title
         self.height = height
         self.intro_wait = intro_wait
+        self.path = path
         self.resetParameters()
 
     def resetParameters(self):
         if self.data is not None and isinstance(self.data, tuple) and len(self.data) > 0:
             self.data[1].clear()
-        self.path = os.getcwd()
-        self.filter = 'xml'
+        if self.path is None:
+            self.path = os.getcwd()
+        self.file = ''
+        self.filter = 'txt'
         self._update_files()
         pass
 
@@ -47,10 +52,10 @@ class DirChooser(Step):
             self.workflow.steps[self.pos_id + 3].setPreviousStep(self.workflow.steps[1])
             self.workflow.steps[self.pos_id + 3].start()
             return None
-        box = widgets.VBox(layout=widgets.Layout(display='flex', flex_grown='column'))
-        self._update(box)
-        display(box)
-        return box
+        self.box = widgets.VBox(layout=widgets.Layout(display='flex', flex_grown='column'))
+        self._update(self.box)
+        display(self.box)
+        return self.box
 
     def _update(self, box):
         def on_click(b):
@@ -58,11 +63,21 @@ class DirChooser(Step):
                 self.path = os.path.split(self.path)[0]
             else:
                 self.path = self.path + "/" + b.description
+            for button in box.children[2].children:
+                button.disabled = True
             self._update_files()
+            self.file = ''
             # print(self.files)
             # self.files.sort()
             # print(self.files)
+
             self._update(box)
+
+        def on_select(b):
+            self.file = b.description
+            self.notice = "<p><b>Current selected zip file: </b>%s</p>" % (self.file,)
+            self._update(box)
+            pass
 
         def on_confirm(b):
             clear_output()
@@ -71,7 +86,10 @@ class DirChooser(Step):
             else:
                 file_type = "'" + self.filter + "'"
             display(widgets.HTML("Start to import <b>" + file_type + "</b> files from: <br/>" + self.path))
-            self.data = (self.path, self.files)
+            if len(self.file) > 0:
+                self.data = (self.file, self.files)
+            else:
+                self.data = (self.path, self.files)
             self.complete()
             pass
 
@@ -103,7 +121,8 @@ class DirChooser(Step):
             buttons.append(button)
         for f in self.files:
             button = widgets.Button(description=f)
-            # button.on_click(on_click)
+            if f.lower().endswith('zip'):
+                button.on_click(on_select)
             buttons.append(button)
 
         box_layout = Layout(overflow_y='auto', display='block', height=str(self.height) + 'px', border='1px solid grey')
@@ -119,7 +138,9 @@ class DirChooser(Step):
         )
         file_filter.continuous_update = False
         file_filter.observe(update_filter, type='change')
-
+        self.notice = "<p><b>Current directory: </b>%s</p>" % (self.path,)
+        if len(self.file) > 0:
+            self.notice = "<p><b>Current selected zip file: </b>%s</p>" % (self.file,)
         box.children = tuple([widgets.HTML("<h4>" + self.title + "</h4>")] +
-                             [widgets.HTML("<p><b>Current directory: </b>%s</p>" % (self.path,))] + [carousel] + [
+                             [widgets.HTML(self.notice)] + [carousel] + [
                                  file_filter] + [confirm])

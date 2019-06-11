@@ -1,8 +1,9 @@
+import random
 from os import path
 
 import pandas as pd
-from IPython.core.display import display
-from ipywidgets import widgets
+from IPython.core.display import display, clear_output
+from ipywidgets import widgets, Button
 
 from SmartAnno.gui.PreviousNextWidgets import PreviousNext
 from SmartAnno.gui.Workflow import Step
@@ -20,6 +21,14 @@ class ReadFiles(PreviousNext):
         self.data = None
         self.references = None
         self.resetParameters()
+        self.start_import_btn = Button(description="Start Import")
+        self.progressbar = widgets.IntProgress(min=0, max=1, value=0, layout=widgets.Layout(width='50%'))
+        self.sample_num = widgets.Text(
+            value='',
+            placeholder='',
+            description='Number of files to sample',
+            disabled=False, style={'description_width': 'initial'}
+        )
         pass
 
     def resetParameters(self):
@@ -28,38 +37,81 @@ class ReadFiles(PreviousNext):
         pass
 
     def start(self):
+        def startImport(b):
+            b.disabled = True
+            print('start import...')
+            parent_dir, files = self.previous_step.data
+            self.progressbar.max = int(self.sample_num.value)
+            if not parent_dir.lower().endswith('.zip'):
+                sampled_ids = random.sample(range(0, len(files)), self.progressbar.max)
+                for i in range(0, self.progressbar.max):
+                    file = files[sampled_ids[i]]
+                    base_name = path.basename(file)
+                    self.progressbar.value = i
+                    with open(parent_dir + '/' + file) as f:
+                        text = f.read()
+                        if file.lower().endswith('.xml'):
+                            self.loadTextFromXml(file, text, self.data)
+                        else:
+                            self.dataset_name = 'unknown'
+                            self.data = self.data.append(pd.DataFrame([[None, base_name, text, None, None]],
+                                                                      columns=['BUNCH_ID', 'DOC_NAME', 'TEXT', 'DATE',
+                                                                               'REF_DATE']))
+                self.progressbar.value = self.progressbar.max
+            else:
+                sampled_ids = random.sample(range(0, len(self.file_list)), self.progressbar.max)
+                for i in range(0, self.progressbar.max):
+                    finfo = self.file_list[sampled_ids[i]]
+                    ifile = self.zfile.open(finfo)
+                    doc_text = ifile.read().decode("utf-8")
+                    base_name = path.basename(finfo.filename)
+                    self.progressbar.value = i
+                    if finfo.filename.lower().endswith('.xml'):
+                        self.loadTextFromXml(finfo, doc_text, self.data)
+                    else:
+                        self.dataset_name = 'unknown'
+                        self.data = self.data.append(pd.DataFrame([[None, base_name, doc_text, None, None]],
+                                                                  columns=['BUNCH_ID', 'DOC_NAME', 'TEXT', 'DATE',
+                                                                           'REF_DATE']))
+                self.zfile.close()
+                self.progressbar.value = self.progressbar.max
+            self.next_button.disabled = False
+            # self.data.set_index('DOC_NAME', inplace=True)
+            if self.dataset_name == 'n2c2':
+                self.inferRefDate(self.data)
+            print("Totally " + str(len(sampled_ids)) + " files have been imported into dataframe.\n"
+                                                 "They are parsed into " + str(len(self.data)) + " records in dataframe.")
+            pass
+
         if self.previous_step.data is None:
             self.previous_step.start()
         parent_dir, files = self.previous_step.data
-        label = widgets.HTML("<h4>Read files from: </h4><p>" + parent_dir + "</p>")
-        progressbar = widgets.IntProgress(min=0, max=len(files), value=0, layout=widgets.Layout(width='50%'))
-        rows = [label, progressbar] + self.addSeparator(top='10px') + [
-            self.addPreviousNext(self.show_previous, self.show_next)]
+        if not parent_dir.lower().endswith('.zip'):
+            label = widgets.HTML("<h4>Read %s files from: </h4><p>%s</p>".format(len(files), parent_dir))
+            self.start_import_btn.on_click(startImport)
+            self.sample_num.value = str(len(files))
+            self.progressbar.max = len(files)
+            rows = [label, self.sample_num, self.start_import_btn, self.progressbar] + self.addSeparator(top='10px') + [
+                self.addPreviousNext(self.show_previous, self.show_next)]
+        else:
+            import zipfile, os
+            parent_dir = os.path.join(self.previous_step.path, parent_dir)
+            self.zfile = zipfile.ZipFile(parent_dir)
+            print('reading file list from {} ...'.format(parent_dir))
+            self.file_list = [f for f in self.zfile.infolist() if not f.is_dir()]
+            label = widgets.HTML("<h4>Read %s files from: </h4><p>%s</p>".format(len(self.file_list), parent_dir))
+            self.sample_num.value = str(len(self.file_list))
+            self.progressbar.max = len(self.file_list)
+            self.start_import_btn.on_click(startImport)
+            rows = [label, self.sample_num, self.start_import_btn, self.progressbar] + self.addSeparator(top='10px') + [
+                self.addPreviousNext(self.show_previous, self.show_next)]
         vbox = widgets.VBox(rows)
         vbox.layout.flex_grown = 'column'
+        clear_output()
         display(vbox)
-        for i in range(0, len(files)):
-            file = files[i]
-            base_name = path.basename(file)
-            progressbar.value = i
-            with open(parent_dir + '/' + file) as f:
-                text = f.read()
-                if file.lower().endswith('.xml'):
-                    self.loadTextFromXml(file, text, self.data)
-                else:
-                    self.dataset_name = 'unknown'
-                    self.data = self.data.append(pd.DataFrame([[None, base_name, text, None, None]],
-                                                              columns=['BUNCH_ID', 'DOC_NAME', 'TEXT', 'DATE',
-                                                                       'REF_DATE']))
-        progressbar.value = progressbar.max
-        self.next_button.disabled = False
-        # self.data.set_index('DOC_NAME', inplace=True)
-        if self.dataset_name == 'n2c2':
-            self.inferRefDate(self.data)
-        print("Totally " + str(len(files)) + " files have been imported into dataframe.\n"
-                                             "They are parsed into "+str(len(self.data))+" records in dataframe.")
-
         return self.data
+
+
 
     def loadTextFromXml(self, file_name, content, df):
         if '<PatientMatching>' in content:

@@ -1,8 +1,6 @@
 from IPython.core.display import display
 from ipywidgets import widgets
 
-from SmartAnno.models.svm.SVMClassifier import SVMClassifier
-from SmartAnno.utils.ConfigReader import ConfigReader
 from SmartAnno.gui.DirChooser import DirChooser
 from SmartAnno.gui.FileIO import ReadFiles
 # from SmartAnno.gui.SetFilterKeyWords import SetFilterKeyWords
@@ -11,6 +9,7 @@ from SmartAnno.gui.Workflow import Workflow
 from SmartAnno.models.BaseClassifier import NotTrained
 from SmartAnno.models.logistic.LogisticBOWClassifier import LogisticBOWClassifier
 from SmartAnno.utils.AnnotationTypeDef import AnnotationTypeDef
+from SmartAnno.utils.ConfigReader import ConfigReader
 from SmartAnno.utils.DBInitiater import DBInitiater
 from SmartAnno.utils.DataSetChooser import DataSetChooser
 from SmartAnno.utils.DocsToDB import DocsToDB

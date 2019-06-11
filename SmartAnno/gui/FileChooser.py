@@ -7,8 +7,8 @@ from IPython.display import clear_output, display
 from SmartAnno.gui.Workflow import Step
 
 
-class DirChooser(Step):
-    """Display a simple GUI to let users choose from which directory to import the text files"""
+class FileChooser(Step):
+    """Display a simple GUI to let users choose from which zip file to import the text documents"""
 
     def __init__(self, height=150, intro_wait=3.5):
         super().__init__()
@@ -37,7 +37,7 @@ class DirChooser(Step):
         self.files.sort()
 
     def start(self):
-        display(HTML('<p><b>Welcome to SmartAnno!<br/>First let\'s import txt data from a directory. </p>'))
+        display(HTML('<p><b>Welcome to SmartAnno!<br/>First let\'s import txt data from a zip file. </p>'))
         num_half_sec = int(self.intro_wait * 2)
         progressbar = widgets.IntProgress(min=0, max=num_half_sec, value=0)
         display(progressbar)

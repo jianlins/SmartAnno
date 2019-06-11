@@ -131,17 +131,77 @@ class Workflow(object):
         previous_step = None
         if len(self.steps) > 0:
             previous_step = self.steps[-1]
-        id = len(self.steps)
-        new_step.pos_id = id
+        step_id = len(self.steps)
+        new_step.pos_id = step_id
         new_step.setWorkflow(self)
         self.steps.append(new_step)
 
-        self.name_dict[new_step.name] = id
+        self.name_dict[new_step.name] = step_id
         if previous_step is not None:
-            logMsg((self, 'attache new step ' + new_step.name + ' ' + str(id)))
+            logMsg((self, 'attache new step ' + new_step.name + ' ' + str(step_id)))
             new_step.setPreviousStep(previous_step)
             previous_step.setNextStep(new_step)
             pass
+
+    def insert(self, pos: int, new_step: Step):
+        if pos >= len(self):
+            logMsg(self, 'insert position is greater than the current length of steps. Append to the end instead.')
+            self.append(new_step)
+        else:
+            self.steps.insert(pos, new_step)
+            self.steps[pos].setWorkflow(self)
+            if pos > 0:
+                self.steps[pos - 1].setNextStep(self.steps[pos])
+            for step_id in range(pos, len(self)):
+                step = self.steps[step_id]
+                step.pos_id = step_id
+                step.setPreviousStep(self.steps[pos - 1])
+                if step_id < len(self) - 1:
+                    step.setNextStep(self.steps[pos + 1])
+                self.name_dict[step.name] = step_id
+        pass
+
+    def replace(self, pos: int, new_step: Step):
+        if pos >= len(self):
+            logMsg(self, 'insert position is greater than the current length of steps. Append to the end instead.')
+            self.append(new_step)
+        elif pos < 0:
+            logMsg(self, 'The position to delete is greater than the current length of steps. Ignore this command.')
+            return
+        else:
+            old_name = self.steps[pos].name
+            self.steps[pos] = new_step
+            new_step.pos_id = pos
+            new_step.setWorkflow(self)
+            if pos > 0:
+                self.steps[pos - 1].setNextStep(self.steps[pos])
+                self.steps[pos].setPreviousStep(self.steps[pos - 1])
+            if pos < len(self) - 1:
+                self.steps[pos].setNextStep(self.steps[pos + 1])
+                self.steps[pos + 1].setPreviousStep(self.steps[pos])
+            del self.name_dict[old_name]
+            self.name_dict[new_step.name] = pos
+        pass
+
+    def remove(self, pos: int):
+        if pos >= len(self):
+            logMsg(self, 'The position to delete is greater than the current length of steps. Ignore this command.')
+            return
+        elif pos < 0:
+            logMsg(self, 'The position to delete is greater than the current length of steps. Ignore this command.')
+            return
+        else:
+            self.steps.__delitem__(pos)
+            if pos > 0:
+                self.steps[pos - 1].setNextStep(self.steps[pos])
+            for step_id in range(pos, len(self)):
+                step = self.steps[step_id]
+                step.pos_id = step_id
+                step.setPreviousStep(self.steps[pos - 1])
+                if step_id < len(self) - 1:
+                    step.setNextStep(self.steps[pos + 1])
+                self.name_dict[step.name] = step_id
+        pass
 
     def getStepById(self, step_id):
         return self.steps[step_id]
@@ -178,4 +238,7 @@ class Workflow(object):
         return status
 
     def __repr__(self):
-        return '<%s, %s>' % (type(self), self.name)
+        rep = []
+        for step in self.steps:
+            rep.append(str(type(step).__name__) + "\tName:" + step.name + "\tId:" + str(step.pos_id))
+        return '\n'.join(rep)
