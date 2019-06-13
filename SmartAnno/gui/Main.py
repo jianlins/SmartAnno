@@ -105,3 +105,7 @@ class Main:
             return self.workflow.data[length - 1]
         else:
             return None
+
+    def navigate(self):
+        # TODO
+        pass

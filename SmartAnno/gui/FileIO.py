@@ -99,7 +99,7 @@ class ReadFiles(PreviousNext):
             self.zfile = zipfile.ZipFile(parent_dir)
             print('reading file list from {} ...'.format(parent_dir))
             self.file_list = [f for f in self.zfile.infolist() if not f.is_dir()]
-            label = widgets.HTML("<h4>Read %s files from: </h4><p>%s</p>".format(len(self.file_list), parent_dir))
+            label = widgets.HTML("<h4>Read {} files from: </h4><p>{}</p>".format(len(self.file_list), parent_dir))
             self.sample_num.value = str(len(self.file_list))
             self.progressbar.max = len(self.file_list)
             self.start_import_btn.on_click(startImport)

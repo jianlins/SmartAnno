@@ -242,3 +242,6 @@ class Workflow(object):
         for step in self.steps:
             rep.append(str(type(step).__name__) + "\tName:" + step.name + "\tId:" + str(step.pos_id))
         return '\n'.join(rep)
+
+    def __getitem__(self, val):
+        return self.steps[val]

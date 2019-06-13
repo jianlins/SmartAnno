@@ -29,7 +29,7 @@ class ReviewRBInit(PreviousNext):
     nlp = None
     matcher = None
 
-    def __init__(self, description='', name=str(Step.global_id + 1)):
+    def __init__(self, description='', name=str(Step.global_id + 1), sampler_cls: type = KeywordStratefiedSampler):
         super().__init__(name=name)
         self.toggle = widgets.ToggleButtons(options=sample_options, value=sample_options[-1],
                                             description='What to do with previously sampled data? ',
@@ -40,7 +40,7 @@ class ReviewRBInit(PreviousNext):
                                                         description='Total documents you want to sample:',
                                                         style=dict(description_width='initial'))
         self.sample_size_input.observe(self.onSampleConfigChange)
-
+        self.sampler_cls=sampler_cls
         self.sampled_summary = widgets.HTML(value='')
         self.percent_slider = widgets.IntSlider(
             value=70,
@@ -188,9 +188,10 @@ class ReviewRBInit(PreviousNext):
         for type_name in self.workflow.filters.keys():
             self.samples[type_name] = []
 
-        self.sampler = KeywordStratefiedSampler(dao=self.workflow.dao,
+        self.sampler = self.sampler_cls(dao=self.workflow.dao,
                                                 previous_sampled_ids=set(self.data['annos'].keys()),
-                                                dataset_id=self.workflow.dataset_id)
+                                                dataset_id=self.workflow.dataset_id,
+                                                task_id=self.workflow.task_id)
         grouped_ids, new_ids, self.current_stats = self.sampler.getSummary(self.workflow.filters)
         self.ready = True
         pass
