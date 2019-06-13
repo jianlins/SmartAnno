@@ -193,6 +193,7 @@ class ReviewRBInit(PreviousNext):
                                                 dataset_id=self.workflow.dataset_id,
                                                 task_id=self.workflow.task_id)
         grouped_ids, new_ids, self.current_stats = self.sampler.getSummary(self.workflow.filters)
+        print(self.current_stats)
         self.ready = True
         pass
 

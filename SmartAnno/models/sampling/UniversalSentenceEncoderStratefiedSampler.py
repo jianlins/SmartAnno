@@ -32,9 +32,13 @@ class UniversalSentenceEncoderStratefiedSampler(KeywordStratefiedSampler):
             self.index_dir = kwargs['index_dir']
         else:
             self.index_dir = 'data/faiss'
+        if not Path(self.index_dir).is_dir():
+            Path(self.index_dir).mkdir()
         self.dataset_idx = OrderedDict()
         self.dataset_txt = []
         self.dataset_doc_ids = []
+        self.faiss_index = None
+        self.dataset_embeddings = None
         pass
 
     def getSummary(self, filters: dict = dict(), reindex=False, distance_threhold=1) -> dict:
@@ -45,9 +49,19 @@ class UniversalSentenceEncoderStratefiedSampler(KeywordStratefiedSampler):
                  keywords and have not been sampled
         :rtype: dict
         """
-        annos = dict()
         self.grouped_ids = {type_name: set() for type_name in filters.keys()}
         self.new_ids = {type_name: set() for type_name in filters.keys()}
+        annos, self.dataset_idx, self.dataset_txt, self.dataset_doc_ids = self.read_db(reindex)
+        if reindex or not Path(self.index_dir, self.VECTOR_DUMP).is_file():
+            self.faiss_index, self.dataset_embeddings = self.reindex_embeddings()
+        else:
+            print('Loading indexed sentence embeddings and faiss indexes...')
+            self.faiss_index, self.dataset_embeddings = self.load_embedding_index()
+        return self.gen_stats(self.dataset_idx, self.dataset_doc_ids, self.dataset_embeddings, self.faiss_index, annos,
+                              distance_threhold)
+
+    def read_db(self, reindex=False):
+        annos = dict()
         with self.dao.create_session() as session:
             res = session.query(Annotation).filter(Annotation.TASK_ID == self.task_id, Annotation.REVIEWED_TYPE != None)
             for anno in res:
@@ -65,62 +79,56 @@ class UniversalSentenceEncoderStratefiedSampler(KeywordStratefiedSampler):
                     self.dataset_idx[doc.DOC_ID] = len(self.dataset_txt)
                     self.dataset_txt.append(doc.TEXT)
                     self.dataset_doc_ids.append(doc.DOC_ID)
+        return annos, self.dataset_idx, self.dataset_txt, self.dataset_doc_ids
 
-        if reindex or not Path(self.index_dir, self.VECTOR_DUMP).is_file():
-            print('Start reindexing sentence embeddings...')
-            import tensorflow as tf
-            import tensorflow_hub as hub
+    def reindex_embeddings(self):
+        print('Start reindexing sentence embeddings...')
+        import tensorflow as tf
+        import tensorflow_hub as hub
 
-            module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/3"
-            embed = hub.Module(module_url)
-            print('Sentence encoder model loaded.')
+        module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/3"
+        embed = hub.Module(module_url)
+        print('Sentence encoder model loaded.')
 
-            # need to split the dataset to fit into memory for sentence encoder
-            dataset_embeddings = None
-            i = 0
-            pace = 1000
-            print('Start encoding documents...')
+        # need to split the dataset to fit into memory for sentence encoder
+        self.dataset_embeddings = []
+        i = 0
+        pace = 1000
+        print('Start encoding documents...')
+        with tf.Session() as session:
+            session.run([tf.global_variables_initializer(), tf.tables_initializer()])
             while i <= (len(self.dataset_txt) - pace) / pace:
-                with tf.Session() as session:
-                    session.run([tf.global_variables_initializer(), tf.tables_initializer()])
-                    if dataset_embeddings is None:
-                        dataset_embeddings=session.run(embed(self.dataset_txt[i * pace:(i + 1) * pace]))
-                    else:
-                        dataset_embeddings = np.concatenate(
-                        [dataset_embeddings, session.run(embed(self.dataset_txt[i * pace:(i + 1) * pace]))])
-                print(str(i*pace)+' documents have been encoded.')
+                self.dataset_embeddings.append(session.run(embed(self.dataset_txt[i * pace:(i + 1) * pace])))
+                print(str(i * pace) + ' documents have been encoded.')
                 i += 1
 
             if i * pace < len(self.dataset_txt):
-                if dataset_embeddings is None:
-                    dataset_embeddings = session.run(embed(self.dataset_txt[i * pace:(i + 1) * pace]))
-                else:
-                    dataset_embeddings = np.concatenate(
-                        [dataset_embeddings, session.run(embed(self.dataset_txt[i * pace:]))])
+                self.dataset_embeddings.append(session.run(embed(self.dataset_txt[i * pace:])))
 
-            if dataset_embeddings is None:
-                logError('dataset_embeddings is none, no documents were read from the database.')
-                return
-            dimension = dataset_embeddings.shape[1]
-            # save vectors
-            dataset_embeddings.dump(Path(self.index_dir, self.VECTOR_DUMP))
-            print('Sentence embedding generated.')
+        if len(self.dataset_embeddings) == 0:
+            logError('dataset_embeddings is none, no documents were read from the database.')
+            return
+        self.dataset_embeddings = np.concatenate(self.dataset_embeddings)
+        dimension = self.dataset_embeddings.shape[1]
+        # save vectors
+        self.dataset_embeddings.dump(str(Path(self.index_dir, self.VECTOR_DUMP)))
+        print('Sentence embedding generated.')
 
-            faiss_index = faiss.IndexFlatL2(dimension)
-            faiss_index.add(dataset_embeddings)
-            # save faiss index
-            faiss.write_index_binary(faiss_index, str(Path(self.index_dir, self.FAISS_INX)))
-            print('Sentence embedding indexed.')
-        else:
-            print('Loading indexed sentence embeddings and faiss indexes...')
-            dataset_embeddings = np.load(Path(self.index_dir, self.VECTOR_DUMP))
-            faiss_index = faiss.read_index_binary(str(Path(self.index_dir, self.FAISS_INX)))
-        return self.gen_stats(self.dataset_idx, self.dataset_doc_ids, dataset_embeddings, faiss_index, annos,
-                              distance_threhold)
+        self.faiss_index = faiss.IndexFlatL2(dimension)
+        self.faiss_index.add(self.dataset_embeddings)
+        # save faiss index
+        faiss.write_index(self.faiss_index, str(Path(self.index_dir, self.FAISS_INX)))
+        print('Sentence embedding indexed.')
+        return self.faiss_index, self.dataset_embeddings
 
-    def gen_stats(self, dataset_idx: OrderedDict, dataset_doc_ids: object, dataset_embeddings: object,
-                  faiss_index: object,
-                  annos: object, distance_threhold: float) -> (dict, dict, dict):
+    def load_embedding_index(self):
+        self.dataset_embeddings = np.load(str(Path(self.index_dir, self.VECTOR_DUMP)), allow_pickle=True)
+        self.faiss_index = faiss.read_index(str(Path(self.index_dir, self.FAISS_INX)))
+        return self.faiss_index, self.dataset_embeddings
+
+    def gen_stats(self, dataset_idx: OrderedDict, dataset_doc_ids: [], dataset_embeddings: np.ndarray,
+                  faiss_index: faiss.Index,
+                  annos: dict, distance_threhold: float) -> (dict, dict, dict):
         """
         :param dataset_idx:  The dictionary to map document id to the index in dataset_doc_ids
         :param dataset_doc_ids: Array of document ids
@@ -131,26 +139,33 @@ class UniversalSentenceEncoderStratefiedSampler(KeywordStratefiedSampler):
         by annotation type, a stats counts for each annotation type.
         """
         distances = {type_name: dict() for type_name in self.grouped_ids.keys()}
-        for type_name, docs in annos.items():
-            subset_embeddings = np.array([dataset_embeddings[dataset_idx[doc_id]] for doc_id in docs])
-            D, I = faiss_index.search(subset_embeddings, int(len(dataset_embeddings) * 0.8))
-            for i in range(0, len(D)):
-                res_d = D[i]
-                if res_d > distance_threhold:
-                    break
-                doc_id = dataset_doc_ids[i]
-                self.grouped_ids[type_name].add(doc_id)
-                # update the distances of a candidate doc to the closest doc in the reviewed documents
-                if doc_id not in distances[type_name] or res_d < distances[type_name][doc_id]:
-                    distances[type_name][doc_id] = res_d
+        print(type(dataset_embeddings))
+        max_query_res = int(len(dataset_embeddings) * 0.8)
+        if max_query_res > 100:
+            max_query_res = 100
+        print('Querying similar document embeddings...')
+        for type_name, doc_ids in annos.items():
+            subset_embeddings = np.array([dataset_embeddings[dataset_idx[doc_id]] for doc_id in doc_ids])
+            for i in range(0, len(subset_embeddings)):
+                D, I = faiss_index.search(subset_embeddings[i:i + 1], max_query_res)
+                for j in range(0, len(D[0])):
+                    res_d = D[0][j]
+                    if res_d > distance_threhold:
+                        break
+                    doc_id = dataset_doc_ids[I[0][j]]
+                    self.grouped_ids[type_name].add(doc_id)
+                    # update the distances of a candidate doc to the closest doc in the reviewed documents
+                    if doc_id not in distances[type_name] or res_d < distances[type_name][doc_id]:
+                        distances[type_name][doc_id] = res_d
 
         # solve overlapping candidates
+        print('Solve overlapping candidates...')
         for doc_id in dataset_doc_ids:
             shortest_distance = 10000
             to_remove_from_types = []
             previous_type = ''
             for type_name in distances.keys():
-                if distances[type_name][doc_id] < shortest_distance:
+                if doc_id in distances[type_name] and distances[type_name][doc_id] < shortest_distance:
                     shortest_distance = distances[type_name][doc_id]
                     if previous_type != '':
                         to_remove_from_types.append(type_name)
@@ -161,6 +176,7 @@ class UniversalSentenceEncoderStratefiedSampler(KeywordStratefiedSampler):
 
         available_outscope_ids = set(dataset_doc_ids)
         # identify the documents haven't been reviewed
+        print("identify the documents haven't been reviewed")
         for type_name, doc_ids in self.grouped_ids.items():
             available_outscope_ids = available_outscope_ids - doc_ids
             self.new_ids[type_name] = doc_ids - self.previous_sampled_ids
