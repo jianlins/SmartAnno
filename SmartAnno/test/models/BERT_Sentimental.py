@@ -241,6 +241,7 @@ def model_fn_builder(num_labels, learning_rate, num_train_steps,
         segment_ids = features["segment_ids"]
         label_ids = features["label_ids"]
 
+
         is_predicting = (mode == tf.estimator.ModeKeys.PREDICT)
 
         # TRAIN and EVAL

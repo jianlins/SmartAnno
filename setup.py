@@ -15,7 +15,7 @@ setup(
     # exclude=['*.json', '*.sqlite', 'SmartAnno.test', '*.ipynb_checkpoints', '*.ini']
     # ),
     # this must be the same as the name above
-    version='1.0.29.dev',
+    version='1.0.30.dev',
     description='A smart snippet annotation tool with deep learning backbone.',
     author='Jianlin',
     author_email='jianlinshi.cn@gmail.com',
@@ -37,7 +37,7 @@ setup(
     ],
     install_requires=[
         'PyRuSH', 'sqlalchemy-dao', 'keras', 'spacy', 'ipywidgets', 'jupytext', 'scikit-learn', 'numpy', 'sqlalchemy',
-        'colorama', 'textblob', 'Whoosh',"lxml","matplotlib", 'bert-tensorflow','paramiko'
+        'colorama', 'textblob', 'Whoosh',"lxml","matplotlib", 'bert-tensorflow','paramiko','pyConTextNLP','radnlp'
     ],
     include_package_data=True,
     extras_require={
