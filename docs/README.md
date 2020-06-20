@@ -42,5 +42,4 @@ main.start()
 ![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-48.gif)
 
 ## A Colab Notebook Demo: 
-
-https://colab.research.google.com/drive/1hKauV26CTreyzwsa-2eipLmSJxQo2SmB?usp=sharing
+A Colab Notebook Demo is [here](https://colab.research.google.com/drive/1hKauV26CTreyzwsa-2eipLmSJxQo2SmB?usp=sharing)
