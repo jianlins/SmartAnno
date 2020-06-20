@@ -34,6 +34,7 @@ main.workflow.steps
 ```
 
 ## A glimp of the annotation interface embedded in notebook
+The following annimation shows annotating a sentence (whether a sentence is describing a disorder or not).
 ![annotation gif](https://jianlins.github.io/SmartAnno/img/Peek%202020-06-20%2014-48.gif)
 
 ## A runnable Colab Notebook Demo
