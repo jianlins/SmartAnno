@@ -33,14 +33,11 @@ main.start()
 main.workflow.steps
 ```
 
-Execute these two cells.
+## A glimp of interface embedded in notebook
+![annotation gif](https://jianlins.github.io/SmartAnno/img/Peek%202020-06-20%2014-48.gif)
 
-```python
-main.workflow.steps[-2].data
-```
-
-```python
-
-```
 A Colab Notebook Demo is here: 
 https://colab.research.google.com/drive/1hKauV26CTreyzwsa-2eipLmSJxQo2SmB?usp=sharing
+
+## Documentation
+The full documentation can be found at [SmartAnno Github Page](https://jianlins.github.io/SmartAnno/)
