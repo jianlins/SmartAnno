@@ -6,3 +6,4 @@ data
 .idea
 build
 dist
+_site/
