@@ -7,9 +7,6 @@ from sklearn import metrics
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-import pandas as pd
-import tensorflow as tf
-import tensorflow_hub as hub
 from sklearn.pipeline import Pipeline
 
 from SmartAnno.gui.Workflow import logMsg
