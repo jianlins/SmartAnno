@@ -29,18 +29,18 @@ Then, create another python cell, type:
 ```python
 main.start()
 ```
-```python
-main.workflow.steps
-```
 
-Execute these two cells.
+## A glimp of features
 
-```python
-main.workflow.steps[-2].data
-```
+### UMLS-based synonym expander
+![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-58.gif)
 
-```python
+### Word-embedding-based related term expander
+![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-59.gif)
 
-```
-A Colab Notebook Demo is here: 
+### Notebook embedded snippet annotation interface
+![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-48.gif)
+
+## A Colab Notebook Demo: 
+
 https://colab.research.google.com/drive/1hKauV26CTreyzwsa-2eipLmSJxQo2SmB?usp=sharing
