@@ -33,7 +33,7 @@ main.start()
 main.workflow.steps
 ```
 
-## A glimp of interface embedded in notebook
+## A glimp of the annotation interface embedded in notebook
 ![annotation gif](https://jianlins.github.io/SmartAnno/img/Peek%202020-06-20%2014-48.gif)
 
 A Colab Notebook Demo is here: 
