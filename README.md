@@ -36,6 +36,7 @@ main.workflow.steps
 ## A glimp of the annotation interface embedded in notebook
 ![annotation gif](https://jianlins.github.io/SmartAnno/img/Peek%202020-06-20%2014-48.gif)
 
+## A runnable Colab Notebook Demo
 A Colab Notebook Demo is here: 
 https://colab.research.google.com/drive/1hKauV26CTreyzwsa-2eipLmSJxQo2SmB?usp=sharing
 
