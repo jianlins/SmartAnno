@@ -3,6 +3,12 @@ layout: default
 title: SmartAnno
 nav_order: 1
 ---
+# Navigation Structure
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
 # SmartAnno
 {:toc}
 SmartAnno is a semi-automatic annotation tool implemented within jupyter notebook. 
