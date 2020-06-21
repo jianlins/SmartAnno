@@ -18,7 +18,7 @@ if you have older version installed, then you might want to try upgrade it:
 pip install smartanno -U --no-cache-dir
 ```
 
-## How to use
+## Quick Start
 
 Within a jupyter notebook, add a python cell, type: 
 ```python
