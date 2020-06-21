@@ -1,4 +1,4 @@
-# SmartAnno
+# 1. SmartAnno
 
 SmartAnno is a semi-automatic annotation tool implemented within jupyter notebook. 
 It uses deep learning model in the backend to learn a smarter and smarter model over time while users annotating the data. 
