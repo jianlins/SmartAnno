@@ -31,8 +31,10 @@ initial rule-based pre-annotator.
 Here is the instruction video about how to get an [UMLS API key (at 01:12 from the beginning)](https://www.nlm.nih.gov/research/umls/user_education/quick_tours/UTS-API/UTS_REST_API_Authentication.html)
 
 We can also leave it blank if we don't want to use UMLS.
+
 ___
-### Configure SmartAnno
+
+## Configure SmartAnno
 With the information above, we are now able to configure SmartAnno:
 
 ![Configure Screenshot](img/Selection_082.png)

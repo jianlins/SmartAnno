@@ -3,16 +3,13 @@ layout: default
 title: SmartAnno
 nav_order: 1
 ---
-
-
-
-
-# SmartAnno
-{:toc}
 ## Table of contents
 {: .no_toc .text-delta }
+1. TOC
+{:toc}
 
-
+# SmartAnno
+{: .no_toc }
 SmartAnno is a semi-automatic annotation tool implemented within jupyter notebook. 
 It uses deep learning model in the backend to learn a smarter and smarter model over time while users annotating the data. 
 It also integrates word embedding, and UMLS synonym heuristics to improve learning rate.
