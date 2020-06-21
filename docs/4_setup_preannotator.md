@@ -44,3 +44,5 @@ Then you will be prompt to choose which candidates are relevant to the selected 
 SmartAnno will automatically merge the duplicated keywords. All these keywords will be used to pre-annotate the incoming 
 samples. 
 
+## Machine-learning-based pre-annotator
+The machine-learning-based pre-annotator will be configured later..
