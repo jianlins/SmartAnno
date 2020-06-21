@@ -33,5 +33,7 @@ ___
 With the information above, we are now able to configure SmartAnno:
 
 ![Configure Screenshot](img/Selection_082.png)
+
 ___
+
 For more details, please refer to this runnable [Colab Notebook](https://colab.research.google.com/drive/1hKauV26CTreyzwsa-2eipLmSJxQo2SmB?usp=sharing). 
