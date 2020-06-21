@@ -7,7 +7,7 @@ nav_order: 5
 
 The pre-annotator is an agent running in the background to make a best guest of un-reviewed data 
 before human annotators start to annotate the samples. A good preannotator can potentially [speed 
-up annotation process](https://pubmed.ncbi.nlm.nih.gov/24001514/) and [improve annotation quality] (https://arxiv.org/pdf/1808.03806).
+up annotation process](https://pubmed.ncbi.nlm.nih.gov/24001514/) and [improve annotation quality](https://arxiv.org/pdf/1808.03806).
 
 SmartAnno uses adaptive models in the backend to complete the pre-annotations: 
 * At the beginning of the annotation, it will use rule-base pre-annotator (built on top of the ConText algorithm),
@@ -30,6 +30,8 @@ First, you can select with keywords you want to discover using embedding:
 Then you will be prompt to choose which candidates are the synonyms to the selected keywords:
 ![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-58.gif)
 
+**Note:** Because UMLS REST service is internet-based and the service can be overwhelming by too many requests, you will 
+often encounter lagging when using this UMLS-based synonym expander. 
 
 ### The Word-embedding-based related term expander
 If you have [configured the word embedding model](1_config_smartanno.html#configure-word-embedding-model), you are now 
@@ -45,4 +47,4 @@ SmartAnno will automatically merge the duplicated keywords. All these keywords w
 samples. 
 
 ## Machine-learning-based pre-annotator
-The machine-learning-based pre-annotator will be configured later..
+The machine-learning-based pre-annotator will be configured after some maual annotations are completed.
