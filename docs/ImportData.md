@@ -1,3 +1,8 @@
+---
+layout: default
+title: Import Data
+nav_order: 3
+---
 ## 2. Import Data
 Once you finish the essential configuration of SmartAnno, you will be asked to import data--usually txt files.
 
