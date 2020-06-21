@@ -19,6 +19,7 @@ ___
 ## Name your dataset
 After importing, we can give a name for this imported dataset (document-level)
 ![Set Dataset Name](img/Selection_083.png)
+
 The SmartAnno will also ask if we want to split sentences to create a sentence-level dataset. We have two options:
 using [TextBlob sentence splitter](https://textblob.readthedocs.io/en/dev/) or [PyRuSh](https://github.com/jianlins/pyrush).
  The PyRuSH is a sentence segmenter customized for clinical text.    
@@ -28,6 +29,6 @@ using [TextBlob sentence splitter](https://textblob.readthedocs.io/en/dev/) or [
 If you chose the sentence splitting above, you will see two datasets:
 
 * Document-level dataset: you will review and annotate per document.
-* Sentence-level dataset(with a surfix '_sents'): you will review and annotate per sentence.
+* Sentence-level dataset(with a suffix '_sents'): you will review and annotate per sentence.
 
 ![Select Dataset](img/Selection_086.png) 

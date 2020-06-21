@@ -21,7 +21,7 @@ It also integrates word embedding, and UMLS synonym heuristics to improve learni
 pip install smartanno
 ```
 
-if you have older version installed, then you might want to try upgrade it:
+if you have older version installed, then you might want to upgrade it:
 
 ```bash
 pip install smartanno -U --no-cache-dir

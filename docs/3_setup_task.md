@@ -17,8 +17,8 @@ the attributes and values. Each line will be considered as an annotation type. I
 type named "DISORDER." 
 ![Annotation schema](img/Selection_087.png)
 
-SmartAnno will also recommend to define a "Irrelevant" type by default, so that we can have some negative samples. If 
-you are sure, all the samples are relevant (must be classified into one of the types listed in the textarea), you can 
+SmartAnno will also recommend defining a "Irrelevant" type by default, so that we can have some negative samples. If 
+you are sure all the samples are relevant (must be classified into one of the types listed in the textarea), you can 
 choose "No."
 
 
