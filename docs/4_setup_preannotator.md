@@ -23,13 +23,23 @@ At the beginning, you will need to configure this rule-based pre-annotator by ad
 ### The UMLS-based synonym expander
 If you have [configured UMLS API key](1_config_smartanno.html#configure-umls-api-key), you are now able to use UMLS 
 provided REST service to expand your keywords.
+
+First, you can select with keywords you want to discover using embedding:
+![select keywords](img/Selection_090.png)
+
+Then you will be prompt to choose which candidates are the synonyms to the selected keywords:
 ![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-58.gif)
 
 
 ### The Word-embedding-based related term expander
 If you have [configured the word embedding model](1_config_smartanno.html#configure-word-embedding-model), you are now 
 able to use the embedding model to expand your keywords.
-![Animation of UMLS-based synonym expander](img/Peek 2020-06-20 14-59.gif)
+
+First, you can select with keywords you want to discover using embedding:
+![select keywords](img/Selection_091.png)
+
+Then you will be prompt to choose which candidates are relevant to the selected keywords:
+![Animation of embedding-based synonym expander](img/Peek 2020-06-20 14-59.gif)
 
 SmartAnno will automatically merge the duplicated keywords. All these keywords will be used to pre-annotate the incoming 
 samples. 
