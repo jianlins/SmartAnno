@@ -6,7 +6,7 @@ heading_anchors: true
 aux_links:
   "SmartAnno on GitHub":
     - "//github.com/jianlins/SmartAnno"
-footer_content: "Copyright &copy; 2018-2020 Jianlin Shi. Distributed by an <a href=\"https://github.com/jianlins/SmartAnno/tree/master/LICENSE.txt\">Apache license v2.0.</a>"
+footer_content: "Copyright &copy; 2018-2020 Jianlin Shi. Distributed by an <a href=\"https://github.com/jianlins/SmartAnno/blob/master/LICENSE\">Apache license v2.0.</a>"
 
 
 ---

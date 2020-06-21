@@ -22,12 +22,15 @@ head -1 resources/glove.6B.100d.gs.txt
 ```
 The first number is the vocabulary size, the 2nd is the dimension size.
 
+Additional [tranformer models](https://huggingface.co/transformers/) will be available soon. 
+
 ## Configure UMLS API key
 We can use UMLS REST API to expand keywords by looking for synonyms. These keywords are used in the 
 initial rule-based pre-annotator.
 
 Here is the instruction video about how to get an [UMLS API key (at 01:12 from the beginning)](https://www.nlm.nih.gov/research/umls/user_education/quick_tours/UTS-API/UTS_REST_API_Authentication.html)
 
+We can also leave it blank if we don't want to use UMLS.
 ___
 ### Configure SmartAnno
 With the information above, we are now able to configure SmartAnno:
